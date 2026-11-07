@@ -360,3 +360,41 @@
 	margin-top: 0;
 	line-height: 18px;
 }
+
+/* floating button to upload documents */
+.upload-button {
+	position: absolute;
+	right: 28px;
+	bottom: 28px;
+	z-index: 20;
+	width: 56px;
+	height: 56px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background-color: #34c84a;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+	cursor: pointer;
+	-webkit-app-region: no-drag;
+	transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.upload-button:hover {
+	background-color: #2fb443;
+	transform: scale(1.06);
+}
+
+.upload-button:active {
+	background-color: #28a03b;
+	transform: scale(0.96);
+}
+
+.upload-button:focus {
+	outline: none;
+}
+
+.upload-button .icon {
+	color: #fff;
+	font-size: 26px;
+	line-height: 56px;
+}

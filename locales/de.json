@@ -43,6 +43,7 @@
 	"documents.notDisplayed": "Das Dokument konnte nicht angezeigt werden.",
 	"documents.loading": "Lädt...",
 	"documents.dropFiles": "Dateien hier ablegen!",
+	"documents.upload": "Dokumente hochladen",
 	"documents.uploading": "Dokumente werden hochgeladen..",
 	"documents.uploadingBody": "Sie erscheinen in deiner Dokumentenliste, sobald die Verarbeitung abgeschlossen ist.",
 	"documents.uploadFailed": "{name} konnte nicht hochgeladen werden!",

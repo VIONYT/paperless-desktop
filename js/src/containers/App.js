@@ -9,6 +9,10 @@ import { request, getToken } from "../api";
 import { ipcRenderer, dialog } from "../electronBridge";
 import { t } from "../i18n";
 
+// the file types paperless-ngx can consume
+const UPLOAD_TYPES =
+	".pdf,.png,.jpg,.jpeg,.gif,.tif,.tiff,.webp,.txt,.csv,.doc,.docx,.odt,.xls,.xlsx,.ods,.ppt,.pptx,.odp";
+
 class App extends PaperlessComponent {
 	// CONSTRUCTOR
 	constructor(props, context) {
@@ -28,7 +32,10 @@ class App extends PaperlessComponent {
 		});
 	}
 
-	handleDrop(files) {
+	// UPLOAD FILES: used by drag & drop and by the upload button
+	uploadFiles(files) {
+		if (!files || files.length === 0) return;
+
 		for (var ii = 0, len = files.length; ii < len; ii++) {
 			const file = files[ii];
 			const data = new FormData();
@@ -51,9 +58,28 @@ class App extends PaperlessComponent {
 			});
 		}
 
-		var notif = new window.Notification(t("documents.uploading"), {
+		const notification = new window.Notification(t("documents.uploading"), {
 			body: t("documents.uploadingBody")
 		});
+	}
+
+	// HANDLE DROP
+	handleDrop(files) {
+		this.uploadFiles(files);
+	}
+
+	// OPEN FILE DIALOG: the button opens the file selection of the system
+	openFileDialog() {
+		if (this.fileInput) this.fileInput.click();
+	}
+
+	// HANDLE FILES SELECTED
+	handleFilesSelected(event) {
+		const input = event.target;
+		this.uploadFiles(Array.prototype.slice.call(input.files));
+
+		// allows to select the same file again
+		input.value = "";
 	}
 
 	// RENDER
@@ -63,9 +89,31 @@ class App extends PaperlessComponent {
 				<RemindersNotification />
 				<Header history={this.props.history} />
 				<Tabs history={this.props.history} />
-				<FileDrop onDrop={this.handleDrop}>{t("documents.dropFiles")}</FileDrop>
+				<FileDrop onDrop={this.handleDrop.bind(this)}>{t("documents.dropFiles")}</FileDrop>
 				<div className="window-content">{this.props.children}</div>
 				<Footer />
+				{this.props.location && this.props.location.pathname === "/documents" ? (
+					<div>
+						<input
+							type="file"
+							multiple
+							accept={UPLOAD_TYPES}
+							style={{ display: "none" }}
+							ref={(el) => {
+								this.fileInput = el;
+							}}
+							onChange={this.handleFilesSelected.bind(this)}
+						/>
+						<button
+							type="button"
+							className="upload-button"
+							title={t("documents.upload")}
+							onClick={this.openFileDialog.bind(this)}
+						>
+							<span className="icon icon-plus" />
+						</button>
+					</div>
+				) : null}
 			</div>
 		);
 	}
