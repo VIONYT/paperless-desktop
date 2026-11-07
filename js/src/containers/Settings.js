@@ -2,6 +2,7 @@ import React from "react";
 import $ from "jquery";
 import { getToken, normalizeHost, fetchToken } from "../api";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { applyTheme, getTheme } from "../theme";
 
 class Settings extends React.Component {
 	// CONSTRUCTOR
@@ -39,6 +40,11 @@ class Settings extends React.Component {
 		var blacklist = ["username", "password", "host"];
 		if (blacklist.indexOf(e.target.name) < 0) {
 			localStorage.setItem("settings." + e.target.name, e.target.value);
+		}
+
+		// switch the appearance right away
+		if (e.target.name === "theme") {
+			applyTheme(e.target.value);
 		}
 	}
 
@@ -156,6 +162,25 @@ class Settings extends React.Component {
 						>
 							Update
 						</button>
+					</form>
+
+					<h3>Appearance</h3>
+					<hr />
+					<form className="settings-form">
+						<div className="form-group">
+							<label>Theme</label>
+							<select
+								name="theme"
+								value={getTheme()}
+								onChange={this.handleChange.bind(this)}
+								className="form-control"
+								style={{ width: "200px", display: "block" }}
+							>
+								<option value="system">Same as system</option>
+								<option value="light">Light</option>
+								<option value="dark">Dark</option>
+							</select>
+						</div>
 					</form>
 
 					<h3>Documents</h3>

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const { app, Menu, BrowserWindow, session, ipcMain } = require("electron");
+const { app, Menu, BrowserWindow, session, ipcMain, nativeTheme } = require("electron");
 const remoteMain = require("@electron/remote/main");
 const { download } = require("electron-dl");
 const path = require("path");
@@ -110,6 +110,11 @@ var menu = Menu.buildFromTemplate([
 ipcMain.on("login", (event, arg) => {
 	if (typeof arg === "string") arg = JSON.parse(arg);
 	auth = arg && arg.host && arg.token ? arg : null;
+});
+
+// listen to the appearance setting ("system", "light" or "dark")
+ipcMain.on("setTheme", (event, theme) => {
+	nativeTheme.themeSource = theme === "light" || theme === "dark" ? theme : "system";
 });
 
 // listen or URL download requests
