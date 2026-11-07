@@ -578,3 +578,24 @@ th,
 	height: 52px;
 	-webkit-app-region: drag;
 }
+
+/* buttons with a text: the icon and the text are centered on one line */
+.toolbar-items .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	line-height: 22px;
+}
+
+.toolbar-items .btn .icon {
+	float: none;
+	flex-shrink: 0;
+}
+
+.toolbar-items .btn-primary .icon {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	line-height: 18px;
+}

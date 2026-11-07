@@ -81,7 +81,7 @@ class Header extends React.Component {
 				onClick={item.click}
 			>
 				{item.icon ? <span className={"icon icon-" + item.icon} /> : null}
-				{primary ? " " + item.text : null}
+				{primary ? <span>{item.text}</span> : null}
 			</button>
 		);
 	}
