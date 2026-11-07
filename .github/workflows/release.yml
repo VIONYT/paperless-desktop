@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "[0-9]*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-13
+            script: package
+            dir: Paperless-darwin-x64
+          - name: Windows
+            os: windows-latest
+            script: package:win
+            dir: Paperless-win32-x64
+          - name: Linux
+            os: ubuntu-latest
+            script: package:linux
+            dir: Paperless-linux-x64
+    steps:
+      - uses: actions/checkout@v4
+
+      # gulp 3 / electron 1.8 need an old Node version
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 10
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run ${{ matrix.script }}
+
+      - name: Set archive name
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME:-dev}"
+          echo "ARCHIVE=Paperless-${VERSION}-${{ matrix.dir }}.zip" >> "$GITHUB_ENV"
+
+      - name: Zip (macOS/Linux)
+        if: runner.os != 'Windows'
+        working-directory: build
+        run: zip -r -y "../${ARCHIVE}" "${{ matrix.dir }}"
+
+      - name: Zip (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path "build/${{ matrix.dir }}" -DestinationPath "$env:ARCHIVE"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.dir }}
+          path: ${{ env.ARCHIVE }}
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

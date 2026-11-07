@@ -8,7 +8,9 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint js/src",
 		"precommit": "pretty-quick --staged",
-		"package": "gulp && electron-packager ./ Paperless --platform=darwin --arch=all --out ./build --ignore='^/build$' --electron-version 1.8.4 --overwrite --icon=./icon.icns"
+		"package": "gulp && electron-packager ./ Paperless --platform=darwin --arch=all --out ./build --ignore='^/build$' --electron-version 1.8.4 --overwrite --icon=./icon.icns",
+		"package:win": "gulp && electron-packager ./ Paperless --platform=win32 --arch=x64 --out ./build --ignore='^/build$' --electron-version 1.8.4 --overwrite",
+		"package:linux": "gulp && electron-packager ./ Paperless --platform=linux --arch=x64 --out ./build --ignore='^/build$' --electron-version 1.8.4 --overwrite"
 	},
 	"repository": {
 		"type": "git",
