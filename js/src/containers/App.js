@@ -41,7 +41,15 @@ class App extends PaperlessComponent {
 		for (var ii = 0, len = files.length; ii < len; ii++) {
 			const file = files[ii];
 
-			uploadFile(file).catch(() => {
+			uploadFile(file, (task) => {
+				// paperless-ngx could not process the document
+				if (task.status === "FAILURE" || task.status === "REVOKED") {
+					dialog.showErrorBox(
+						t("documents.processingFailed", { name: file.name }),
+						task.result || t("common.tryAgain")
+					);
+				}
+			}).catch(() => {
 				dialog.showErrorBox(
 					t("documents.uploadFailed", { name: file.name }),
 					t("documents.uploadFailedMessage")

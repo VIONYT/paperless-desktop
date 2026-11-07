@@ -58,27 +58,42 @@ class UploadWidget extends React.Component {
 		const percent = s.total > 0 ? Math.min(100, Math.floor((s.loaded / s.total) * 100)) : 0;
 		const done = !s.active;
 		const failed = done && s.failed > 0;
+		const processing = !s.uploading && s.processing;
 
+		let title;
 		let status;
-		if (failed) status = t("upload.failed");
-		else if (done) status = t("upload.complete");
-		else if (percent >= 100) status = t("upload.finishing");
-		else status = formatSpeed(s.speed);
+		let right = percent + " %";
+
+		if (processing) {
+			// paperless-ngx has the file and recognizes the text (OCR)
+			title = t("upload.processing", { count: s.files });
+			status = s.taskStatus === "STARTED" ? t("upload.ocr") : t("upload.queued");
+			right = s.finished + s.failed + " / " + s.files;
+		} else if (done) {
+			title = t("upload.title");
+			status = failed ? t("upload.failed") : t("upload.complete");
+			right = failed ? percent + " %" : "100 %";
+		} else {
+			title = t("upload.uploading", { count: s.files });
+			status = percent >= 100 ? t("upload.finishing") : formatSpeed(s.speed);
+		}
 
 		let className = "upload-widget";
 		if (done && !failed) className += " upload-widget-done";
 		if (failed) className += " upload-widget-failed";
+		if (processing) className += " upload-widget-processing";
 
 		return (
 			<div className={className}>
 				<div className="upload-widget-header">
-					<span className="upload-widget-title">
-						{done ? t("upload.title") : t("upload.uploading", { count: s.files })}
-					</span>
-					<span className="upload-widget-percent">{percent} %</span>
+					<span className="upload-widget-title">{title}</span>
+					<span className="upload-widget-percent">{right}</span>
 				</div>
 				<div className="upload-widget-bar">
-					<div className="upload-widget-bar-fill" style={{ width: percent + "%" }} />
+					<div
+						className="upload-widget-bar-fill"
+						style={{ width: (processing || done ? 100 : percent) + "%" }}
+					/>
 				</div>
 				<div className="upload-widget-footer">
 					<span>{status}</span>

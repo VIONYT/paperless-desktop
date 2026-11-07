@@ -134,5 +134,9 @@
 	"upload.files": "{done} von {count}",
 	"upload.finishing": "Wird abgeschlossen...",
 	"upload.complete": "Upload abgeschlossen",
-	"upload.failed": "Upload fehlgeschlagen"
+	"upload.failed": "Upload fehlgeschlagen",
+	"upload.processing": "{count} Datei(en) werden verarbeitet",
+	"upload.ocr": "Texterkennung (OCR) läuft...",
+	"upload.queued": "Wartet in der Warteschlange...",
+	"documents.processingFailed": "paperless konnte {name} nicht verarbeiten!"
 }
