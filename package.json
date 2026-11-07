@@ -25,6 +25,7 @@
 		"electron-dl": "^3.5.2",
 		"jquery": "^3.5.0",
 		"moment": "^2.29.2",
+		"pdfjs-dist": "^6.5.438",
 		"prop-types": "^15.5.8",
 		"react": "^15.4.1",
 		"react-big-calendar": "^0.13.0",

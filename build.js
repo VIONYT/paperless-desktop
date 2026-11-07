@@ -47,7 +47,17 @@ const options = {
 	logLevel: "info"
 };
 
+// the worker of pdf.js (PDF preview) is loaded at runtime next to the bundle
+const copyPdfWorker = () => {
+	fs.copyFileSync(
+		path.join(__dirname, "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
+		path.join(__dirname, "js", "build", "pdf.worker.min.mjs")
+	);
+};
+
 async function main() {
+	copyPdfWorker();
+
 	if (watch) {
 		const ctx = await esbuild.context(options);
 		await ctx.watch();
