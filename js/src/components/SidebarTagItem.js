@@ -37,7 +37,10 @@ class SidebarTagItem extends React.Component {
 		return (
 			<span
 				className={"nav-group-item" + (this.state.active ? " active" : "")}
+				role="button"
+				tabIndex={0}
 				onClick={this.setTagFilter.bind(this)}
+				onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && this.setTagFilter()}
 			>
 				<span className="icon icon-record" style={{ color: tagColor(tag) }} />
 				{tag.name}

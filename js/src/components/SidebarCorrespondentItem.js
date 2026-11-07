@@ -34,7 +34,12 @@ class SidebarCorrespondentItem extends React.Component {
 		return (
 			<span
 				className={"nav-group-item" + (this.state.active ? " active" : "")}
+				role="button"
+				tabIndex={0}
 				onClick={this.setCorrespondentFilter.bind(this)}
+				onKeyDown={(e) =>
+					(e.key === "Enter" || e.key === " ") && this.setCorrespondentFilter()
+				}
 			>
 				<span className="icon icon-user" />
 				{this.props.correspondent.name}

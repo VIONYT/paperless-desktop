@@ -1,13 +1,14 @@
 import native from "./native";
 import { t } from "./i18n";
 
-// CONFIRM DELETE: asks the user before something is deleted, resolves to true if confirmed
-export const confirmDelete = (messageKey) =>
+// CONFIRM DELETE: asks the user before something is deleted, resolves to true if confirmed.
+// The title is the question, the buttons say what they do (and Cancel is the default).
+export const confirmDelete = (titleKey) =>
 	native.confirm({
-		title: t("document.deleteConfirmTitle"),
-		message: t(messageKey),
-		yes: t("common.yes"),
-		no: t("common.no")
+		title: t(titleKey),
+		message: t("common.cannotBeUndone"),
+		accept: t("common.delete"),
+		cancel: t("common.cancel")
 	});
 
 // the servers of the own computer are reached without leaving it, an unencrypted connection is fine
@@ -23,7 +24,7 @@ export const confirmInsecure = (host) => {
 	return native.confirm({
 		title: t("login.insecureTitle"),
 		message: t("login.insecureMessage"),
-		yes: t("common.yes"),
-		no: t("common.no")
+		accept: t("login.signInAnyway"),
+		cancel: t("common.cancel")
 	});
 };

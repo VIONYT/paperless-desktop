@@ -43,6 +43,7 @@ class DocumentRender extends React.Component {
 		this.container = null;
 		this.pdf = null;
 		this.renderId = 0;
+		this.unmounted = false;
 		this.resizeTimeout = null;
 		this.onResize = () => {
 			window.clearTimeout(this.resizeTimeout);
@@ -65,7 +66,8 @@ class DocumentRender extends React.Component {
 
 		// stops a running render
 		this.renderId++;
-		if (this.pdf) this.pdf.destroy();
+		this.unmounted = true;
+		if (this.pdf) this.pdf.loadingTask.destroy();
 	}
 
 	// LOAD PDF: downloads the PDF and renders it
@@ -77,6 +79,9 @@ class DocumentRender extends React.Component {
 		})
 			.then((result) => pdfjs.getDocument({ data: new Uint8Array(result.data) }).promise)
 			.then((pdf) => {
+				// the document was closed while it was loading
+				if (this.unmounted) return pdf.loadingTask.destroy();
+
 				this.pdf = pdf;
 				this.setState({ loading: false });
 

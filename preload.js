@@ -20,6 +20,7 @@ const SEND = [
 
 const RECEIVE = [
 	"navigate",
+	"command",
 	"closeCurrentTab",
 	"openDocument",
 	"tagAdded",

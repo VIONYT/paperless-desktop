@@ -2,15 +2,14 @@ import React from "react";
 import Select from "react-select";
 import TagsActions from "../actions/TagsActions";
 import TagsStore from "../stores/TagsStore";
-import { tagColor } from "../utils";
 import { t } from "../i18n";
 
-// the options of the select: the tags that are available on the server
+// the options of the select: the tags that are available on the server (the color of a tag is
+// not used for the text, light colors can not be read)
 const toOptions = (tags) =>
 	((tags && tags.results) || []).map((tag) => ({
 		label: tag.name,
-		value: tag.id,
-		style: { color: tagColor(tag) }
+		value: tag.id
 	}));
 
 class TagsInput extends React.Component {

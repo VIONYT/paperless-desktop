@@ -42,6 +42,7 @@ class Login extends React.Component {
 	render() {
 		return (
 			<div className="center-form">
+				<div className="login-drag" />
 				<center>
 					<img src="icon.png" width="180" />
 				</center>

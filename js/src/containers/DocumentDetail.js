@@ -17,17 +17,22 @@ class DocumentDetail extends React.Component {
 		super(props);
 		this.state = {};
 		this.onChange = this.onChange.bind(this);
+		this.unsubscribe = [];
 	}
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
+		bus.trigger("header.activeItem", { item: "documents" });
+
 		DocumentStore.listen(this.onChange);
 		DocumentActions.getDocument(this.props.params.id);
 		this.addToolbarItems();
+		this.subscribeToMenu();
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
+		this.unsubscribe.forEach((unsubscribe) => unsubscribe());
 		ToolbarActions.clearItems();
 		DocumentStore.unlisten(this.onChange);
 	}
@@ -40,42 +45,63 @@ class DocumentDetail extends React.Component {
 		}
 	}
 
-	// ADD TOOLBAR ITEMS
-	addToolbarItems() {
-		const id = this.props.params.id;
+	// SAVE
+	save() {
+		DocumentActions.updateDocument(this.state.doc);
+	}
 
+	// DOWNLOAD
+	download() {
+		native.send("download", downloadUrl(this.props.params.id));
+	}
+
+	// ADD REMINDER
+	addReminder() {
+		native.send("modal", {
+			route: "/modal/reminders/add/" + this.props.params.id,
+			width: 450,
+			height: 350
+		});
+	}
+
+	// DELETE DOCUMENT: after the confirmation the tab is closed, the list removes the document
+	deleteDocument() {
+		confirmDelete("document.deleteConfirmTitle").then((confirmed) => {
+			if (!confirmed) return;
+
+			DocumentsActions.deleteDocuments([this.props.params.id]);
+			bus.trigger("tabs.closeCurrent");
+		});
+	}
+
+	// SUBSCRIBE TO MENU: the commands of the page are in the toolbar and in the menu bar
+	subscribeToMenu() {
+		this.unsubscribe = [
+			bus.on("command:save", () => this.save()),
+			bus.on("command:download", () => this.download()),
+			bus.on("command:addReminder", () => this.addReminder()),
+			bus.on("command:deleteDocument", () => this.deleteDocument())
+		];
+	}
+
+	// ADD TOOLBAR ITEMS: shown in the toolbar of the window, the main action last
+	addToolbarItems() {
 		ToolbarActions.clearItems();
-		ToolbarActions.addItem(
-			"save-detail",
-			"floppy",
-			t("common.save"),
-			"primary",
-			"right",
-			(e) => {
-				e.preventDefault();
-				DocumentActions.updateDocument(this.state.doc);
-			}
-		);
-		ToolbarActions.addItem(
-			"download-file",
-			"download",
-			t("document.download"),
-			"default",
-			"left",
-			() => native.send("download", downloadUrl(id))
-		);
 		ToolbarActions.addItem(
 			"add-reminder",
 			"bell",
 			t("document.addReminder"),
 			"default",
 			"right",
-			() =>
-				native.send("modal", {
-					route: "/modal/reminders/add/" + id,
-					width: 450,
-					height: 350
-				})
+			() => this.addReminder()
+		);
+		ToolbarActions.addItem(
+			"download-file",
+			"download",
+			t("document.download"),
+			"default",
+			"right",
+			() => this.download()
 		);
 		ToolbarActions.addItem(
 			"delete-document",
@@ -85,16 +111,17 @@ class DocumentDetail extends React.Component {
 			"right",
 			() => this.deleteDocument()
 		);
-	}
-
-	// DELETE DOCUMENT: after the confirmation the tab is closed, the list removes the document
-	deleteDocument() {
-		confirmDelete("document.deleteConfirm").then((confirmed) => {
-			if (!confirmed) return;
-
-			DocumentsActions.deleteDocuments([this.props.params.id]);
-			bus.trigger("tabs.closeCurrent");
-		});
+		ToolbarActions.addItem(
+			"save-detail",
+			"floppy",
+			t("common.save"),
+			"primary",
+			"right",
+			(e) => {
+				e.preventDefault();
+				this.save();
+			}
+		);
 	}
 
 	// ON CHANGE: the document was loaded, it gets its own tab

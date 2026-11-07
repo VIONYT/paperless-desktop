@@ -1,11 +1,12 @@
 import React from "react";
 import FileDrop from "react-file-drop";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
 import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
 import UploadWidget from "../components/UploadWidget";
 import native from "../native";
+import bus from "../bus";
+import { applyTheme } from "../theme";
 import { isSignedIn } from "../auth";
 import { uploadFile } from "../uploads";
 import { t } from "../i18n";
@@ -50,13 +51,28 @@ class App extends React.Component {
 		this.unsubscribe = [
 			native.on("openDocument", (id) => this.context.router.push("/document/" + id)),
 			// the menu bar, only when signed in
-			native.on("navigate", (route) => isSignedIn() && this.context.router.push(route))
+			native.on("navigate", (route) => isSignedIn() && this.context.router.push(route)),
+			// the commands of the menu bar: the app handles some, the open page the others
+			native.on("command", (name) => this.runCommand(name))
 		];
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		this.unsubscribe.forEach((unsubscribe) => unsubscribe());
+	}
+
+	// RUN COMMAND
+	runCommand(name) {
+		if (name === "upload") this.fileInput.click();
+		else if (name.startsWith("theme:")) this.setTheme(name.slice("theme:".length));
+		else bus.trigger("command:" + name);
+	}
+
+	// SET THEME
+	setTheme(theme) {
+		localStorage.setItem("settings.theme", theme);
+		applyTheme(theme);
 	}
 
 	// HANDLE FILES SELECTED
@@ -71,26 +87,15 @@ class App extends React.Component {
 	// RENDER UPLOAD BUTTON: the button of the document list opens the file dialog
 	renderUploadButton() {
 		return (
-			<div>
-				<input
-					type="file"
-					multiple
-					accept={UPLOAD_TYPES}
-					style={{ display: "none" }}
-					ref={(el) => {
-						this.fileInput = el;
-					}}
-					onChange={this.handleFilesSelected.bind(this)}
-				/>
-				<button
-					type="button"
-					className="upload-button"
-					title={t("documents.upload")}
-					onClick={() => this.fileInput.click()}
-				>
-					<span className="icon icon-plus" />
-				</button>
-			</div>
+			<button
+				type="button"
+				className="upload-button"
+				title={t("documents.upload")}
+				aria-label={t("documents.upload")}
+				onClick={() => this.fileInput.click()}
+			>
+				<span className="icon icon-plus" />
+			</button>
 		);
 	}
 
@@ -105,8 +110,17 @@ class App extends React.Component {
 				<Tabs history={this.props.history} />
 				<FileDrop onDrop={uploadFiles}>{t("documents.dropFiles")}</FileDrop>
 				<div className="window-content">{this.props.children}</div>
-				<Footer />
 				<UploadWidget />
+				<input
+					type="file"
+					multiple
+					accept={UPLOAD_TYPES}
+					style={{ display: "none" }}
+					ref={(el) => {
+						this.fileInput = el;
+					}}
+					onChange={this.handleFilesSelected.bind(this)}
+				/>
 				{onDocuments ? this.renderUploadButton() : null}
 			</div>
 		);

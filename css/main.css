@@ -31,7 +31,8 @@
 }
 
 .document-item small {
-	color: #ccc;
+	/* 5.1:1 on white */
+	color: #6e6e73;
 }
 
 .document-item-thumbnail {
@@ -174,7 +175,7 @@
 
 .no-reminders {
 	font-style: italic;
-	color: lightgrey;
+	color: #6e6e73;
 }
 
 .spinner {
@@ -288,10 +289,13 @@
 
 .toolbar-header .search-bar {
 	float: none;
-	margin-left: auto;
+	flex: 0 1 300px;
+	min-width: 120px;
+	margin-left: 14px;
 }
 
 .toolbar-header .search-bar > input[type="search"] {
+	width: 100%;
 	height: 30px;
 	margin: 0;
 	padding: 4px 10px;
@@ -359,7 +363,8 @@
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background-color: #34c84a;
+	/* the white plus has 5.4:1 on this green */
+	background-color: #1f7a35;
 	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
 	cursor: pointer;
 	-webkit-app-region: no-drag;
@@ -367,12 +372,12 @@
 }
 
 .upload-button:hover {
-	background-color: #2fb443;
+	background-color: #1a6a2d;
 	transform: scale(1.06);
 }
 
 .upload-button:active {
-	background-color: #28a03b;
+	background-color: #155a26;
 	transform: scale(0.96);
 }
 
@@ -479,4 +484,97 @@ html.dark .upload-widget-footer {
 	to {
 		background-position: 16px 0;
 	}
+}
+
+/* ---- one accent color: the green of the logo (white text has 5.4:1 on it) ---- */
+.btn-primary {
+	color: #fff;
+	text-shadow: none;
+	border-color: #1a6a2d;
+	background-color: #1f7a35;
+	background-image: none;
+}
+
+.btn-primary:active {
+	background-color: #1a6a2d;
+	background-image: none;
+}
+
+/* ---- flat look instead of the gradients of the Photon theme ---- */
+.toolbar,
+.btn-default {
+	background-image: none;
+}
+
+.toolbar {
+	background-color: #ececec;
+	box-shadow: none;
+}
+
+.btn-default {
+	background-color: #fff;
+	border-color: #c7c7cc;
+	box-shadow: none;
+}
+
+.btn-default:active {
+	background-color: #e4e4e6;
+}
+
+.tab-item,
+.tab-item.active {
+	background-image: none;
+}
+
+.tab-item {
+	background-color: #dcdcde;
+}
+
+.tab-item.active {
+	background-color: #f5f5f4;
+}
+
+/* ---- keyboard focus is always visible ---- */
+.btn:focus-visible,
+a:focus-visible,
+.nav-group-item:focus-visible,
+.upload-button:focus-visible,
+.tab-item:focus-visible {
+	outline: 2px solid #1f7a35 !important;
+	outline-offset: 2px;
+}
+
+/* ---- text that is useful can be selected and copied ---- */
+td,
+th,
+.document-item-title,
+.pdf-message,
+.upload-widget {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+/* ---- the actions of a page are in the toolbar of the window ---- */
+.toolbar-items {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+}
+
+.toolbar-items .btn {
+	margin-left: 8px;
+}
+
+.toolbar-items .btn-primary .icon {
+	color: #fff;
+}
+
+/* the login has no toolbar: the top of the window moves the window */
+.login-drag {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 52px;
+	-webkit-app-region: drag;
 }

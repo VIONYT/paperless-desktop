@@ -12,6 +12,13 @@ const buildMenu = (send) => {
 		accelerator: accelerator,
 		click: () => send("navigate", route)
 	});
+	// a command is executed by the page that is open, e.g. "save" by a document
+	const command = (key, name, accelerator) => ({
+		label: t(key),
+		accelerator: accelerator,
+		click: () => send("command", name)
+	});
+	const theme = (key, name) => ({ label: t(key), click: () => send("command", "theme:" + name) });
 
 	return Menu.buildFromTemplate([
 		{
@@ -27,6 +34,13 @@ const buildMenu = (send) => {
 		{
 			label: t("menu.file"),
 			submenu: [
+				command("menu.upload", "upload", "CmdOrCtrl+O"),
+				{ type: "separator" },
+				command("menu.save", "save", "CmdOrCtrl+S"),
+				command("menu.download", "download", "CmdOrCtrl+Shift+S"),
+				command("menu.addReminder", "addReminder", "CmdOrCtrl+Shift+R"),
+				command("menu.deleteDocument", "deleteDocument", "CmdOrCtrl+Backspace"),
+				{ type: "separator" },
 				{
 					label: t("menu.closeTab"),
 					accelerator: "CmdOrCtrl+W",
@@ -43,7 +57,24 @@ const buildMenu = (send) => {
 				{ role: "cut" },
 				{ role: "copy" },
 				{ role: "paste" },
-				{ role: "selectAll" }
+				{ role: "selectAll" },
+				{ type: "separator" },
+				command("menu.find", "find", "CmdOrCtrl+F")
+			]
+		},
+		{
+			label: t("menu.view"),
+			submenu: [
+				{
+					label: t("menu.appearance"),
+					submenu: [
+						theme("settings.themeSystem", "system"),
+						theme("settings.themeLight", "light"),
+						theme("settings.themeDark", "dark")
+					]
+				},
+				{ type: "separator" },
+				{ role: "togglefullscreen" }
 			]
 		},
 		{
@@ -56,7 +87,8 @@ const buildMenu = (send) => {
 				{ type: "separator" },
 				go("nav.logs", "/logs", "CmdOrCtrl+5")
 			]
-		}
+		},
+		{ role: "windowMenu" }
 	]);
 };
 

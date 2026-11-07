@@ -1,18 +1,14 @@
 {
 	"language.name": "English",
-
 	"common.save": "Save",
 	"common.close": "Close",
 	"common.delete": "Delete",
-	"common.yes": "Yes",
-	"common.no": "No",
 	"common.name": "Name",
 	"common.match": "Match",
 	"common.date": "Date",
 	"common.note": "Note",
 	"common.color": "Color",
 	"common.tryAgain": "Please try again.",
-
 	"nav.documents": "Documents",
 	"nav.correspondents": "Correspondents",
 	"nav.tags": "Tags",
@@ -20,14 +16,12 @@
 	"nav.settings": "Settings",
 	"nav.logs": "Logs",
 	"nav.search": "Search",
-
 	"menu.about": "About Paperless Desktop",
 	"menu.file": "File",
 	"menu.closeTab": "Close Tab",
 	"menu.edit": "Edit",
 	"menu.go": "Go",
 	"menu.quit": "Quit",
-
 	"login.url": "URL to paperless",
 	"login.urlPlaceholder": "For example: http://localhost:8000",
 	"login.username": "Username",
@@ -35,7 +29,6 @@
 	"login.submit": "Log in",
 	"login.failedTitle": "Ohoh!",
 	"login.failedMessage": "These sign in details can't be right. Just tested. Sad!",
-
 	"documents.new": "New document",
 	"documents.loadFailed": "Could not load documents!",
 	"documents.deleteFailed": "Could not delete document(s)!",
@@ -49,7 +42,6 @@
 	"documents.uploadingBody": "They will appear in your document list once they have finished processing.",
 	"documents.uploadFailed": "Could not upload {name}!",
 	"documents.uploadFailedMessage": "Please check the connection to paperless and try again.",
-
 	"document.title": "Title",
 	"document.correspondent": "Correspondent",
 	"document.content": "Content",
@@ -59,10 +51,8 @@
 	"document.download": "Download File",
 	"document.delete": "Delete document",
 	"document.addReminder": "Add reminder",
-	"document.deleteConfirmTitle": "It'll be gone forever!",
-	"document.deleteConfirm": "Are you sure you want to delete this document?",
+	"document.deleteConfirmTitle": "Delete this document?",
 	"document.select": "Select...",
-
 	"tags.add": "Add tag",
 	"tags.loadFailed": "Could not load tags!",
 	"tags.deleteFailed": "Could not delete tag(s)!",
@@ -70,10 +60,9 @@
 	"tags.addFailedMessage": "Data might be missing or the tag may already exist.",
 	"tags.editFailed": "Could not edit the tag!",
 	"tags.editFailedMessage": "Data might be missing or the tag does not exist anymore.",
-	"tags.deleteOne": "Are you sure you want to delete this tag?",
-	"tags.deleteMany": "Are you sure you want to delete these tags?",
+	"tags.deleteOne": "Delete this tag?",
+	"tags.deleteMany": "Delete these tags?",
 	"tags.addTitle": "Add Tag",
-
 	"correspondents.add": "Add correspondent",
 	"correspondents.loadFailed": "Could not load correspondents!",
 	"correspondents.deleteFailed": "Could not delete correspondent(s)!",
@@ -81,10 +70,9 @@
 	"correspondents.addFailedMessage": "Data might be missing or the correspondent may already exist.",
 	"correspondents.editFailed": "Could not edit the correspondent!",
 	"correspondents.editFailedMessage": "Data might be missing or the correspondent does not exist anymore.",
-	"correspondents.deleteOne": "Are you sure you want to delete this correspondent?",
-	"correspondents.deleteMany": "Are you sure you want to delete these correspondents?",
+	"correspondents.deleteOne": "Delete this correspondent?",
+	"correspondents.deleteMany": "Delete these correspondents?",
 	"correspondents.addTitle": "Add Correspondent",
-
 	"matching.label": "Matching Algorithm",
 	"matching.labelForm": "Matching-Algorithm",
 	"matching.none": "None",
@@ -95,7 +83,6 @@
 	"matching.fuzzy": "Fuzzy Match",
 	"matching.auto": "Auto",
 	"matching.help": "Which algorithm you want to use when matching text to the OCR'd PDF. Here, \"any\" looks for any occurrence of any word provided in the PDF, while \"all\" requires that every word provided appear in the PDF, albeit not in the order provided. A \"literal\" match means that the text you enter must appear in the PDF exactly as you've entered it, and \"regular expression\" uses a regex to match the PDF. If you don't know what a regex is, you probably don't want this option.",
-
 	"reminders.add": "Add Reminder",
 	"reminders.none": "no reminders set",
 	"reminders.remove": "Remove reminder",
@@ -109,10 +96,8 @@
 	"reminders.noteMissing": "Please add a note text!",
 	"reminders.notePlaceholder": "Add a note to your reminder, if you'd like.",
 	"reminders.hint": "Note: reminder notifications only show up, while this app is open on your Mac!",
-
 	"logs.title": "Log",
 	"logs.loadFailed": "Could not load logs!",
-
 	"settings.signIn": "Sign In",
 	"settings.update": "Update",
 	"settings.passwordPlaceholder": "Enter your password to sign in again",
@@ -129,7 +114,6 @@
 	"settings.devTools": "Open DevTools",
 	"settings.testNotification": "Test notification with 2s delay",
 	"settings.testNotificationBody": "test",
-
 	"upload.title": "Upload",
 	"upload.uploading": "Uploading {count} file(s)",
 	"upload.files": "{done} of {count}",
@@ -140,7 +124,17 @@
 	"upload.ocr": "Recognizing text (OCR)...",
 	"upload.queued": "Waiting in the queue...",
 	"documents.processingFailed": "paperless could not process {name}!",
-
 	"login.insecureTitle": "The connection is not encrypted",
-	"login.insecureMessage": "The address starts with http://. Your password and your documents are sent over the network without encryption. Use https:// if you can. Sign in anyway?"
+	"login.insecureMessage": "The address starts with http://. Your password and your documents are sent over the network without encryption. Use https:// if you can.",
+	"common.cancel": "Cancel",
+	"common.cannotBeUndone": "This can't be undone.",
+	"login.signInAnyway": "Sign In Anyway",
+	"menu.upload": "Upload Documents...",
+	"menu.save": "Save",
+	"menu.download": "Download File",
+	"menu.addReminder": "Add Reminder...",
+	"menu.deleteDocument": "Delete Document",
+	"menu.find": "Find",
+	"menu.view": "View",
+	"menu.appearance": "Appearance"
 }

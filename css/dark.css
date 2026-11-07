@@ -47,7 +47,6 @@ html.dark .toolbar {
 }
 
 html.dark .toolbar-header,
-html.dark .toolbar-footer,
 html.dark .tab-group {
 	border-color: #1a1a1a;
 }
@@ -107,8 +106,10 @@ html.dark .document-item-title {
 	color: #e4e4e6 !important;
 }
 
-html.dark .document-item small {
-	color: #7d7d82;
+html.dark .document-item small,
+html.dark .no-reminders {
+	/* 5.8:1 on the dark background */
+	color: #98989d;
 }
 
 html.dark .document-item-thumbnail {
@@ -162,4 +163,39 @@ html.dark .rbc-today {
 
 html.dark .btn-group .btn + .btn {
 	border-left: 1px solid #1a1a1a;
+}
+
+html.dark .toolbar {
+	background-color: #2d2d2f;
+}
+
+html.dark .tab-item {
+	background-color: #2a2a2c;
+}
+
+html.dark .tab-item.active {
+	background-color: #3c3c3f;
+}
+
+html.dark .btn-primary {
+	color: #fff;
+	background-color: #1f7a35;
+	border-color: #1a6a2d;
+}
+
+html.dark .btn:focus-visible,
+html.dark a:focus-visible,
+html.dark .nav-group-item:focus-visible,
+html.dark .upload-button:focus-visible,
+html.dark .tab-item:focus-visible {
+	outline-color: #4cc364 !important;
+}
+
+html.dark .toolbar {
+	background-image: none;
+}
+
+html.dark .btn-default {
+	background-color: #3a3a3c;
+	background-image: none;
 }

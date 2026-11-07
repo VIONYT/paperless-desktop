@@ -51,10 +51,13 @@ const showError = (event, title, message) =>
 const confirm = async (event, args) => {
 	const result = await showMessage(event, {
 		type: "question",
-		title: String(args.title),
-		message: String(args.message),
-		buttons: [String(args.yes), String(args.no)],
-		defaultId: 1
+		// macOS shows the message as the bold question and the detail below it
+		message: String(args.title),
+		detail: String(args.message),
+		buttons: [String(args.accept), String(args.cancel)],
+		// Cancel is the default and the way out (Escape)
+		defaultId: 1,
+		cancelId: 1
 	});
 
 	return result.response === 0;

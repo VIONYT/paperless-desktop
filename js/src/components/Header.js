@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router";
+import ToolbarStore from "../stores/ToolbarStore";
 import bus from "../bus";
 import { t } from "../i18n";
 
@@ -23,8 +24,14 @@ class Header extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = { active: "documents", route: "/documents" };
+		this.state = {
+			active: "documents",
+			route: "/documents",
+			items: ToolbarStore.getState().items
+		};
+		this.searchInput = null;
 		this.onHashChange = () => this.setState({ route: currentRoute() });
+		this.onToolbarChange = (state) => this.setState({ items: state.items });
 	}
 
 	// COMPONENT DID MOUNT
@@ -33,11 +40,15 @@ class Header extends React.Component {
 			this.setState({ active: data.item })
 		);
 		window.addEventListener("hashchange", this.onHashChange);
+		ToolbarStore.listen(this.onToolbarChange);
+		this.unsubscribeFind = bus.on("command:find", () => this.focusSearch());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		this.unsubscribe();
+		this.unsubscribeFind();
+		ToolbarStore.unlisten(this.onToolbarChange);
 		window.removeEventListener("hashchange", this.onHashChange);
 	}
 
@@ -48,6 +59,31 @@ class Header extends React.Component {
 		if (query.length === 0) bus.trigger("loadAllDocuments");
 		else if (query.length > 2 && event.keyCode === 13)
 			bus.trigger("searchDocuments", { query: query });
+	}
+
+	// FOCUS SEARCH: the menu "Find" shows the documents and puts the cursor in the search field
+	focusSearch() {
+		if (this.state.route !== "/documents") location.hash = "#/documents";
+
+		window.setTimeout(() => this.searchInput && this.searchInput.focus(), 200);
+	}
+
+	// RENDER ITEM: an action of the page, only the main action has a text, the others a tooltip
+	renderItem(item) {
+		const primary = item.flavor === "primary";
+
+		return (
+			<button
+				key={item.id}
+				className={"btn btn-" + item.flavor}
+				title={item.text}
+				aria-label={item.text}
+				onClick={item.click}
+			>
+				{item.icon ? <span className={"icon icon-" + item.icon} /> : null}
+				{primary ? " " + item.text : null}
+			</button>
+		);
 	}
 
 	// RENDER BUTTON
@@ -72,6 +108,13 @@ class Header extends React.Component {
 						</div>
 					))}
 
+					<div className="toolbar-items">
+						{this.state.items
+							.slice()
+							.sort((a, b) => (a.flavor === "primary") - (b.flavor === "primary"))
+							.map((item) => this.renderItem(item))}
+					</div>
+
 					{this.state.route === "/documents" ? (
 						<div className="search-bar pull-right">
 							<input
@@ -79,6 +122,9 @@ class Header extends React.Component {
 								onKeyUp={this.handleSearchInputChanged.bind(this)}
 								className="form-control"
 								placeholder={t("nav.search")}
+								ref={(el) => {
+									this.searchInput = el;
+								}}
 							/>
 						</div>
 					) : null}

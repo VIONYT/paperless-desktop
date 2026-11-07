@@ -1,18 +1,14 @@
 {
 	"language.name": "Deutsch",
-
 	"common.save": "Speichern",
 	"common.close": "Schließen",
 	"common.delete": "Löschen",
-	"common.yes": "Ja",
-	"common.no": "Nein",
 	"common.name": "Name",
 	"common.match": "Suchbegriff",
 	"common.date": "Datum",
 	"common.note": "Notiz",
 	"common.color": "Farbe",
 	"common.tryAgain": "Bitte versuche es erneut.",
-
 	"nav.documents": "Dokumente",
 	"nav.correspondents": "Korrespondenten",
 	"nav.tags": "Tags",
@@ -20,14 +16,12 @@
 	"nav.settings": "Einstellungen",
 	"nav.logs": "Protokoll",
 	"nav.search": "Suchen",
-
 	"menu.about": "Über Paperless Desktop",
 	"menu.file": "Ablage",
 	"menu.closeTab": "Tab schließen",
 	"menu.edit": "Bearbeiten",
 	"menu.go": "Gehe zu",
 	"menu.quit": "Beenden",
-
 	"login.url": "URL zu paperless",
 	"login.urlPlaceholder": "Zum Beispiel: http://localhost:8000",
 	"login.username": "Benutzername",
@@ -35,7 +29,6 @@
 	"login.submit": "Anmelden",
 	"login.failedTitle": "Oje!",
 	"login.failedMessage": "Diese Anmeldedaten stimmen nicht. Gerade getestet. Schade!",
-
 	"documents.new": "Neues Dokument",
 	"documents.loadFailed": "Dokumente konnten nicht geladen werden!",
 	"documents.deleteFailed": "Dokument(e) konnten nicht gelöscht werden!",
@@ -49,7 +42,6 @@
 	"documents.uploadingBody": "Sie erscheinen in deiner Dokumentenliste, sobald die Verarbeitung abgeschlossen ist.",
 	"documents.uploadFailed": "{name} konnte nicht hochgeladen werden!",
 	"documents.uploadFailedMessage": "Bitte prüfe die Verbindung zu paperless und versuche es erneut.",
-
 	"document.title": "Titel",
 	"document.correspondent": "Korrespondent",
 	"document.content": "Inhalt",
@@ -59,10 +51,8 @@
 	"document.download": "Datei herunterladen",
 	"document.delete": "Dokument löschen",
 	"document.addReminder": "Erinnerung hinzufügen",
-	"document.deleteConfirmTitle": "Es ist für immer weg!",
-	"document.deleteConfirm": "Möchtest du dieses Dokument wirklich löschen?",
+	"document.deleteConfirmTitle": "Dieses Dokument löschen?",
 	"document.select": "Auswählen...",
-
 	"tags.add": "Tag hinzufügen",
 	"tags.loadFailed": "Tags konnten nicht geladen werden!",
 	"tags.deleteFailed": "Tag(s) konnten nicht gelöscht werden!",
@@ -70,10 +60,9 @@
 	"tags.addFailedMessage": "Es fehlen eventuell Angaben oder der Tag existiert bereits.",
 	"tags.editFailed": "Der Tag konnte nicht bearbeitet werden!",
 	"tags.editFailedMessage": "Es fehlen eventuell Angaben oder der Tag existiert nicht mehr.",
-	"tags.deleteOne": "Möchtest du diesen Tag wirklich löschen?",
-	"tags.deleteMany": "Möchtest du diese Tags wirklich löschen?",
+	"tags.deleteOne": "Diesen Tag löschen?",
+	"tags.deleteMany": "Diese Tags löschen?",
 	"tags.addTitle": "Tag hinzufügen",
-
 	"correspondents.add": "Korrespondent hinzufügen",
 	"correspondents.loadFailed": "Korrespondenten konnten nicht geladen werden!",
 	"correspondents.deleteFailed": "Korrespondent(en) konnten nicht gelöscht werden!",
@@ -81,10 +70,9 @@
 	"correspondents.addFailedMessage": "Es fehlen eventuell Angaben oder der Korrespondent existiert bereits.",
 	"correspondents.editFailed": "Der Korrespondent konnte nicht bearbeitet werden!",
 	"correspondents.editFailedMessage": "Es fehlen eventuell Angaben oder der Korrespondent existiert nicht mehr.",
-	"correspondents.deleteOne": "Möchtest du diesen Korrespondenten wirklich löschen?",
-	"correspondents.deleteMany": "Möchtest du diese Korrespondenten wirklich löschen?",
+	"correspondents.deleteOne": "Diesen Korrespondenten löschen?",
+	"correspondents.deleteMany": "Diese Korrespondenten löschen?",
 	"correspondents.addTitle": "Korrespondent hinzufügen",
-
 	"matching.label": "Zuweisungsalgorithmus",
 	"matching.labelForm": "Zuweisungsalgorithmus",
 	"matching.none": "Keiner",
@@ -95,7 +83,6 @@
 	"matching.fuzzy": "Unscharfe Übereinstimmung",
 	"matching.auto": "Automatisch",
 	"matching.help": "Mit welchem Algorithmus der Text mit dem per OCR erkannten PDF abgeglichen wird. „Irgendein Wort“ sucht nach einem beliebigen der angegebenen Wörter, „Alle Wörter“ verlangt, dass jedes angegebene Wort vorkommt, jedoch nicht in der angegebenen Reihenfolge. „Exakte Übereinstimmung“ bedeutet, dass der Text genau so im PDF stehen muss, und „Regulärer Ausdruck“ verwendet einen Regex. Wenn du nicht weißt, was ein Regex ist, brauchst du diese Option vermutlich nicht.",
-
 	"reminders.add": "Erinnerung hinzufügen",
 	"reminders.none": "keine Erinnerungen gesetzt",
 	"reminders.remove": "Erinnerung entfernen",
@@ -109,10 +96,8 @@
 	"reminders.noteMissing": "Bitte gib einen Notiztext ein!",
 	"reminders.notePlaceholder": "Füge deiner Erinnerung eine Notiz hinzu, wenn du möchtest.",
 	"reminders.hint": "Hinweis: Erinnerungen werden nur angezeigt, solange die App auf deinem Mac geöffnet ist!",
-
 	"logs.title": "Protokoll",
 	"logs.loadFailed": "Das Protokoll konnte nicht geladen werden!",
-
 	"settings.signIn": "Anmeldung",
 	"settings.update": "Aktualisieren",
 	"settings.passwordPlaceholder": "Passwort eingeben, um dich erneut anzumelden",
@@ -129,7 +114,6 @@
 	"settings.devTools": "DevTools öffnen",
 	"settings.testNotification": "Benachrichtigung mit 2 s Verzögerung testen",
 	"settings.testNotificationBody": "Test",
-
 	"upload.title": "Upload",
 	"upload.uploading": "{count} Datei(en) werden hochgeladen",
 	"upload.files": "{done} von {count}",
@@ -140,7 +124,17 @@
 	"upload.ocr": "Texterkennung (OCR) läuft...",
 	"upload.queued": "Wartet in der Warteschlange...",
 	"documents.processingFailed": "paperless konnte {name} nicht verarbeiten!",
-
 	"login.insecureTitle": "Die Verbindung ist nicht verschlüsselt",
-	"login.insecureMessage": "Die Adresse beginnt mit http://. Dein Passwort und deine Dokumente werden unverschlüsselt über das Netzwerk gesendet. Nutze nach Möglichkeit https://. Trotzdem anmelden?"
+	"login.insecureMessage": "Die Adresse beginnt mit http://. Dein Passwort und deine Dokumente werden unverschlüsselt über das Netzwerk gesendet. Nutze nach Möglichkeit https://.",
+	"common.cancel": "Abbrechen",
+	"common.cannotBeUndone": "Das kann nicht rückgängig gemacht werden.",
+	"login.signInAnyway": "Trotzdem anmelden",
+	"menu.upload": "Dokumente hochladen…",
+	"menu.save": "Sichern",
+	"menu.download": "Datei laden",
+	"menu.addReminder": "Erinnerung hinzufügen…",
+	"menu.deleteDocument": "Dokument löschen",
+	"menu.find": "Suchen",
+	"menu.view": "Darstellung",
+	"menu.appearance": "Erscheinungsbild"
 }
