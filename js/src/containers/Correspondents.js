@@ -122,7 +122,6 @@ class Correspondents extends PaperlessComponent {
 		// ask user if he really wants to delete the document
 		var choice =
 			dialog.showMessageBoxSync(remote.getCurrentWindow(), {
-				// eslint-disable-line no-sync
 				type: "question",
 				buttons: ["Yes", "No"],
 				title: "It'll be gone forever!",
