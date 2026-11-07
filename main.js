@@ -9,7 +9,12 @@ const url = require("url");
 // the renderer uses the remote module (dialogs, current window)
 remoteMain.initialize();
 
-const DEBUG = false;
+// Debug builds open the DevTools. They are enabled by the environment variable PAPERLESS_DEBUG=1,
+// the command line flag --debug or a "debug.flag" file in the app (see `npm run package:debug`).
+const DEBUG =
+	process.env.PAPERLESS_DEBUG === "1" ||
+	process.argv.includes("--debug") ||
+	require("fs").existsSync(path.join(__dirname, "debug.flag"));
 
 // https://medium.com/@ccnokes/how-to-store-user-data-in-electron-3ba6bf66bc1e#.b6j3oex0s
 const Store = require("./store.js");

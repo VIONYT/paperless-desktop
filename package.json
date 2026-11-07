@@ -11,7 +11,8 @@
 		"precommit": "pretty-quick --staged",
 		"package": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=arm64,x64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
 		"package:mac:arm64": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=arm64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
-		"package:mac:universal": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=universal --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'"
+		"package:mac:universal": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=universal --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
+		"package:debug": "node build.js && touch debug.flag && electron-packager ./ 'Paperless Debug' --platform=darwin --arch=arm64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'; rm -f debug.flag"
 	},
 	"repository": {
 		"type": "git",
