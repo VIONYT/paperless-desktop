@@ -7,13 +7,6 @@ import ToolbarActions from "../actions/ToolbarActions";
 import BigCalendar from "react-big-calendar";
 import moment from "moment";
 
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
-
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 
 class Reminders extends React.Component {

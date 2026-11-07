@@ -33,18 +33,19 @@ class CorrespondentSelect extends React.Component {
 		this.props.onChange({
 			target: {
 				name: "correspondent",
-				value: value.value
+				value: value ? value.value : null
 			}
 		});
 	}
 
 	// RENDER
 	render() {
-		var options = this.state.correspondents.results.map((c) => {
-			var value = localStorage.getItem("settings.host") + "/api/correspondents/" + c.id + "/";
+		var results = (this.state.correspondents && this.state.correspondents.results) || [];
 
+		// the correspondent of a document is referenced by its id
+		var options = results.map((c) => {
 			return {
-				value: value,
+				value: c.id,
 				label: c.name
 			};
 		});

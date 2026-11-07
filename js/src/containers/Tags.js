@@ -5,13 +5,7 @@ import $ from "jquery";
 import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
 import TagsListItem from "../components/TagsListItem";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer, remote, dialog } from "../electronBridge";
 
 class Tags extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -120,7 +114,8 @@ class Tags extends PaperlessComponent {
 
 		// ask user if he really wants to delete the document
 		var choice =
-			dialog.showMessageBox(remote.getCurrentWindow(), {
+			dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+				// eslint-disable-line no-sync
 				type: "question",
 				buttons: ["Yes", "No"],
 				title: "It'll be gone forever!",

@@ -1,14 +1,9 @@
 import alt from "../alt";
+import { isAuthError } from "../api";
 import TagsActions from "../actions/TagsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer, dialog } from "../electronBridge";
 
 // TAGS STORE
 class TagsStore {
@@ -24,7 +19,7 @@ class TagsStore {
 
 	// GET TAGS FAIL
 	getTagsFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -48,7 +43,7 @@ class TagsStore {
 
 	// DELETE TAGS FAIL
 	deleteTagsFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -64,7 +59,7 @@ class TagsStore {
 
 	// ADD TAG FAIL
 	addTagFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -88,7 +83,7 @@ class TagsStore {
 
 	// EDIT TAG FAIL
 	editTagFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}

@@ -5,6 +5,12 @@ import PaperlessComponent from "./PaperlessComponent";
 import CorrespondentSelect from "./CorrespondentSelect";
 import DocumentDetailReminders from "./DocumentDetailReminders";
 
+// paperless-ngx 2.16+ delivers the creation date of a document as a plain date
+// (YYYY-MM-DD), older versions deliver a date time
+const isDateOnly = (created) => {
+	return typeof created === "string" && created.indexOf("T") < 0;
+};
+
 class DocumentDetailForm extends PaperlessComponent {
 	// CONSTRUCTOR
 	constructor(props) {
@@ -17,7 +23,14 @@ class DocumentDetailForm extends PaperlessComponent {
 	// HANDLE DETAIL CHANGE
 	handleDetailChange(e) {
 		var doc = this.state.doc;
-		doc[e.target.name] = e.target.value;
+		var value = e.target.value;
+
+		// a date time input delivers local time, paperless expects an ISO string
+		if (e.target.name === "created" && !isDateOnly(doc.created) && value) {
+			value = moment(value).toISOString();
+		}
+
+		doc[e.target.name] = value;
 
 		this.setState({
 			doc: doc
@@ -28,11 +41,15 @@ class DocumentDetailForm extends PaperlessComponent {
 
 	// RENDER
 	render() {
+		var dateOnly = isDateOnly(this.state.doc.created);
+
 		// convert the date to local time
-		var created = moment
-			.utc(this.state.doc.created)
-			.local()
-			.format("YYYY-MM-DD[T]HH:mm");
+		var created = dateOnly
+			? this.state.doc.created
+			: moment
+					.utc(this.state.doc.created)
+					.local()
+					.format("YYYY-MM-DD[T]HH:mm");
 
 		return (
 			<form className="form-detail-info">
@@ -63,7 +80,7 @@ class DocumentDetailForm extends PaperlessComponent {
 						rows="6"
 						name="content"
 						placeholder="Content"
-						value={this.state.doc.content}
+						value={this.state.doc.content || ""}
 						onChange={this.handleDetailChange.bind(this)}
 					/>
 				</div>
@@ -81,10 +98,10 @@ class DocumentDetailForm extends PaperlessComponent {
 				<div className="form-group">
 					<label>Date</label>
 					<input
-						type="datetime-local"
+						type={dateOnly ? "date" : "datetime-local"}
 						className="form-control"
 						name="created"
-						placeholder="Tags"
+						placeholder="Date"
 						value={created}
 						onChange={this.handleDetailChange.bind(this)}
 					/>

@@ -1,13 +1,7 @@
 import React from "react";
 import Header from "../components/Header";
-import axios from "axios";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { getToken, getHost, normalizeHost, fetchToken } from "../api";
+import { ipcRenderer, dialog } from "../electronBridge";
 
 class Login extends React.Component {
 	constructor(props) {
@@ -18,18 +12,11 @@ class Login extends React.Component {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		// already logged in?
-		if (
-			localStorage.getItem("settings.auth.username") &&
-			localStorage.getItem("settings.auth.username").length > 0 &&
-			localStorage.getItem("settings.auth.password") &&
-			localStorage.getItem("settings.auth.password").length > 0 &&
-			localStorage.getItem("settings.host") &&
-			localStorage.getItem("settings.host").length > 0
-		) {
+		if (getToken() && getHost().length > 0) {
 			// send login information down the wire to the main process
 			ipcRenderer.send("login", {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
+				host: getHost(),
+				token: getToken()
 			});
 
 			this.goHome();
@@ -44,7 +31,9 @@ class Login extends React.Component {
 	}
 
 	// HANDLE LOGIN
-	handleLogin() {
+	handleLogin(event) {
+		if (event) event.preventDefault();
+
 		// a bit of validation
 		if (!("host" in this.state) || this.state.host.length <= 0) {
 			return;
@@ -58,31 +47,22 @@ class Login extends React.Component {
 			return;
 		}
 
-		// check if host has http as prefix
-		var host = this.state.host;
-		if (host.indexOf("http://") < 0 && host.indexOf("https://") < 0) {
-			host = "http://" + host;
-		}
+		// adds http:// if no scheme is given
+		var host = normalizeHost(this.state.host);
 
-		// all is fine
-		localStorage.setItem("settings.auth.username", this.state.username);
-		localStorage.setItem("settings.auth.password", this.state.password);
-		localStorage.setItem("settings.host", host);
+		// exchange the credentials for an API token of paperless-ngx
+		fetchToken(host, this.state.username, this.state.password)
+			.then((token) => {
+				// the request worked out, we can save the settings
+				localStorage.setItem("settings.auth.username", this.state.username);
+				localStorage.setItem("settings.auth.token", token);
+				localStorage.setItem("settings.host", host);
 
-		ipcRenderer.send("login", {
-			username: localStorage.getItem("settings.auth.username"),
-			password: localStorage.getItem("settings.auth.password")
-		});
+				ipcRenderer.send("login", {
+					host: host,
+					token: token
+				});
 
-		// check if the user information works
-		var url = this.state.host + "/api/correspondents/";
-
-		axios({
-			method: "get",
-			url: url
-		})
-			// the request worked out, we can save the settings
-			.then(() => {
 				// move the router to the homepage
 				this.goHome();
 			})
@@ -111,7 +91,7 @@ class Login extends React.Component {
 				<center>
 					<img src="icon.png" width="180" />
 				</center>
-				<form className="login-form">
+				<form className="login-form" onSubmit={this.handleLogin.bind(this)}>
 					<div className="form-group">
 						<label>URL to paperless</label>
 						<input
@@ -119,7 +99,7 @@ class Login extends React.Component {
 							name="host"
 							onChange={this.handleChange.bind(this)}
 							className="form-control"
-							placeholder="For example: http://localhost:1234"
+							placeholder="For example: http://localhost:8000"
 						/>
 					</div>
 					<div className="form-group">
@@ -143,11 +123,7 @@ class Login extends React.Component {
 						/>
 					</div>
 					<div className="form-actions">
-						<button
-							type="button"
-							onClick={this.handleLogin.bind(this)}
-							className="btn btn-form btn-primary"
-						>
+						<button type="submit" className="btn btn-form btn-primary">
 							Log in
 						</button>
 					</div>

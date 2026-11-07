@@ -3,13 +3,7 @@ import PaperlessComponent from "../components/PaperlessComponent";
 import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import moment from "moment";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
-const remote = electron.remote;
-const dialog = remote.dialog;
+import { ipcRenderer, dialog } from "../electronBridge";
 
 class RemindersAdd extends PaperlessComponent {
 	// CONSTRUCTOR

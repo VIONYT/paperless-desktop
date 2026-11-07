@@ -4,6 +4,7 @@ import PaperlessComponent from "./PaperlessComponent";
 import moment from "moment";
 import TagsStore from "../stores/TagsStore";
 import TagDot from "./TagDot";
+import { thumbnailUrl } from "../api";
 
 String.prototype.trunc =
 	String.prototype.trunc ||
@@ -21,14 +22,11 @@ class DocumentItem extends PaperlessComponent {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		// load the image base64 data
-		super.getDataUri(
-			super.getHost() + this.props.document.thumbnail_url.replace("\\", ""),
-			(result) => {
-				this.setState({
-					data: result
-				});
-			}
-		);
+		super.getDataUri(thumbnailUrl(this.props.document.id), (result) => {
+			this.setState({
+				data: result
+			});
+		});
 	}
 
 	// RENDER
@@ -38,9 +36,11 @@ class DocumentItem extends PaperlessComponent {
 			divStyle["backgroundImage"] = "url(" + this.state.data + ")";
 		}
 		var tags = [];
-		this.state.tags.results.map((tag) => {
-			tags[tag.id] = tag;
-		});
+		if (this.state.tags && this.state.tags.results) {
+			this.state.tags.results.forEach((tag) => {
+				tags[tag.id] = tag;
+			});
+		}
 		return (
 			<Link className="document-item" to={"/document/" + this.props.document.id}>
 				<div className="document-item-thumbnail" style={divStyle} />
@@ -54,10 +54,9 @@ class DocumentItem extends PaperlessComponent {
 					{this.props.document.fresh ? " " : null}
 					{this.props.document.title.trunc(100)}
 					&nbsp;
-					{this.props.document.tags.map((tagUrl) => {
-						var tagRegex = /\/([0-9]+)\//;
-						var tagId = tagRegex.exec(tagUrl)[1];
+					{this.props.document.tags.map((tagId) => {
 						var tag = tags[tagId];
+						if (!tag) return null;
 						return (
 							<TagDot
 								tag={tag}

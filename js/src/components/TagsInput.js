@@ -12,19 +12,18 @@ class TagsInput extends PaperlessComponent {
 		this.state = TagsStore.getState();
 		this.onChange = this.onChange.bind(this);
 
-		if (props.tags) {
-			// extract the tags selection
-			this.state.selection = this.props.tags.map(t => {
-				var s = t.replace(/\/$/, "").split("/");
-				return parseInt(s[s.length - 1]);
-			});
-		}
+		// the tags of a document are the ids of the tags
+		this.state.selection = props.tags ? props.tags.slice() : [];
 	}
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		TagsStore.listen(this.onChange);
-		//TagsActions.getTags();
+
+		// make sure the tags are available, even if the sidebar did not load them yet
+		if (!this.state.tags || !this.state.tags.results) {
+			TagsActions.getTags();
+		}
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -39,18 +38,11 @@ class TagsInput extends PaperlessComponent {
 
 	// CHANGE SELECTION
 	changeSelection(val) {
-		this.setState({
-			selection: val
-		});
+		// prepare the paperless API value for the tags: a list of tag ids
+		var updateTags = val.map((v) => v.value);
 
-		// prepare the paperless API value for the tags
-		var updateTags = val.map(v => {
-			return (
-				localStorage.getItem("settings.host") +
-				"/api/tags/" +
-				v.value +
-				"/"
-			);
+		this.setState({
+			selection: updateTags
 		});
 
 		this.props.onChange({
@@ -66,13 +58,13 @@ class TagsInput extends PaperlessComponent {
 		var possibles = [];
 
 		// prepare the selection tag ids
-		if (this.state.tags && this.state.tags.count > 0) {
+		if (this.state.tags && this.state.tags.results) {
 			// possible tags
-			possibles = this.state.tags.results.map(t => {
+			possibles = this.state.tags.results.map((t) => {
 				return {
 					label: t.name,
 					value: t.id,
-					style: { color: this.getTagColor(t.colour) }
+					style: { color: this.getTagColor(t) }
 				};
 			});
 		}

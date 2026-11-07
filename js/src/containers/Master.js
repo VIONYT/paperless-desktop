@@ -1,10 +1,6 @@
 import React from "react";
 import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class Master extends React.Component {
 	// COMPONENT DID MOUNT
@@ -21,7 +17,10 @@ class Master extends React.Component {
 	goBackToLogin() {
 		localStorage.removeItem("settings.auth.username");
 		localStorage.removeItem("settings.auth.password");
+		localStorage.removeItem("settings.auth.token");
 		localStorage.removeItem("settings.host");
+
+		ipcRenderer.send("login", null);
 
 		ipcRenderer.send("setSize", {
 			width: 500,

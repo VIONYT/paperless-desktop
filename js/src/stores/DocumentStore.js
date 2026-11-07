@@ -1,12 +1,8 @@
 import alt from "../alt";
+import { isAuthError } from "../api";
 import DocumentActions from "../actions/DocumentActions";
 import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
+import { dialog } from "../electronBridge";
 
 // DOCUMENT STORE
 class DocumentStore {
@@ -22,7 +18,7 @@ class DocumentStore {
 
 	// GET DOCUMENT FAIL
 	getDocumentFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -41,7 +37,7 @@ class DocumentStore {
 
 	// UPDATE DOCUMENT FAIL
 	updateDocumentFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 		}
 	}

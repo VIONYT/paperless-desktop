@@ -2,11 +2,7 @@ import React from "react";
 import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import DocumentDetailRemindersItem from "./DocumentDetailRemindersItem";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class DocumentDetailReminders extends React.Component {
 	// CONSTRUCTOR
@@ -21,17 +17,9 @@ class DocumentDetailReminders extends React.Component {
 		RemindersStore.listen(this.onChange);
 		RemindersActions.getReminders();
 
-		// EVENT: tagAdded
-		ipcRenderer.on("reminderAdded", (e, data) => {
-			// add the newly created tag to the store
-			var reminders = this.state.reminders;
-			if (reminders) {
-				reminders.push(data);
-
-				this.setState({
-					reminders: reminders
-				});
-			}
+		// EVENT: reminderAdded (reminders are stored locally, reload them)
+		ipcRenderer.on("reminderAdded", () => {
+			RemindersActions.getReminders();
 		});
 	}
 
@@ -53,7 +41,7 @@ class DocumentDetailReminders extends React.Component {
 	// RENDER
 	render() {
 		// filter out the matching reminders
-		var reminders = this.state.reminders.filter(r => {
+		var reminders = this.state.reminders.filter((r) => {
 			return r.document.endsWith("/" + this.props.doc.id + "/");
 		});
 

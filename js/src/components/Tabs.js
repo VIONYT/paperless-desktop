@@ -1,11 +1,7 @@
 import React from "react";
 import $ from "jquery";
 import TabsItem from "./TabsItem";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class Tabs extends React.Component {
 	// CONSTRUCTOR
@@ -46,7 +42,7 @@ class Tabs extends React.Component {
 	closeCurrent() {
 		if (this.state.tabs.length > 1) {
 			// find current route
-			var currTabRoute = this.state.tabs.find(tab => {
+			var currTabRoute = this.state.tabs.find((tab) => {
 				return tab.active === true;
 			});
 
@@ -59,7 +55,7 @@ class Tabs extends React.Component {
 	setActiveTitle(e, data) {
 		if (this.state.tabs.length > 1) {
 			// update title of current route
-			var tabs = this.state.tabs.map(tab => {
+			var tabs = this.state.tabs.map((tab) => {
 				if (tab.active === true) {
 					tab.title = data.title;
 				}
@@ -167,7 +163,7 @@ class Tabs extends React.Component {
 
 		return (
 			<div className="tab-group">
-				{this.state.tabs.map(t => {
+				{this.state.tabs.map((t) => {
 					i++;
 					return (
 						<TabsItem

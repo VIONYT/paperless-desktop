@@ -1,13 +1,6 @@
 import alt from "../alt";
 import RemindersActions from "../actions/RemindersActions";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer, dialog } from "../electronBridge";
 
 // REMINDERS STORE
 class RemindersStore {
@@ -22,36 +15,24 @@ class RemindersStore {
 	}
 
 	// GET REMINDERS FAIL
-	getRemindersFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
+	getRemindersFail() {
 		dialog.showErrorBox("Could not load reminders!", "Please try again.");
 	}
 
 	// ADD REMINDER SUCCESS
-	addReminderSuccess(result) {
-		ipcRenderer.send("reminderAdd", result);
+	addReminderSuccess(reminder) {
+		// the reminder is stored locally, the main window just has to reload them
+		ipcRenderer.send("reminderAdd", { data: reminder });
 		ipcRenderer.send("closeModal");
 	}
 
 	// ADD REMINDER FAIL
-	addReminderFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
+	addReminderFail() {
 		dialog.showErrorBox("Could not add the reminder!", "Please try again.");
 	}
 
 	// REMOVE REMINDER SUCCESS
-	removeReminderSuccess(result) {
-		var parts = result.request.responseURL.split("/");
-		var id = parseInt(parts[parts.length - 2]);
-
+	removeReminderSuccess(id) {
 		// filter out the removed reminder
 		this.reminders = this.reminders.filter((r) => {
 			return r.id !== id;
@@ -59,12 +40,7 @@ class RemindersStore {
 	}
 
 	// REMOVE REMINDER FAIL
-	removeReminderFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
+	removeReminderFail() {
 		dialog.showErrorBox("Could not remove the reminder!", "Please try again.");
 	}
 }

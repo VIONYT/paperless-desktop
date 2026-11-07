@@ -1,6 +1,5 @@
 import alt from "../alt";
-import axios from "axios";
-import async from "async";
+import { request, MAX_PAGE_SIZE } from "../api";
 
 // CORRESPONDENTS ACTIONS
 class CorrespondentsActions {
@@ -19,15 +18,10 @@ class CorrespondentsActions {
 
 	// GET CORRESPONDENTS
 	getCorrespondents() {
-		var url = localStorage.getItem("settings.host") + "/api/correspondents/";
-
-		axios({
+		request({
 			method: "get",
-			url: url,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
+			url: "/api/correspondents/",
+			params: { ordering: "name", page_size: MAX_PAGE_SIZE }
 		})
 			.then(this.actions.getCorrespondentsSuccess)
 			.catch(this.actions.getCorrespondentsFail);
@@ -35,71 +29,23 @@ class CorrespondentsActions {
 
 	// DELETE CORRESPONDENTS
 	deleteCorrespondents(ids) {
-		var that = this;
-
-		// asyncroniously delete all document ids
-		async.every(
-			ids,
-			(id, callback) => {
-				const url = localStorage.getItem("settings.host") + "/api/correspondents/" + id;
-
-				// delete document
-				axios({
-					method: "delete",
-					url: url,
-					auth: {
-						username: localStorage.getItem("settings.auth.username"),
-						password: localStorage.getItem("settings.auth.password")
-					}
-				})
-					.then((r) => {
-						return callback(null, r);
-					})
-					.catch((e) => {
-						return callback(e);
-					});
-			},
-			(err) => {
-				if (err) {
-					return that.actions.deleteCorrespondentsFail(err);
-				}
-
-				// if result is true then every file exists
-				return that.actions.deleteCorrespondentsSuccess(ids);
-			}
-		);
+		Promise.all(
+			ids.map((id) => request({ method: "delete", url: "/api/correspondents/" + id + "/" }))
+		)
+			.then(() => this.actions.deleteCorrespondentsSuccess(ids))
+			.catch(this.actions.deleteCorrespondentsFail);
 	}
 
 	// ADD CORRESPONDENT
 	addCorrespondent(data) {
-		var url = localStorage.getItem("settings.host") + "/api/correspondents/";
-
-		axios({
-			method: "post",
-			url: url,
-			data: data,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "post", url: "/api/correspondents/", data: data })
 			.then(this.actions.addCorrespondentSuccess)
 			.catch(this.actions.addCorrespondentFail);
 	}
 
 	// EDIT CORRESPONDENT
 	editCorrespondent(data) {
-		const url = localStorage.getItem("settings.host") + "/api/correspondents/" + data.id + "/";
-
-		axios({
-			method: "put",
-			url: url,
-			data: data,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "put", url: "/api/correspondents/" + data.id + "/", data: data })
 			.then(this.actions.editCorrespondentSuccess)
 			.catch(this.actions.editCorrespondentFail);
 	}

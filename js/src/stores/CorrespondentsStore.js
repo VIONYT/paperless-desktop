@@ -1,14 +1,9 @@
 import alt from "../alt";
+import { isAuthError } from "../api";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer, dialog } from "../electronBridge";
 
 // CORRESPONDENTS STORE
 class CorrespondentsStore {
@@ -25,7 +20,7 @@ class CorrespondentsStore {
 
 	// GET CORRESPONDENTS FAIL
 	getCorrespondentsFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -51,7 +46,7 @@ class CorrespondentsStore {
 
 	// DELETE CORRESPONDENTS FAIL
 	deleteCorrespondentsFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -67,7 +62,7 @@ class CorrespondentsStore {
 
 	// ADD CORRESPONDENTS FAIL
 	addCorrespondentFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}
@@ -91,7 +86,7 @@ class CorrespondentsStore {
 
 	// EDIT CORRESPONDENT FAIL
 	editCorrespondentFail(err) {
-		if (err.response && err.response.status === 403) {
+		if (isAuthError(err)) {
 			$(window).trigger("goBackToLogin");
 			return;
 		}

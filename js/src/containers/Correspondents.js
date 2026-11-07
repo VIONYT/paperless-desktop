@@ -5,13 +5,7 @@ import $ from "jquery";
 import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
 import CorrespondentsListItem from "../components/CorrespondentsListItem";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer, remote, dialog } from "../electronBridge";
 
 class Correspondents extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -63,7 +57,7 @@ class Correspondents extends PaperlessComponent {
 				ipcRenderer.send("modal", {
 					route: "/modal/correspondents/add",
 					width: 450,
-					height: 280
+					height: 400
 				});
 			}
 		);
@@ -127,7 +121,8 @@ class Correspondents extends PaperlessComponent {
 
 		// ask user if he really wants to delete the document
 		var choice =
-			dialog.showMessageBox(remote.getCurrentWindow(), {
+			dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+				// eslint-disable-line no-sync
 				type: "question",
 				buttons: ["Yes", "No"],
 				title: "It'll be gone forever!",

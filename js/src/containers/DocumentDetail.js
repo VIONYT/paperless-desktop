@@ -8,13 +8,8 @@ import DocumentDetailForm from "../components/DocumentDetailForm";
 import DocumentRender from "../components/DocumentRender";
 import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
-const remote = electron.remote;
-const dialog = remote.dialog;
+import { downloadUrl } from "../api";
+import { ipcRenderer, remote, dialog } from "../electronBridge";
 
 class DocumentDetail extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -47,9 +42,9 @@ class DocumentDetail extends PaperlessComponent {
 			"left",
 			() => {
 				// downstream the download command
-				if (this.state.doc.download_url) {
+				if (this.state.doc && this.state.doc.id) {
 					ipcRenderer.send("download", {
-						url: super.getHost() + this.state.doc.download_url.replace("\\", "")
+						url: downloadUrl(this.state.doc.id)
 					});
 				}
 			}
@@ -75,7 +70,8 @@ class DocumentDetail extends PaperlessComponent {
 			() => {
 				// ask user if he really wants to delete the document
 				var choice =
-					dialog.showMessageBox(remote.getCurrentWindow(), {
+					dialog.showMessageBoxSync(remote.getCurrentWindow(), {
+						// eslint-disable-line no-sync
 						type: "question",
 						buttons: ["Yes", "No"],
 						title: "It'll be gone forever!",
@@ -85,9 +81,6 @@ class DocumentDetail extends PaperlessComponent {
 				// yes, delete this thing!
 				if (choice === true) {
 					DocumentsActions.deleteDocuments([this.props.params.id]);
-
-					// reload documents store
-					DocumentsActions.getDocuments();
 
 					// emit event to close this tab, since the document is just deleted
 					$(window).trigger("tabs.closeCurrent");
@@ -129,6 +122,9 @@ class DocumentDetail extends PaperlessComponent {
 
 	// ON CHANGE
 	onChange(state) {
+		// the document store was changed by something else than loading a document
+		if (!state.doc) return;
+
 		// add new tab
 		$(window).trigger("tabs.push", {
 			title: state.doc.title,
@@ -157,9 +153,7 @@ class DocumentDetail extends PaperlessComponent {
 		return (
 			<div className="pane-group">
 				<div className="pane-two-third">
-					<DocumentRender
-						doc={this.state.doc}
-					/>
+					<DocumentRender doc={this.state.doc} />
 				</div>
 				<div className="pane pane-one-third">
 					<DocumentDetailForm

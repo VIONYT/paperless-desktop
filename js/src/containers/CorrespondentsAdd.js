@@ -1,12 +1,7 @@
 import React from "react";
 import PaperlessComponent from "../components/PaperlessComponent";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
-import slug from "slug";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class CorrespondentsAdd extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -16,7 +11,8 @@ class CorrespondentsAdd extends PaperlessComponent {
 		this.nameInput = null;
 		this.state = {
 			name: "",
-			slug: ""
+			match: "",
+			matching_algorithm: 6
 		};
 	}
 
@@ -35,8 +31,9 @@ class CorrespondentsAdd extends PaperlessComponent {
 		var s = this.state;
 		s[e.target.name] = e.target.value;
 
-		if (e.target.name === "name") {
-			s["slug"] = slug(e.target.value).toLowerCase();
+		// the API expects the matching algorithm as number
+		if (e.target.name === "matching_algorithm") {
+			s[e.target.name] = parseInt(e.target.value);
 		}
 
 		this.setState(s);
@@ -69,15 +66,33 @@ class CorrespondentsAdd extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Slug</label>
+					<label>Match</label>
 					<input
 						type="text"
 						className="form-control"
-						name="slug"
-						placeholder="Slug"
-						value={this.state.slug}
+						name="match"
+						placeholder="Match"
+						value={this.state.match}
 						onChange={this.handleChange.bind(this)}
 					/>
+				</div>
+
+				<div className="form-group">
+					<label>Matching-Algorithm</label>
+					<select
+						className="form-control"
+						name="matching_algorithm"
+						value={this.state.matching_algorithm}
+						onChange={this.handleChange.bind(this)}
+					>
+						<option value="0">None</option>
+						<option value="1">Any</option>
+						<option value="2">All</option>
+						<option value="3">Literal</option>
+						<option value="4">Regular Expression</option>
+						<option value="5">Fuzzy Match</option>
+						<option value="6">Auto</option>
+					</select>
 				</div>
 
 				<div className="btn-group">

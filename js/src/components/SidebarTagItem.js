@@ -23,13 +23,13 @@ class SidebarTagItem extends PaperlessComponent {
 
 	// SET TAG FILTER
 	setTagFilter() {
-		$(window).trigger("changeExternTag", { tag: this.props.tag.slug });
+		$(window).trigger("changeExternTag", { tag: this.props.tag.id });
 
 		// set or unset the tag
 		if (this.state.active === true) {
 			this.props.setTagFilter(null);
 		} else {
-			this.props.setTagFilter(this.props.tag.slug);
+			this.props.setTagFilter(this.props.tag.id);
 		}
 
 		// toggle active state
@@ -41,7 +41,7 @@ class SidebarTagItem extends PaperlessComponent {
 	// CHANGE EXTERN TAG
 	changeExternTag(e, data) {
 		this.setState({
-			active: this.props.tag.slug === data.tag
+			active: this.props.tag.id === data.tag
 		});
 	}
 
@@ -57,7 +57,7 @@ class SidebarTagItem extends PaperlessComponent {
 				<span
 					className="icon icon-record"
 					style={{
-						color: this.getTagColor(this.props.tag.colour)
+						color: this.getTagColor(this.props.tag)
 					}}
 				/>
 				{this.props.tag.name}

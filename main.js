@@ -1,12 +1,13 @@
 /* eslint-disable */
 
 const { app, Menu, BrowserWindow, session, ipcMain } = require("electron");
-const btoa = require("btoa");
+const remoteMain = require("@electron/remote/main");
 const { download } = require("electron-dl");
 const path = require("path");
 const url = require("url");
-const appVersion = require("./package.json").version;
-const os = require("os").platform();
+
+// the renderer uses the remote module (dialogs, current window)
+remoteMain.initialize();
 
 const DEBUG = false;
 
@@ -18,7 +19,7 @@ const Store = require("./store.js");
 var mainWindow;
 var modalWindow;
 
-// authentication object
+// authentication of the paperless-ngx API: { host: "https://paperless.local", token: "..." }
 var auth = null;
 
 /*
@@ -50,11 +51,11 @@ const store = new Store({
 // create menu template
 var menu = Menu.buildFromTemplate([
 	{
-		label: app.getName(),
+		label: app.name,
 		submenu: [
 			{
 				label: "About Paperless Desktop",
-				selector: "orderFrontStandardAboutPanel:"
+				role: "about"
 			},
 			{
 				label: "Quit",
@@ -80,9 +81,13 @@ var menu = Menu.buildFromTemplate([
 	{
 		label: "Edit",
 		submenu: [
-			{ label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
-			{ label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
-			{ label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
+			{ role: "undo" },
+			{ role: "redo" },
+			{ type: "separator" },
+			{ role: "cut" },
+			{ role: "copy" },
+			{ role: "paste" },
+			{ role: "selectAll" }
 		]
 	}
 ]);
@@ -99,12 +104,13 @@ var menu = Menu.buildFromTemplate([
 // listen for login message from the renderer
 ipcMain.on("login", (event, arg) => {
 	if (typeof arg === "string") arg = JSON.parse(arg);
-	auth = arg;
+	auth = arg && arg.host && arg.token ? arg : null;
 });
 
 // listen or URL download requests
 ipcMain.on("download", (e, args) => {
-	download(BrowserWindow.getFocusedWindow(), args.url);
+	const win = BrowserWindow.fromWebContents(e.sender) || mainWindow;
+	download(win, args.url).catch((err) => console.error("Download failed", err));
 });
 
 // listen to open a modal window
@@ -115,8 +121,10 @@ ipcMain.on("modal", (e, args) => {
 		modal: true,
 		show: false,
 		width: args.width,
-		height: args.height
+		height: args.height,
+		webPreferences: webPreferences()
 	});
+	remoteMain.enable(modalWindow.webContents);
 
 	// build the url
 	modalWindow.loadURL(
@@ -138,7 +146,7 @@ ipcMain.on("modal", (e, args) => {
 
 // listen on close modal
 ipcMain.on("closeModal", () => {
-	modalWindow.hide();
+	if (modalWindow) modalWindow.hide();
 });
 
 // listen on tag add
@@ -194,6 +202,21 @@ ipcMain.on("openDocument", (e, args) => {
 */
 
 /**
+ * The web preferences of all windows. The renderer is our own code that talks to the
+ * paperless server (which usually lives on another origin), so it needs node integration
+ * and has to be allowed to do cross origin requests.
+ */
+function webPreferences() {
+	return {
+		nodeIntegration: true,
+		contextIsolation: false,
+		webSecurity: false,
+		// the PDF viewer of Chromium renders the documents
+		plugins: true
+	};
+}
+
+/**
  * Creates a new application window
  */
 function createWindow() {
@@ -209,11 +232,10 @@ function createWindow() {
 		minHeight: 200,
 		minWidth: 400,
 		titleBarStyle: "hidden",
-		webPreferences: {
-			webSecurity: false
-		},
+		webPreferences: webPreferences(),
 		center: true
 	});
+	remoteMain.enable(mainWindow.webContents);
 
 	// and load the index.html of the app.
 	mainWindow.loadURL(
@@ -225,15 +247,12 @@ function createWindow() {
 	);
 
 	// ON BEFORE SEND HEADERS
+	// Images and PDFs are loaded by the browser itself, so the API token of paperless-ngx
+	// is attached here. It is only sent to the configured paperless server.
 	session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
-		// check if the auth information is present
-		if (auth !== null) {
-			details.requestHeaders["Authorization"] =
-				"Basic " + btoa(auth.username + ":" + auth.password);
+		if (auth !== null && details.url.indexOf(auth.host) === 0) {
+			details.requestHeaders["Authorization"] = "Token " + auth.token;
 		}
-
-		// drop all cookie information, we authenticate just via HTTP Basic
-		delete details.requestHeaders["Cookie"];
 
 		callback({ cancel: false, requestHeaders: details.requestHeaders });
 	});
@@ -285,7 +304,7 @@ app.on("window-all-closed", () => {
 app.on("activate", () => {
 	// on OS X it's common to re-create a window in the app when the
 	// dock icon is clicked and there are no other windows open.
-	if (mainWindow === null) {
+	if (BrowserWindow.getAllWindows().length === 0) {
 		createWindow();
 	}
 });

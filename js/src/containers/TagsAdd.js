@@ -1,12 +1,7 @@
 import React from "react";
 import PaperlessComponent from "../components/PaperlessComponent";
-import slug from "slug";
 import TagsActions from "../actions/TagsActions";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class TagsAdd extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -17,10 +12,9 @@ class TagsAdd extends PaperlessComponent {
 
 		this.state = {
 			name: "",
-			slug: "",
-			colour: 1,
+			color: "#a6cee3",
 			match: "",
-			matching_algorithm: 1
+			matching_algorithm: 6
 		};
 	}
 
@@ -39,8 +33,9 @@ class TagsAdd extends PaperlessComponent {
 		var s = this.state;
 		s[e.target.name] = e.target.value;
 
-		if (e.target.name === "name") {
-			s["slug"] = slug(e.target.value).toLowerCase();
+		// the API expects the matching algorithm as number
+		if (e.target.name === "matching_algorithm") {
+			s[e.target.name] = parseInt(e.target.value);
 		}
 
 		this.setState(s);
@@ -54,8 +49,6 @@ class TagsAdd extends PaperlessComponent {
 
 	// RENDER
 	render() {
-		var colorIdx = 0;
-
 		return (
 			<form className="form-detail-info">
 				<h3>Add Tag</h3>
@@ -75,32 +68,14 @@ class TagsAdd extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Slug</label>
+					<label>Color</label>
 					<input
-						type="text"
+						type="color"
 						className="form-control"
-						name="slug"
-						placeholder="Slug"
-						value={this.state.slug}
+						name="color"
+						value={this.state.color}
 						onChange={this.handleChange.bind(this)}
 					/>
-				</div>
-
-				<div className="form-group">
-					<label>Color</label>
-					<select
-						className="form-control"
-						name="colour"
-						onChange={this.handleChange.bind(this)}
-					>
-						{super.getColors().map((c) => {
-							return (
-								<option key={c} value={colorIdx++}>
-									{c}
-								</option>
-							);
-						})}
-					</select>
 				</div>
 
 				<div className="form-group">
@@ -120,12 +95,16 @@ class TagsAdd extends PaperlessComponent {
 					<select
 						className="form-control"
 						name="matching_algorithm"
+						value={this.state.matching_algorithm}
 						onChange={this.handleChange.bind(this)}
 					>
+						<option value="0">None</option>
 						<option value="1">Any</option>
 						<option value="2">All</option>
 						<option value="3">Literal</option>
 						<option value="4">Regular Expression</option>
+						<option value="5">Fuzzy Match</option>
+						<option value="6">Auto</option>
 					</select>
 					<small>
 						Which algorithm you want to use when matching text to the OCR'd PDF. Here,

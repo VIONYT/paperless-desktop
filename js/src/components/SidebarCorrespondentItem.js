@@ -12,10 +12,7 @@ class SidebarCorrespondentItem extends React.Component {
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).on(
-			"changeExternCorrespendent",
-			this.changeExternCorrespendent.bind(this)
-		);
+		$(window).on("changeExternCorrespendent", this.changeExternCorrespendent.bind(this));
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -26,14 +23,14 @@ class SidebarCorrespondentItem extends React.Component {
 	// SET CORRESPONDENT FILTER
 	setCorrespondentFilter() {
 		$(window).trigger("changeExternCorrespendent", {
-			correspondent: this.props.correspondent.slug
+			correspondent: this.props.correspondent.id
 		});
 
 		// set or unset the tag
 		if (this.state.active === true) {
 			this.props.setCorrespondentFilter(null);
 		} else {
-			this.props.setCorrespondentFilter(this.props.correspondent.slug);
+			this.props.setCorrespondentFilter(this.props.correspondent.id);
 		}
 
 		// toggle active state
@@ -45,7 +42,7 @@ class SidebarCorrespondentItem extends React.Component {
 	// CHANGE EXTERN CORRESPONDENT
 	changeExternCorrespendent(e, data) {
 		this.setState({
-			active: this.props.correspondent.slug === data.correspondent
+			active: this.props.correspondent.id === data.correspondent
 		});
 	}
 
@@ -57,10 +54,7 @@ class SidebarCorrespondentItem extends React.Component {
 		}
 
 		return (
-			<span
-				className={itemClass}
-				onClick={this.setCorrespondentFilter.bind(this)}
-			>
+			<span className={itemClass} onClick={this.setCorrespondentFilter.bind(this)}>
 				<span className="icon icon-user" />
 				{this.props.correspondent.name}
 			</span>

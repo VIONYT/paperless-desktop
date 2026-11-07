@@ -1,13 +1,7 @@
 import React from "react";
 import $ from "jquery";
-import axios from "axios";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { getToken, normalizeHost, fetchToken } from "../api";
+import { ipcRenderer, dialog } from "../electronBridge";
 
 class Settings extends React.Component {
 	// CONSTRUCTOR
@@ -16,20 +10,16 @@ class Settings extends React.Component {
 
 		this.old = {
 			username: localStorage.getItem("settings.auth.username"),
-			password: localStorage.getItem("settings.auth.password"),
+			token: getToken(),
 			host: localStorage.getItem("settings.host"),
-			documentsUpdateInterval: localStorage.getItem(
-				"settings.documentsUpdateInterval"
-			)
+			documentsUpdateInterval: localStorage.getItem("settings.documentsUpdateInterval")
 		};
 
 		this.state = {
-			username: localStorage.getItem("settings.auth.username"),
-			password: localStorage.getItem("settings.auth.password"),
-			host: localStorage.getItem("settings.host"),
-			documentsUpdateInterval: localStorage.getItem(
-				"settings.documentsUpdateInterval"
-			)
+			username: localStorage.getItem("settings.auth.username") || "",
+			password: "",
+			host: localStorage.getItem("settings.host") || "",
+			documentsUpdateInterval: localStorage.getItem("settings.documentsUpdateInterval")
 		};
 	}
 
@@ -47,7 +37,7 @@ class Settings extends React.Component {
 
 		// store new settings
 		var blacklist = ["username", "password", "host"];
-		if (!(e.target.name in blacklist)) {
+		if (blacklist.indexOf(e.target.name) < 0) {
 			localStorage.setItem("settings." + e.target.name, e.target.value);
 		}
 	}
@@ -61,48 +51,36 @@ class Settings extends React.Component {
 	saveSignIn(e) {
 		e.preventDefault();
 
-		// check if the user information works
-		var url = this.state.host + "/api/correspondents/";
+		var host = normalizeHost(this.state.host);
 
-		// set the localStorage to the input values
-		ipcRenderer.send("login", {
-			username: this.state.username,
-			password: this.state.password
-		});
-
-		axios({
-			method: "get",
-			url: url
-		})
+		// check if the user information works by requesting a new API token
+		fetchToken(host, this.state.username, this.state.password)
 			// the request worked out, we can save the settings
-			.then(() => {
-				localStorage.setItem(
-					"settings.auth.username",
-					this.state.username
-				);
-				localStorage.setItem(
-					"settings.auth.password",
-					this.state.password
-				);
-				localStorage.setItem("settings.host", this.state.host);
+			.then((token) => {
+				localStorage.setItem("settings.auth.username", this.state.username);
+				localStorage.setItem("settings.auth.token", token);
+				localStorage.setItem("settings.host", host);
+
+				ipcRenderer.send("login", {
+					host: host,
+					token: token
+				});
 
 				this.old = {
 					username: this.state.username,
-					password: this.state.password,
-					host: this.state.host
+					token: token,
+					host: host
 				};
+
+				// the password is not stored, only the token
+				this.setState({ host: host, password: "" });
 			})
 			// the request did not work out, show an error
 			.catch(() => {
-				// reset information
-				ipcRenderer.send("login", {
-					username: this.old.username,
-					password: this.old.password
-				});
 				this.setState({
-					username: this.old.username,
-					password: this.old.password,
-					host: this.old.host
+					username: this.old.username || "",
+					password: "",
+					host: this.old.host || ""
 				});
 
 				dialog.showErrorBox(
@@ -147,7 +125,7 @@ class Settings extends React.Component {
 								value={this.state.host}
 								onChange={this.handleChange.bind(this)}
 								className="form-control"
-								placeholder="For example: http://localhost:1234"
+								placeholder="For example: http://localhost:8000"
 							/>
 						</div>
 						<div className="form-group">
@@ -169,7 +147,7 @@ class Settings extends React.Component {
 								onChange={this.handleChange.bind(this)}
 								name="password"
 								className="form-control"
-								placeholder="Password"
+								placeholder="Enter your password to sign in again"
 							/>
 						</div>
 						<button
@@ -184,9 +162,7 @@ class Settings extends React.Component {
 					<hr />
 					<form className="settings-form">
 						<div className="form-group">
-							<label>
-								Interval (seconds) to check for new documents
-							</label>
+							<label>Interval (seconds) to check for new documents</label>
 							<input
 								type="number"
 								name="documentsUpdateInterval"
@@ -216,8 +192,7 @@ class Settings extends React.Component {
 							className="btn btn-large btn-default"
 							onClick={this.testNotification.bind(this)}
 						>
-							<span className="icon icon-chat" /> Test
-							notification with 2s delay
+							<span className="icon icon-chat" /> Test notification with 2s delay
 						</button>
 					</div>
 				</div>

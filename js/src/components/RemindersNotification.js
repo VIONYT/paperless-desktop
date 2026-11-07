@@ -3,10 +3,7 @@ import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import DocumentsStore from "../stores/DocumentsStore";
 import moment from "moment";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const ipcRenderer = electron.ipcRenderer;
+import { ipcRenderer } from "../electronBridge";
 
 class RemindersNotification extends Component {
 	// CONSTRUCTOR
@@ -41,7 +38,7 @@ class RemindersNotification extends Component {
 	// CHECK REMINDERS
 	checkReminders() {
 		// find reminders that are overdue
-		var overdueReminders = this.state.reminders.filter(r => {
+		var overdueReminders = this.state.reminders.filter((r) => {
 			return moment(r.date).isBefore(moment().utc());
 		});
 
@@ -49,11 +46,9 @@ class RemindersNotification extends Component {
 		var docs = DocumentsStore.getState();
 
 		// loop overdue reinders
-		var documents = overdueReminders.map(o => {
+		var documents = overdueReminders.map((o) => {
 			// find matching document to notification
-			var doc = docs.documents.find(d =>
-				o.document.endsWith("/" + d.id + "/")
-			);
+			var doc = docs.documents.find((d) => o.document.endsWith("/" + d.id + "/"));
 
 			var notifTitle = "Paperless Reminder";
 			if (doc) {

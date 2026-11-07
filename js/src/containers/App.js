@@ -5,14 +5,8 @@ import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
 import FileDrop from "react-file-drop";
 import PaperlessComponent from "../components/PaperlessComponent";
-import axios from "axios";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import { request } from "../api";
+import { ipcRenderer, dialog } from "../electronBridge";
 
 class App extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -30,21 +24,24 @@ class App extends PaperlessComponent {
 
 	handleDrop(files) {
 		for (var ii = 0, len = files.length; ii < len; ii++) {
-			var file = files[ii];
+			const file = files[ii];
 			const data = new FormData();
 			data.append("document", file);
 			data.append("title", file.name);
 
-			var url = localStorage.getItem("settings.host") + "/push";
-
-			axios.post(url, data, {
-				auth: {
-					username: localStorage.getItem("settings.auth.username"),
-					password: localStorage.getItem("settings.auth.password")
-				},
+			// paperless-ngx consumes uploaded documents via this endpoint
+			request({
+				method: "post",
+				url: "/api/documents/post_document/",
+				data: data,
 				headers: {
 					"Content-Type": "multipart/form-data"
 				}
+			}).catch(() => {
+				dialog.showErrorBox(
+					"Could not upload " + file.name + "!",
+					"Please check the connection to paperless and try again."
+				);
 			});
 		}
 

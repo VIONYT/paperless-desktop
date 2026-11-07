@@ -7,7 +7,7 @@ import shouldPureComponentUpdate from "react-pure-render/function";
 import $ from "jquery";
 import ToolbarActions from "../actions/ToolbarActions";
 import Waypoint from "react-waypoint";
-import axios from "axios";
+import { request, isAuthError } from "../api";
 
 class Documents extends React.Component {
 	constructor(props) {
@@ -116,66 +116,46 @@ class Documents extends React.Component {
 
 	// CHECK FOR NEW DOCUMENTS
 	checkForNewDocuments() {
-		var toQueryString = function(obj) {
-			var parts = [];
-			for (var i in obj) {
-				if (obj.hasOwnProperty(i) && obj[i]) {
-					parts.push(encodeURIComponent(i) + "=" + encodeURIComponent(obj[i]));
-				}
-			}
-			return parts.join("&");
-		};
-
-		var url = localStorage.getItem("settings.host") + "/api/documents/";
-
-		// add parameters to url
-		var parameters = toQueryString({
-			correspondent__slug_0: this.state.correspondent,
-			correspondent__slug_1: "contains",
-			tags__slug_0: this.state.tag,
-			tags__slug_1: "contains",
-			ordering: "-modified",
-			page: 1
-		});
-
-		// attach parameters if availble
-		if (parameters.length > 0) {
-			url += "?" + parameters;
-		}
+		var params = { ordering: "-modified", page: 1 };
+		if (this.state.correspondent) params.correspondent__id = this.state.correspondent;
+		if (this.state.tag) params.tags__id__all = this.state.tag;
 
 		// fetch documents
-		axios({
+		request({
 			method: "get",
-			url: url,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		}).then((result) => {
-			var fresh = result.data.results.filter((d) => {
-				return (
-					new Date(d.modified) >
-					new Date(parseInt(localStorage.getItem("documents.maxModified")))
-				);
+			url: "/api/documents/",
+			params: params
+		})
+			.then((result) => {
+				var fresh = result.data.results.filter((d) => {
+					return (
+						new Date(d.modified) >
+						new Date(parseInt(localStorage.getItem("documents.maxModified")))
+					);
+				});
+
+				if (fresh.length > 0) {
+					// set the current time to max modified
+					localStorage.setItem("documents.maxModified", new Date().getTime());
+
+					var docs = this.state.documents;
+
+					fresh.map((f) => {
+						f.fresh = true;
+						docs.unshift(f);
+					});
+
+					// append new documents to list
+					this.setState({
+						documents: docs
+					});
+				}
+			})
+			.catch((err) => {
+				if (isAuthError(err)) {
+					$(window).trigger("goBackToLogin");
+				}
 			});
-
-			if (fresh.length > 0) {
-				// set the current time to max modified
-				localStorage.setItem("documents.maxModified", new Date().getTime());
-
-				var docs = this.state.documents;
-
-				fresh.map((f) => {
-					f.fresh = true;
-					docs.unshift(f);
-				});
-
-				// append new documents to list
-				this.setState({
-					documents: docs
-				});
-			}
-		});
 	}
 
 	// RENDER
