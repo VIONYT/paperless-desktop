@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://i.imgur.com/F5GNK4X.png" width="150" />
+	<img src="icon.png" width="150" />
 </p>
 
 # Paperless Desktop [![Build Status](https://travis-ci.org/thomasbrueggemann/paperless-desktop.svg?branch=master)](https://travis-ci.org/thomasbrueggemann/paperless-desktop)
