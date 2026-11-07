@@ -345,3 +345,18 @@
 	text-align: center;
 	color: #fff;
 }
+
+/* sidebar: icons and text are centered on the same line */
+.nav-group-item {
+	display: flex;
+	align-items: center;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.nav-group-item .icon {
+	float: none;
+	flex-shrink: 0;
+	margin-top: 0;
+	line-height: 18px;
+}

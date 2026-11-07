@@ -2,6 +2,7 @@ import React from "react";
 import * as pdfjs from "pdfjs-dist";
 import PaperlessComponent from "../components/PaperlessComponent";
 import { previewUrl, request } from "../api";
+import { t } from "../i18n";
 
 // the worker of pdf.js is copied next to the bundle by build.js
 pdfjs.GlobalWorkerOptions.workerSrc = "js/build/pdf.worker.min.mjs";
@@ -123,9 +124,11 @@ class DocumentRender extends PaperlessComponent {
 
 		return (
 			<div className="pdf-viewer">
-				{this.state.loading ? <div className="pdf-message">Loading...</div> : null}
+				{this.state.loading ? (
+					<div className="pdf-message">{t("documents.loading")}</div>
+				) : null}
 				{this.state.error ? (
-					<div className="pdf-message">The document could not be displayed.</div>
+					<div className="pdf-message">{t("documents.notDisplayed")}</div>
 				) : null}
 				<div
 					className="pdf-pages"

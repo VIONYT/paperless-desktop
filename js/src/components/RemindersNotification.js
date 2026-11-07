@@ -4,6 +4,7 @@ import RemindersStore from "../stores/RemindersStore";
 import DocumentsStore from "../stores/DocumentsStore";
 import moment from "moment";
 import { ipcRenderer } from "../electronBridge";
+import { t } from "../i18n";
 
 class RemindersNotification extends Component {
 	// CONSTRUCTOR
@@ -50,7 +51,7 @@ class RemindersNotification extends Component {
 			// find matching document to notification
 			var doc = docs.documents.find((d) => o.document.endsWith("/" + d.id + "/"));
 
-			var notifTitle = "Paperless Reminder";
+			var notifTitle = t("reminders.defaultTitle");
 			if (doc) {
 				notifTitle = doc.title;
 			}

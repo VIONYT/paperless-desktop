@@ -10,6 +10,7 @@ import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
 import { downloadUrl } from "../api";
 import { ipcRenderer, remote, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class DocumentDetail extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -28,16 +29,23 @@ class DocumentDetail extends PaperlessComponent {
 		ToolbarActions.clearItems();
 
 		// toolbar: save button
-		ToolbarActions.addItem("save-detail", "floppy", "Save", "primary", "right", (e) => {
-			e.preventDefault();
-			this.saveDocument();
-		});
+		ToolbarActions.addItem(
+			"save-detail",
+			"floppy",
+			t("common.save"),
+			"primary",
+			"right",
+			(e) => {
+				e.preventDefault();
+				this.saveDocument();
+			}
+		);
 
 		// toolbar: download file
 		ToolbarActions.addItem(
 			"download-file",
 			"download",
-			"Download File",
+			t("document.download"),
 			"default",
 			"left",
 			() => {
@@ -51,20 +59,27 @@ class DocumentDetail extends PaperlessComponent {
 		);
 
 		// toolbar: delete document
-		ToolbarActions.addItem("add-reminder", "bell", "Add reminder", "default", "right", () => {
-			// add correspondent
-			ipcRenderer.send("modal", {
-				route: "/modal/reminders/add/" + this.props.params.id,
-				width: 450,
-				height: 350
-			});
-		});
+		ToolbarActions.addItem(
+			"add-reminder",
+			"bell",
+			t("document.addReminder"),
+			"default",
+			"right",
+			() => {
+				// add correspondent
+				ipcRenderer.send("modal", {
+					route: "/modal/reminders/add/" + this.props.params.id,
+					width: 450,
+					height: 350
+				});
+			}
+		);
 
 		// toolbar: delete document
 		ToolbarActions.addItem(
 			"delete-document",
 			"trash",
-			"Delete document",
+			t("document.delete"),
 			"default",
 			"right",
 			() => {
@@ -72,9 +87,9 @@ class DocumentDetail extends PaperlessComponent {
 				var choice =
 					dialog.showMessageBoxSync(remote.getCurrentWindow(), {
 						type: "question",
-						buttons: ["Yes", "No"],
-						title: "It'll be gone forever!",
-						message: "Are you sure you want to delete this document?"
+						buttons: [t("common.yes"), t("common.no")],
+						title: t("document.deleteConfirmTitle"),
+						message: t("document.deleteConfirm")
 					}) === 0;
 
 				// yes, delete this thing!

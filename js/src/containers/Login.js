@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../components/Header";
 import { getToken, getHost, normalizeHost, fetchToken } from "../api";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class Login extends React.Component {
 	constructor(props) {
@@ -68,10 +69,7 @@ class Login extends React.Component {
 			})
 			// the request did not work out, show an error
 			.catch(() => {
-				dialog.showErrorBox(
-					"Ohoh!",
-					"These signin information can't be right. Just tested. Sad!"
-				);
+				dialog.showErrorBox(t("login.failedTitle"), t("login.failedMessage"));
 			});
 	}
 
@@ -93,38 +91,38 @@ class Login extends React.Component {
 				</center>
 				<form className="login-form" onSubmit={this.handleLogin.bind(this)}>
 					<div className="form-group">
-						<label>URL to paperless</label>
+						<label>{t("login.url")}</label>
 						<input
 							type="text"
 							name="host"
 							onChange={this.handleChange.bind(this)}
 							className="form-control"
-							placeholder="For example: http://localhost:8000"
+							placeholder={t("login.urlPlaceholder")}
 						/>
 					</div>
 					<div className="form-group">
-						<label>Username</label>
+						<label>{t("login.username")}</label>
 						<input
 							type="username"
 							onChange={this.handleChange.bind(this)}
 							name="username"
 							className="form-control"
-							placeholder="Username"
+							placeholder={t("login.username")}
 						/>
 					</div>
 					<div className="form-group">
-						<label>Password</label>
+						<label>{t("login.password")}</label>
 						<input
 							type="password"
 							onChange={this.handleChange.bind(this)}
 							name="password"
 							className="form-control"
-							placeholder="Password"
+							placeholder={t("login.password")}
 						/>
 					</div>
 					<div className="form-actions">
 						<button type="submit" className="btn btn-form btn-primary">
-							Log in
+							{t("login.submit")}
 						</button>
 					</div>
 				</form>

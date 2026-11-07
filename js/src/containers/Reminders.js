@@ -6,6 +6,7 @@ import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
 import BigCalendar from "react-big-calendar";
 import moment from "moment";
+import { t } from "../i18n";
 
 BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
 
@@ -22,7 +23,7 @@ class Reminders extends React.Component {
 		$(window).trigger("tabs.replace", {
 			idx: 0,
 			tab: {
-				title: "Reminders",
+				title: t("nav.reminders"),
 				route: "/reminders"
 			}
 		});

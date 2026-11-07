@@ -3,6 +3,7 @@ import $ from "jquery";
 import { getToken, normalizeHost, fetchToken } from "../api";
 import { ipcRenderer, dialog } from "../electronBridge";
 import { applyTheme, getTheme } from "../theme";
+import { t, getLanguageSetting, availableLanguages } from "../i18n";
 
 class Settings extends React.Component {
 	// CONSTRUCTOR
@@ -45,6 +46,11 @@ class Settings extends React.Component {
 		// switch the appearance right away
 		if (e.target.name === "theme") {
 			applyTheme(e.target.value);
+		}
+
+		// the texts are rendered once, so the language is applied by reloading the window
+		if (e.target.name === "language") {
+			window.location.reload();
 		}
 	}
 
@@ -89,10 +95,7 @@ class Settings extends React.Component {
 					host: this.old.host || ""
 				});
 
-				dialog.showErrorBox(
-					"Ohoh!",
-					"These signin information can't be right. Just tested. Sad!"
-				);
+				dialog.showErrorBox(t("login.failedTitle"), t("login.failedMessage"));
 			});
 	}
 
@@ -100,8 +103,8 @@ class Settings extends React.Component {
 	testNotification() {
 		window.setTimeout(() => {
 			// create notification
-			var notif = new window.Notification("test", {
-				body: "test"
+			var notif = new window.Notification(t("settings.testNotification"), {
+				body: t("settings.testNotificationBody")
 			});
 
 			// If the user clicks in the Notifications Center, show the app
@@ -119,56 +122,56 @@ class Settings extends React.Component {
 		return (
 			<div className="pane-group">
 				<div className="pane settings-pane">
-					<h3>Sign In</h3>
+					<h3>{t("settings.signIn")}</h3>
 					<hr />
 
 					<form className="settings-form">
 						<div className="form-group">
-							<label>URL to paperless</label>
+							<label>{t("login.url")}</label>
 							<input
 								type="text"
 								name="host"
 								value={this.state.host}
 								onChange={this.handleChange.bind(this)}
 								className="form-control"
-								placeholder="For example: http://localhost:8000"
+								placeholder={t("login.urlPlaceholder")}
 							/>
 						</div>
 						<div className="form-group">
-							<label>Username</label>
+							<label>{t("login.username")}</label>
 							<input
 								type="username"
 								value={this.state.username}
 								onChange={this.handleChange.bind(this)}
 								name="username"
 								className="form-control"
-								placeholder="Username"
+								placeholder={t("login.username")}
 							/>
 						</div>
 						<div className="form-group">
-							<label>Password</label>
+							<label>{t("login.password")}</label>
 							<input
 								type="password"
 								value={this.state.password}
 								onChange={this.handleChange.bind(this)}
 								name="password"
 								className="form-control"
-								placeholder="Enter your password to sign in again"
+								placeholder={t("settings.passwordPlaceholder")}
 							/>
 						</div>
 						<button
 							className="btn btn-large btn-primary"
 							onClick={this.saveSignIn.bind(this)}
 						>
-							Update
+							{t("settings.update")}
 						</button>
 					</form>
 
-					<h3>Appearance</h3>
+					<h3>{t("settings.appearance")}</h3>
 					<hr />
 					<form className="settings-form">
 						<div className="form-group">
-							<label>Theme</label>
+							<label>{t("settings.theme")}</label>
 							<select
 								name="theme"
 								value={getTheme()}
@@ -176,18 +179,38 @@ class Settings extends React.Component {
 								className="form-control"
 								style={{ width: "200px", display: "block" }}
 							>
-								<option value="system">Same as system</option>
-								<option value="light">Light</option>
-								<option value="dark">Dark</option>
+								<option value="system">{t("settings.themeSystem")}</option>
+								<option value="light">{t("settings.themeLight")}</option>
+								<option value="dark">{t("settings.themeDark")}</option>
 							</select>
 						</div>
 					</form>
 
-					<h3>Documents</h3>
+					<form className="settings-form">
+						<div className="form-group">
+							<label>{t("settings.language")}</label>
+							<select
+								name="language"
+								value={getLanguageSetting()}
+								onChange={this.handleChange.bind(this)}
+								className="form-control"
+								style={{ width: "200px", display: "block" }}
+							>
+								<option value="system">{t("settings.languageSystem")}</option>
+								{availableLanguages().map((l) => (
+									<option key={l.code} value={l.code}>
+										{l.name}
+									</option>
+								))}
+							</select>
+						</div>
+					</form>
+
+					<h3>{t("settings.documents")}</h3>
 					<hr />
 					<form className="settings-form">
 						<div className="form-group">
-							<label>Interval (seconds) to check for new documents</label>
+							<label>{t("settings.interval")}</label>
 							<input
 								type="number"
 								name="documentsUpdateInterval"
@@ -202,7 +225,7 @@ class Settings extends React.Component {
 						</div>
 					</form>
 
-					<h3>Developer Settings</h3>
+					<h3>{t("settings.developer")}</h3>
 					<hr />
 
 					<div className="btn-group">
@@ -210,14 +233,14 @@ class Settings extends React.Component {
 							className="btn btn-large btn-default"
 							onClick={this.openDevTools.bind(this)}
 						>
-							<span className="icon icon-tools" /> Open DevTools
+							<span className="icon icon-tools" /> {t("settings.devTools")}
 						</button>
 
 						<button
 							className="btn btn-large btn-default"
 							onClick={this.testNotification.bind(this)}
 						>
-							<span className="icon icon-chat" /> Test notification with 2s delay
+							<span className="icon icon-chat" /> {t("settings.testNotification")}
 						</button>
 					</div>
 				</div>

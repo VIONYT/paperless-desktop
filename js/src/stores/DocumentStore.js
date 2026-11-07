@@ -3,6 +3,7 @@ import { isAuthError } from "../api";
 import DocumentActions from "../actions/DocumentActions";
 import $ from "jquery";
 import { dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // DOCUMENT STORE
 class DocumentStore {
@@ -23,7 +24,7 @@ class DocumentStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not load document!", "Please try again.");
+		dialog.showErrorBox(t("documents.loadOneFailed"), t("common.tryAgain"));
 	}
 
 	// UPDATE DOCUMENT SUCCESS

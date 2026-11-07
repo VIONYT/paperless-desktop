@@ -2,6 +2,7 @@ import React from "react";
 import LogsActions from "../actions/LogsActions";
 import LogsStore from "../stores/LogsStore";
 import $ from "jquery";
+import { t } from "../i18n";
 
 class Logs extends React.Component {
 	// CONSTRUCTOR
@@ -16,7 +17,7 @@ class Logs extends React.Component {
 		$(window).trigger("tabs.replace", {
 			idx: 0,
 			tab: {
-				title: "Logs",
+				title: t("nav.logs"),
 				route: "/logs"
 			}
 		});
@@ -45,7 +46,7 @@ class Logs extends React.Component {
 				<table className="table-striped">
 					<thead>
 						<tr>
-							<th>Log</th>
+							<th>{t("logs.title")}</th>
 						</tr>
 					</thead>
 					<tbody>

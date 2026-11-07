@@ -5,6 +5,7 @@ import moment from "moment";
 import TagsStore from "../stores/TagsStore";
 import TagDot from "./TagDot";
 import { thumbnailUrl } from "../api";
+import { t } from "../i18n";
 
 String.prototype.trunc =
 	String.prototype.trunc ||
@@ -47,7 +48,7 @@ class DocumentItem extends PaperlessComponent {
 				<div className="document-item-title">
 					{this.props.document.fresh ? (
 						<span
-							title="New document"
+							title={t("documents.new")}
 							className="icon icon-plus-circled text-positive"
 						/>
 					) : null}

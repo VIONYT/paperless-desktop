@@ -6,6 +6,7 @@ import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
 import TagsListItem from "../components/TagsListItem";
 import { ipcRenderer, remote, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class Tags extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -20,7 +21,7 @@ class Tags extends PaperlessComponent {
 		$(window).trigger("tabs.replace", {
 			idx: 0,
 			tab: {
-				title: "Tags",
+				title: t("nav.tags"),
 				route: "/tags"
 			}
 		});
@@ -46,7 +47,7 @@ class Tags extends PaperlessComponent {
 		ToolbarActions.clearItems();
 
 		// toolbar: add button
-		ToolbarActions.addItem("add-tag", "plus", "Add tag", "primary", "right", () => {
+		ToolbarActions.addItem("add-tag", "plus", t("tags.add"), "primary", "right", () => {
 			// add correspondent
 			ipcRenderer.send("modal", {
 				route: "/modal/tags/add",
@@ -89,7 +90,7 @@ class Tags extends PaperlessComponent {
 			ToolbarActions.addItem(
 				"remove-tags",
 				"trash",
-				"Delete",
+				t("common.delete"),
 				"default",
 				"left",
 				this.deleteSelection.bind(this)
@@ -103,11 +104,11 @@ class Tags extends PaperlessComponent {
 	deleteSelection() {
 		var message;
 		if (this.state.selection.length === 1) {
-			message = "Are you sure you want to delete this tag?";
+			message = t("tags.deleteOne");
 		}
 
 		if (this.state.selection.length > 1) {
-			message = "Are you sure you want to delete these tags?";
+			message = t("tags.deleteMany");
 		}
 
 		if (this.state.selection === 0) return;
@@ -116,8 +117,8 @@ class Tags extends PaperlessComponent {
 		var choice =
 			dialog.showMessageBoxSync(remote.getCurrentWindow(), {
 				type: "question",
-				buttons: ["Yes", "No"],
-				title: "It'll be gone forever!",
+				buttons: [t("common.yes"), t("common.no")],
+				title: t("document.deleteConfirmTitle"),
 				message: message
 			}) === 0;
 
@@ -146,10 +147,10 @@ class Tags extends PaperlessComponent {
 					<thead>
 						<tr>
 							<th />
-							<th>Color</th>
-							<th>Name</th>
-							<th>Match</th>
-							<th>Matching Algorithm</th>
+							<th>{t("common.color")}</th>
+							<th>{t("common.name")}</th>
+							<th>{t("common.match")}</th>
+							<th>{t("matching.label")}</th>
 						</tr>
 					</thead>
 					<tbody>

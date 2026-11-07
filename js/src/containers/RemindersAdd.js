@@ -4,6 +4,7 @@ import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import moment from "moment";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class RemindersAdd extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -36,15 +37,12 @@ class RemindersAdd extends PaperlessComponent {
 				.utc()
 				.isBefore(moment.utc())
 		) {
-			return dialog.showErrorBox(
-				"Time travel as not been invented yet.... or has it?",
-				"Select a reminder date in the future!"
-			);
+			return dialog.showErrorBox(t("reminders.pastTitle"), t("reminders.pastMessage"));
 		}
 
 		// check if a note is available
 		if (this.state.note === null || this.state.note.trim().length <= 0) {
-			return dialog.showErrorBox("Could not add reminder", "Please add a note text!");
+			return dialog.showErrorBox(t("reminders.noteMissingTitle"), t("reminders.noteMissing"));
 		}
 
 		RemindersActions.addReminder(this.state.doc, date, this.state.note);
@@ -62,9 +60,9 @@ class RemindersAdd extends PaperlessComponent {
 	render() {
 		return (
 			<form className="form-detail-info">
-				<h3>Add Reminder</h3>
+				<h3>{t("reminders.add")}</h3>
 				<div className="form-group">
-					<label>Date</label>
+					<label>{t("common.date")}</label>
 					<input
 						type="datetime-local"
 						className="form-control"
@@ -74,32 +72,30 @@ class RemindersAdd extends PaperlessComponent {
 					/>
 				</div>
 				<div className="form-group">
-					<label>Note</label>
+					<label>{t("common.note")}</label>
 					<textarea
 						className="form-control"
 						rows="2"
 						name="note"
 						onChange={this.handleChange.bind(this)}
-						placeholder="Add a note to your reminder, if you'd like."
+						placeholder={t("reminders.notePlaceholder")}
 					/>
 				</div>
 
-				<p style={{ color: "grey" }}>
-					Note: reminder notifications only show up, while this app is open on your Mac!
-				</p>
+				<p style={{ color: "grey" }}>{t("reminders.hint")}</p>
 
 				<div className="btn-group">
 					<button
 						className="btn btn-large btn-default"
 						onClick={this.closeModal.bind(this)}
 					>
-						Close
+						{t("common.close")}
 					</button>
 					<button
 						className="btn btn-large btn-primary"
 						onClick={this.saveReminder.bind(this)}
 					>
-						<span className="icon icon-floppy" /> Save
+						<span className="icon icon-floppy" /> {t("common.save")}
 					</button>
 				</div>
 			</form>

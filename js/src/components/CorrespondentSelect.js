@@ -2,6 +2,7 @@ import React from "react";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import CorrespondentsStore from "../stores/CorrespondentsStore";
 import Select from "react-select";
+import { t } from "../i18n";
 
 class CorrespondentSelect extends React.Component {
 	// CONSTRUCTOR
@@ -55,6 +56,7 @@ class CorrespondentSelect extends React.Component {
 				value={this.props.value}
 				onChange={this.selectChanged.bind(this)}
 				options={options}
+				placeholder={t("document.select")}
 			/>
 		);
 	}

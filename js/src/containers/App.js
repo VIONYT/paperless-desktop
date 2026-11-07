@@ -5,8 +5,9 @@ import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
 import FileDrop from "react-file-drop";
 import PaperlessComponent from "../components/PaperlessComponent";
-import { request } from "../api";
+import { request, getToken } from "../api";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class App extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -19,6 +20,11 @@ class App extends PaperlessComponent {
 		// EVENT: open document
 		ipcRenderer.on("openDocument", (e, data) => {
 			this.context.router.push("/document/" + data);
+		});
+
+		// EVENT: navigate (menu bar), only when signed in
+		ipcRenderer.on("navigate", (e, route) => {
+			if (getToken()) this.context.router.push(route);
 		});
 	}
 
@@ -39,14 +45,14 @@ class App extends PaperlessComponent {
 				}
 			}).catch(() => {
 				dialog.showErrorBox(
-					"Could not upload " + file.name + "!",
-					"Please check the connection to paperless and try again."
+					t("documents.uploadFailed", { name: file.name }),
+					t("documents.uploadFailedMessage")
 				);
 			});
 		}
 
-		var notif = new window.Notification("Documents uploading..", {
-			body: "They will appear in your document list once they have finished processing."
+		var notif = new window.Notification(t("documents.uploading"), {
+			body: t("documents.uploadingBody")
 		});
 	}
 
@@ -57,7 +63,7 @@ class App extends PaperlessComponent {
 				<RemindersNotification />
 				<Header history={this.props.history} />
 				<Tabs history={this.props.history} />
-				<FileDrop onDrop={this.handleDrop}>Drop some files here!</FileDrop>
+				<FileDrop onDrop={this.handleDrop}>{t("documents.dropFiles")}</FileDrop>
 				<div className="window-content">{this.props.children}</div>
 				<Footer />
 			</div>

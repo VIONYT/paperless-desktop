@@ -1,6 +1,7 @@
 import React from "react";
 import PaperlessComponent from "./PaperlessComponent";
 import { RIEInput, RIESelect } from "riek";
+import { t } from "../i18n";
 
 class CorrespondentsListItem extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -9,13 +10,13 @@ class CorrespondentsListItem extends PaperlessComponent {
 
 		// matching algorithm options
 		this.matching_algorithm = [
-			{ id: "0", text: "None" },
-			{ id: "1", text: "Any" },
-			{ id: "2", text: "All" },
-			{ id: "3", text: "Literal" },
-			{ id: "4", text: "Regular Expression" },
-			{ id: "5", text: "Fuzzy Match" },
-			{ id: "6", text: "Auto" }
+			{ id: "0", text: t("matching.none") },
+			{ id: "1", text: t("matching.any") },
+			{ id: "2", text: t("matching.all") },
+			{ id: "3", text: t("matching.literal") },
+			{ id: "4", text: t("matching.regex") },
+			{ id: "5", text: t("matching.fuzzy") },
+			{ id: "6", text: t("matching.auto") }
 		];
 	}
 

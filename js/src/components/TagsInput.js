@@ -3,6 +3,7 @@ import PaperlessComponent from "./PaperlessComponent";
 import TagsActions from "../actions/TagsActions";
 import TagsStore from "../stores/TagsStore";
 import Select from "react-select";
+import { t } from "../i18n";
 
 class TagsInput extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -76,6 +77,7 @@ class TagsInput extends PaperlessComponent {
 				options={possibles}
 				onChange={this.changeSelection.bind(this)}
 				multi={true}
+				placeholder={t("document.select")}
 			/>
 		);
 	}

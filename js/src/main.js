@@ -3,7 +3,9 @@ import { Router, Route, hashHistory } from "react-router";
 import ReactDOM from "react-dom";
 import routes from "./routes";
 import { applyTheme } from "./theme";
+import { applyLanguage } from "./i18n";
 
 applyTheme();
+applyLanguage();
 
 ReactDOM.render(<Router history={hashHistory}>{routes}</Router>, document.getElementById("app"));

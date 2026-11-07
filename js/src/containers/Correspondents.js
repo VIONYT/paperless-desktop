@@ -6,6 +6,7 @@ import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
 import CorrespondentsListItem from "../components/CorrespondentsListItem";
 import { ipcRenderer, remote, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 class Correspondents extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -20,7 +21,7 @@ class Correspondents extends PaperlessComponent {
 		$(window).trigger("tabs.replace", {
 			idx: 0,
 			tab: {
-				title: "Tags",
+				title: t("nav.correspondents"),
 				route: "/tags"
 			}
 		});
@@ -49,7 +50,7 @@ class Correspondents extends PaperlessComponent {
 		ToolbarActions.addItem(
 			"add-correspondent",
 			"plus",
-			"Add correspondent",
+			t("correspondents.add"),
 			"primary",
 			"right",
 			() => {
@@ -96,7 +97,7 @@ class Correspondents extends PaperlessComponent {
 			ToolbarActions.addItem(
 				"remove-tags",
 				"trash",
-				"Delete",
+				t("common.delete"),
 				"default",
 				"left",
 				this.deleteSelection.bind(this)
@@ -110,11 +111,11 @@ class Correspondents extends PaperlessComponent {
 	deleteSelection() {
 		var message;
 		if (this.state.selection.length === 1) {
-			message = "Are you sure you want to delete this correspondent?";
+			message = t("correspondents.deleteOne");
 		}
 
 		if (this.state.selection.length > 1) {
-			message = "Are you sure you want to delete these correspondents?";
+			message = t("correspondents.deleteMany");
 		}
 
 		if (this.state.selection === 0) return;
@@ -123,8 +124,8 @@ class Correspondents extends PaperlessComponent {
 		var choice =
 			dialog.showMessageBoxSync(remote.getCurrentWindow(), {
 				type: "question",
-				buttons: ["Yes", "No"],
-				title: "It'll be gone forever!",
+				buttons: [t("common.yes"), t("common.no")],
+				title: t("document.deleteConfirmTitle"),
 				message: message
 			}) === 0;
 
@@ -154,9 +155,9 @@ class Correspondents extends PaperlessComponent {
 					<thead>
 						<tr>
 							<th />
-							<th>Name</th>
-							<th>Match</th>
-							<th>Matching Algorithm</th>
+							<th>{t("common.name")}</th>
+							<th>{t("common.match")}</th>
+							<th>{t("matching.label")}</th>
 						</tr>
 					</thead>
 					<tbody>

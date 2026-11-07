@@ -3,6 +3,7 @@ import { isAuthError } from "../api";
 import LogsActions from "../actions/LogsActions";
 import $ from "jquery";
 import { dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // LOGS STORE
 class LogsStore {
@@ -24,7 +25,7 @@ class LogsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not load logs!", "Please try again.");
+		dialog.showErrorBox(t("logs.loadFailed"), t("common.tryAgain"));
 	}
 }
 

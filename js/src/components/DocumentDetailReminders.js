@@ -3,6 +3,7 @@ import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import DocumentDetailRemindersItem from "./DocumentDetailRemindersItem";
 import { ipcRenderer } from "../electronBridge";
+import { t } from "../i18n";
 
 class DocumentDetailReminders extends React.Component {
 	// CONSTRUCTOR
@@ -46,7 +47,7 @@ class DocumentDetailReminders extends React.Component {
 		});
 
 		// display that no reminders are available
-		var content = <span className="no-reminders">no reminders set</span>;
+		var content = <span className="no-reminders">{t("reminders.none")}</span>;
 
 		// if there are reminders available, show them
 		if (reminders.length > 0) {
@@ -64,8 +65,8 @@ class DocumentDetailReminders extends React.Component {
 				<table className="table-striped">
 					<thead>
 						<tr>
-							<th>Date</th>
-							<th>Note</th>
+							<th>{t("common.date")}</th>
+							<th>{t("common.note")}</th>
 							<th />
 						</tr>
 					</thead>

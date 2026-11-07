@@ -1,6 +1,7 @@
 import alt from "../alt";
 import RemindersActions from "../actions/RemindersActions";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // REMINDERS STORE
 class RemindersStore {
@@ -16,7 +17,7 @@ class RemindersStore {
 
 	// GET REMINDERS FAIL
 	getRemindersFail() {
-		dialog.showErrorBox("Could not load reminders!", "Please try again.");
+		dialog.showErrorBox(t("reminders.loadFailed"), t("common.tryAgain"));
 	}
 
 	// ADD REMINDER SUCCESS
@@ -28,7 +29,7 @@ class RemindersStore {
 
 	// ADD REMINDER FAIL
 	addReminderFail() {
-		dialog.showErrorBox("Could not add the reminder!", "Please try again.");
+		dialog.showErrorBox(t("reminders.addFailed"), t("common.tryAgain"));
 	}
 
 	// REMOVE REMINDER SUCCESS
@@ -41,7 +42,7 @@ class RemindersStore {
 
 	// REMOVE REMINDER FAIL
 	removeReminderFail() {
-		dialog.showErrorBox("Could not remove the reminder!", "Please try again.");
+		dialog.showErrorBox(t("reminders.removeFailed"), t("common.tryAgain"));
 	}
 }
 

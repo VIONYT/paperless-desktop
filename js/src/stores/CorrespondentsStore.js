@@ -4,6 +4,7 @@ import CorrespondentsActions from "../actions/CorrespondentsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // CORRESPONDENTS STORE
 class CorrespondentsStore {
@@ -25,7 +26,7 @@ class CorrespondentsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not load correspondents!", "Please try again.");
+		dialog.showErrorBox(t("correspondents.loadFailed"), t("common.tryAgain"));
 	}
 
 	// DELETE CORRESPONDENTS SUCCESS
@@ -51,7 +52,7 @@ class CorrespondentsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not delete correspondent(s)!", "Please try again.");
+		dialog.showErrorBox(t("correspondents.deleteFailed"), t("common.tryAgain"));
 	}
 
 	// ADD CORRESPONDENTS SUCCESS
@@ -67,10 +68,7 @@ class CorrespondentsStore {
 			return;
 		}
 
-		dialog.showErrorBox(
-			"Could not add the correspondent!",
-			"Data might be missing or the correspondent may already exist."
-		);
+		dialog.showErrorBox(t("correspondents.addFailed"), t("correspondents.addFailedMessage"));
 	}
 
 	// EDIT CORRESPONDENT SUCCESS
@@ -91,10 +89,7 @@ class CorrespondentsStore {
 			return;
 		}
 
-		dialog.showErrorBox(
-			"Could not edit the correspondent!",
-			"Data might be missing or the correspondent does not exist anymore."
-		);
+		dialog.showErrorBox(t("correspondents.editFailed"), t("correspondents.editFailedMessage"));
 	}
 }
 

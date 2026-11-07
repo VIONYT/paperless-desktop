@@ -4,6 +4,7 @@ import TagsInput from "./TagsInput";
 import PaperlessComponent from "./PaperlessComponent";
 import CorrespondentSelect from "./CorrespondentSelect";
 import DocumentDetailReminders from "./DocumentDetailReminders";
+import { t } from "../i18n";
 
 // paperless-ngx 2.16+ delivers the creation date of a document as a plain date
 // (YYYY-MM-DD), older versions deliver a date time
@@ -54,19 +55,19 @@ class DocumentDetailForm extends PaperlessComponent {
 		return (
 			<form className="form-detail-info">
 				<div className="form-group">
-					<label>Title</label>
+					<label>{t("document.title")}</label>
 					<input
 						type="text"
 						className="form-control"
 						name="title"
-						placeholder="Title"
+						placeholder={t("document.title")}
 						value={this.state.doc.title}
 						onChange={this.handleDetailChange.bind(this)}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Correspondent</label>
+					<label>{t("document.correspondent")}</label>
 					<CorrespondentSelect
 						value={this.state.doc.correspondent}
 						onChange={this.handleDetailChange.bind(this)}
@@ -74,19 +75,19 @@ class DocumentDetailForm extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Content</label>
+					<label>{t("document.content")}</label>
 					<textarea
 						className="form-control"
 						rows="6"
 						name="content"
-						placeholder="Content"
+						placeholder={t("document.content")}
 						value={this.state.doc.content || ""}
 						onChange={this.handleDetailChange.bind(this)}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Tags</label>
+					<label>{t("document.tags")}</label>
 					<div className="select-wrapper">
 						<TagsInput
 							tags={this.state.doc.tags}
@@ -96,19 +97,19 @@ class DocumentDetailForm extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Date</label>
+					<label>{t("document.date")}</label>
 					<input
 						type={dateOnly ? "date" : "datetime-local"}
 						className="form-control"
 						name="created"
-						placeholder="Date"
+						placeholder={t("document.date")}
 						value={created}
 						onChange={this.handleDetailChange.bind(this)}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Reminders</label>
+					<label>{t("document.reminders")}</label>
 					<DocumentDetailReminders doc={this.state.doc} />
 				</div>
 			</form>

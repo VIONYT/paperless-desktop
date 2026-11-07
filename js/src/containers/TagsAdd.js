@@ -2,6 +2,7 @@ import React from "react";
 import PaperlessComponent from "../components/PaperlessComponent";
 import TagsActions from "../actions/TagsActions";
 import { ipcRenderer } from "../electronBridge";
+import { t } from "../i18n";
 
 class TagsAdd extends PaperlessComponent {
 	// CONSTRUCTOR
@@ -51,14 +52,14 @@ class TagsAdd extends PaperlessComponent {
 	render() {
 		return (
 			<form className="form-detail-info">
-				<h3>Add Tag</h3>
+				<h3>{t("tags.addTitle")}</h3>
 				<div className="form-group">
-					<label>Name</label>
+					<label>{t("common.name")}</label>
 					<input
 						type="text"
 						className="form-control"
 						name="name"
-						placeholder="Name"
+						placeholder={t("common.name")}
 						value={this.state.name}
 						onChange={this.handleChange.bind(this)}
 						ref={(input) => {
@@ -68,7 +69,7 @@ class TagsAdd extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Color</label>
+					<label>{t("common.color")}</label>
 					<input
 						type="color"
 						className="form-control"
@@ -79,42 +80,34 @@ class TagsAdd extends PaperlessComponent {
 				</div>
 
 				<div className="form-group">
-					<label>Match</label>
+					<label>{t("common.match")}</label>
 					<input
 						type="text"
 						className="form-control"
 						name="match"
-						placeholder="Match"
+						placeholder={t("common.match")}
 						value={this.state.match}
 						onChange={this.handleChange.bind(this)}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Matching-Algorithm</label>
+					<label>{t("matching.labelForm")}</label>
 					<select
 						className="form-control"
 						name="matching_algorithm"
 						value={this.state.matching_algorithm}
 						onChange={this.handleChange.bind(this)}
 					>
-						<option value="0">None</option>
-						<option value="1">Any</option>
-						<option value="2">All</option>
-						<option value="3">Literal</option>
-						<option value="4">Regular Expression</option>
-						<option value="5">Fuzzy Match</option>
-						<option value="6">Auto</option>
+						<option value="0">{t("matching.none")}</option>
+						<option value="1">{t("matching.any")}</option>
+						<option value="2">{t("matching.all")}</option>
+						<option value="3">{t("matching.literal")}</option>
+						<option value="4">{t("matching.regex")}</option>
+						<option value="5">{t("matching.fuzzy")}</option>
+						<option value="6">{t("matching.auto")}</option>
 					</select>
-					<small>
-						Which algorithm you want to use when matching text to the OCR'd PDF. Here,
-						"any" looks for any occurrence of any word provided in the PDF, while "all"
-						requires that every word provided appear in the PDF, albeit not in the order
-						provided. A "literal" match means that the text you enter must appear in the
-						PDF exactly as you've entered it, and "regular expression" uses a regex to
-						match the PDF. If you don't know what a regex is, you probably don't want
-						this option.
-					</small>
+					<small>{t("matching.help")}</small>
 				</div>
 
 				<div className="btn-group">
@@ -122,10 +115,10 @@ class TagsAdd extends PaperlessComponent {
 						className="btn btn-large btn-default"
 						onClick={this.closeModal.bind(this)}
 					>
-						Close
+						{t("common.close")}
 					</button>
 					<button className="btn btn-large btn-primary" onClick={this.saveTag.bind(this)}>
-						<span className="icon icon-floppy" /> Save
+						<span className="icon icon-floppy" /> {t("common.save")}
 					</button>
 				</div>
 			</form>

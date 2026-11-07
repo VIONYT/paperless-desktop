@@ -3,6 +3,7 @@
 const { app, Menu, BrowserWindow, session, ipcMain, nativeTheme } = require("electron");
 const remoteMain = require("@electron/remote/main");
 const { download } = require("electron-dl");
+const locales = require("./locales");
 const path = require("path");
 const url = require("url");
 
@@ -53,49 +54,82 @@ const store = new Store({
 
 */
 
-// create menu template
-var menu = Menu.buildFromTemplate([
-	{
-		label: app.name,
-		submenu: [
-			{
-				label: "About Paperless Desktop",
-				role: "about"
-			},
-			{
-				label: "Quit",
-				accelerator: "CmdOrCtrl+Q",
-				click: function() {
-					app.quit();
+// the language of the menu, the renderer reports the language chosen in the settings (setLanguage)
+var language = locales.resolve("system", app.getLocale());
+
+// send a message to the main window, if there is one
+function sendToMainWindow(channel, arg) {
+	if (mainWindow) mainWindow.webContents.send(channel, arg);
+}
+
+// create the menu in the current language
+function buildMenu() {
+	const t = (key) => locales.translate(language, key);
+
+	// the "tabs" of the app can be reached from the menu bar as well
+	const go = (label, route, accelerator) => ({
+		label: label,
+		accelerator: accelerator,
+		click: () => sendToMainWindow("navigate", route)
+	});
+
+	return Menu.buildFromTemplate([
+		{
+			label: app.name,
+			submenu: [
+				{
+					label: t("menu.about"),
+					role: "about"
+				},
+				{ type: "separator" },
+				go(t("nav.settings"), "/settings", "CmdOrCtrl+,"),
+				{ type: "separator" },
+				{
+					label: t("menu.quit"),
+					accelerator: "CmdOrCtrl+Q",
+					click: function() {
+						app.quit();
+					}
 				}
-			}
-		]
-	},
-	{
-		label: "File",
-		submenu: [
-			{
-				label: "Close Tab",
-				accelerator: "CmdOrCtrl+W",
-				click: function() {
-					mainWindow.webContents.send("closeCurrentTab", true);
+			]
+		},
+		{
+			label: t("menu.file"),
+			submenu: [
+				{
+					label: t("menu.closeTab"),
+					accelerator: "CmdOrCtrl+W",
+					click: function() {
+						sendToMainWindow("closeCurrentTab", true);
+					}
 				}
-			}
-		]
-	},
-	{
-		label: "Edit",
-		submenu: [
-			{ role: "undo" },
-			{ role: "redo" },
-			{ type: "separator" },
-			{ role: "cut" },
-			{ role: "copy" },
-			{ role: "paste" },
-			{ role: "selectAll" }
-		]
-	}
-]);
+			]
+		},
+		{
+			label: t("menu.edit"),
+			submenu: [
+				{ role: "undo" },
+				{ role: "redo" },
+				{ type: "separator" },
+				{ role: "cut" },
+				{ role: "copy" },
+				{ role: "paste" },
+				{ role: "selectAll" }
+			]
+		},
+		{
+			label: t("menu.go"),
+			submenu: [
+				go(t("nav.documents"), "/documents", "CmdOrCtrl+1"),
+				go(t("nav.correspondents"), "/correspondents", "CmdOrCtrl+2"),
+				go(t("nav.tags"), "/tags", "CmdOrCtrl+3"),
+				go(t("nav.reminders"), "/reminders", "CmdOrCtrl+4"),
+				{ type: "separator" },
+				go(t("nav.logs"), "/logs", "CmdOrCtrl+5")
+			]
+		}
+	]);
+}
 
 /*
  _          __  __      _
@@ -110,6 +144,12 @@ var menu = Menu.buildFromTemplate([
 ipcMain.on("login", (event, arg) => {
 	if (typeof arg === "string") arg = JSON.parse(arg);
 	auth = arg && arg.host && arg.token ? arg : null;
+});
+
+// listen to the language setting, the menu is translated
+ipcMain.on("setLanguage", (event, lang) => {
+	language = locales.resolve(lang, app.getLocale());
+	Menu.setApplicationMenu(buildMenu());
 });
 
 // listen to the appearance setting ("system", "light" or "dark")
@@ -230,7 +270,7 @@ function webPreferences() {
  * Creates a new application window
  */
 function createWindow() {
-	Menu.setApplicationMenu(menu);
+	Menu.setApplicationMenu(buildMenu());
 
 	// First we'll get our height and width. This will be the defaults if there wasn't anything saved
 	let { width, height } = store.get("windowBounds");

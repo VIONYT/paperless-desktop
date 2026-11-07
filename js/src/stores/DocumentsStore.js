@@ -3,6 +3,7 @@ import { isAuthError } from "../api";
 import DocumentsActions from "../actions/DocumentsActions";
 import $ from "jquery";
 import { dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // DOCUMENTS STORE
 class DocumentsStore {
@@ -55,7 +56,7 @@ class DocumentsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not delete document(s)!", "Please try again.");
+		dialog.showErrorBox(t("documents.deleteFailed"), t("common.tryAgain"));
 	}
 
 	// GET DOCUMENTS FAIL
@@ -67,7 +68,7 @@ class DocumentsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not load documents!", "Please try again.");
+		dialog.showErrorBox(t("documents.loadFailed"), t("common.tryAgain"));
 	}
 }
 

@@ -2,6 +2,7 @@ import React from "react";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import CorrespondentsStore from "../stores/CorrespondentsStore";
 import SidebarCorrespondentItem from "./SidebarCorrespondentItem";
+import { t } from "../i18n";
 
 class SidebarCorrespondents extends React.Component {
 	// CONSTRUCTOR
@@ -29,23 +30,17 @@ class SidebarCorrespondents extends React.Component {
 
 	// RENDER
 	render() {
-		if (
-			!this.state.correspondents ||
-			!("results" in this.state.correspondents)
-		)
-			return null;
+		if (!this.state.correspondents || !("results" in this.state.correspondents)) return null;
 
 		return (
 			<nav className="nav-group">
-				<h5 className="nav-group-title">Correspondents</h5>
-				{this.state.correspondents.results.map(c => {
+				<h5 className="nav-group-title">{t("nav.correspondents")}</h5>
+				{this.state.correspondents.results.map((c) => {
 					return (
 						<SidebarCorrespondentItem
 							correspondent={c}
 							key={"sidebar_correspondent_" + c.id}
-							setCorrespondentFilter={
-								this.props.setCorrespondentFilter
-							}
+							setCorrespondentFilter={this.props.setCorrespondentFilter}
 						/>
 					);
 				})}

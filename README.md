@@ -40,6 +40,12 @@ Every release contains one build for Apple Silicon (`Paperless-darwin-arm64`) an
 -   The log view shows the `paperless` log (`/api/logs/`), you need to be a superuser to see it.
 -   paperless-ngx has no reminders. They are now stored locally in the app (per server) and only show up on this Mac.
 
+## Languages
+
+The app is available in English and German. It follows the language of macOS, the language can be changed in the settings.
+To add a language, copy `locales/en.json` to `locales/<code>.json`, translate the values and register the file in `locales/index.js`
+(for the date formats also import the matching `moment/locale/<code>` in `js/src/i18n.js`).
+
 ## Development
 
 Needs Node.js 22.12 or newer.

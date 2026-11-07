@@ -4,6 +4,7 @@ import TagsActions from "../actions/TagsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import $ from "jquery";
 import { ipcRenderer, dialog } from "../electronBridge";
+import { t } from "../i18n";
 
 // TAGS STORE
 class TagsStore {
@@ -24,7 +25,7 @@ class TagsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not load tags!", "Please try again.");
+		dialog.showErrorBox(t("tags.loadFailed"), t("common.tryAgain"));
 	}
 
 	// DELETE TAGS SUCCESS
@@ -48,7 +49,7 @@ class TagsStore {
 			return;
 		}
 
-		dialog.showErrorBox("Could not delete tag(s)!", "Please try again.");
+		dialog.showErrorBox(t("tags.deleteFailed"), t("common.tryAgain"));
 	}
 
 	// ADD TAG SUCCESS
@@ -64,10 +65,7 @@ class TagsStore {
 			return;
 		}
 
-		dialog.showErrorBox(
-			"Could not add the tag!",
-			"Data might be missing or the tag may already exist."
-		);
+		dialog.showErrorBox(t("tags.addFailed"), t("tags.addFailedMessage"));
 	}
 
 	// EDIT TAG SUCCESS
@@ -88,10 +86,7 @@ class TagsStore {
 			return;
 		}
 
-		dialog.showErrorBox(
-			"Could not edit the tag!",
-			"Data might be missing or the tag does not exist anymore."
-		);
+		dialog.showErrorBox(t("tags.editFailed"), t("tags.editFailedMessage"));
 	}
 }
 

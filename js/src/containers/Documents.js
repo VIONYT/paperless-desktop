@@ -8,6 +8,7 @@ import $ from "jquery";
 import ToolbarActions from "../actions/ToolbarActions";
 import Waypoint from "react-waypoint";
 import { request, isAuthError } from "../api";
+import { t } from "../i18n";
 
 class Documents extends React.Component {
 	constructor(props) {
@@ -22,7 +23,7 @@ class Documents extends React.Component {
 		$(window).trigger("tabs.replace", {
 			idx: 0,
 			tab: {
-				title: "Documents",
+				title: t("nav.documents"),
 				route: "/documents"
 			}
 		});

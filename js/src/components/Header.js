@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router";
 import $ from "jquery";
+import { t } from "../i18n";
 
 class Header extends React.Component {
 	// CONSTRUCTOR
@@ -82,7 +83,7 @@ class Header extends React.Component {
 						type="search"
 						onKeyUp={this.handleSearchInputChanged.bind(this)}
 						className="form-control"
-						placeholder="Search"
+						placeholder={t("nav.search")}
 					/>
 				</div>
 			);
@@ -92,29 +93,37 @@ class Header extends React.Component {
 			<header className="toolbar toolbar-header">
 				<div className="toolbar-actions">
 					<div className="btn-group">
-						<Link className={documentsClass} title="Documents" to={"/documents"}>
+						<Link
+							className={documentsClass}
+							title={t("nav.documents")}
+							to={"/documents"}
+						>
 							<span className="icon icon-newspaper" />
 						</Link>
 						<Link
 							className={correspondentsClass}
-							title="Correspondents"
+							title={t("nav.correspondents")}
 							to={"/correspondents"}
 						>
 							<span className="icon icon-users" />
 						</Link>
-						<Link className={tagsClass} title="Tags" to={"/tags"}>
+						<Link className={tagsClass} title={t("nav.tags")} to={"/tags"}>
 							<span className="icon icon-tag" />
 						</Link>
-						<Link className={remindersClass} title="Reminders" to={"/reminders"}>
+						<Link
+							className={remindersClass}
+							title={t("nav.reminders")}
+							to={"/reminders"}
+						>
 							<span className="icon icon-bell" />
 						</Link>
 					</div>
 
 					<div className="btn-group">
-						<Link className={settingsClass} title="Settings" to={"/settings"}>
+						<Link className={settingsClass} title={t("nav.settings")} to={"/settings"}>
 							<span className="icon icon-cog" />
 						</Link>
-						<Link className={logsClass} title="Logs" to={"/logs"}>
+						<Link className={logsClass} title={t("nav.logs")} to={"/logs"}>
 							<span className="icon icon-menu" />
 						</Link>
 					</div>
