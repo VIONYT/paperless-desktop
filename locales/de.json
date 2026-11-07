@@ -127,5 +127,12 @@
 	"settings.developer": "Entwickler-Einstellungen",
 	"settings.devTools": "DevTools öffnen",
 	"settings.testNotification": "Benachrichtigung mit 2 s Verzögerung testen",
-	"settings.testNotificationBody": "Test"
+	"settings.testNotificationBody": "Test",
+
+	"upload.title": "Upload",
+	"upload.uploading": "{count} Datei(en) werden hochgeladen",
+	"upload.files": "{done} von {count}",
+	"upload.finishing": "Wird abgeschlossen...",
+	"upload.complete": "Upload abgeschlossen",
+	"upload.failed": "Upload fehlgeschlagen"
 }

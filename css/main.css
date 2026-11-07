@@ -398,3 +398,74 @@
 	font-size: 26px;
 	line-height: 56px;
 }
+
+/* upload progress widget (top right of the window content) */
+.upload-widget {
+	position: absolute;
+	top: 66px;
+	right: 16px;
+	z-index: 30;
+	width: 260px;
+	padding: 10px 12px;
+	font-size: 12px;
+	color: #333;
+	background-color: rgba(255, 255, 255, 0.96);
+	border: 1px solid #d8d6d8;
+	border-radius: 8px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	-webkit-user-select: none;
+}
+
+.upload-widget-header,
+.upload-widget-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+.upload-widget-title {
+	font-weight: 600;
+}
+
+.upload-widget-percent {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
+.upload-widget-bar {
+	height: 6px;
+	margin: 8px 0 6px;
+	overflow: hidden;
+	background-color: #e4e4e6;
+	border-radius: 3px;
+}
+
+.upload-widget-bar-fill {
+	height: 100%;
+	background-color: #34c84a;
+	border-radius: 3px;
+	transition: width 150ms linear;
+}
+
+.upload-widget-failed .upload-widget-bar-fill {
+	background-color: #fb2f29;
+}
+
+.upload-widget-footer {
+	color: #737475;
+	font-variant-numeric: tabular-nums;
+}
+
+html.dark .upload-widget {
+	color: #e4e4e6;
+	background-color: rgba(44, 44, 46, 0.97);
+	border-color: #4a4a4d;
+}
+
+html.dark .upload-widget-bar {
+	background-color: #4a4a4d;
+}
+
+html.dark .upload-widget-footer {
+	color: #9b9b9f;
+}

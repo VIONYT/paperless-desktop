@@ -5,7 +5,9 @@ import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
 import FileDrop from "react-file-drop";
 import PaperlessComponent from "../components/PaperlessComponent";
-import { request, getToken } from "../api";
+import { getToken } from "../api";
+import { uploadFile } from "../uploads";
+import UploadWidget from "../components/UploadWidget";
 import { ipcRenderer, dialog } from "../electronBridge";
 import { t } from "../i18n";
 
@@ -38,19 +40,8 @@ class App extends PaperlessComponent {
 
 		for (var ii = 0, len = files.length; ii < len; ii++) {
 			const file = files[ii];
-			const data = new FormData();
-			data.append("document", file);
-			data.append("title", file.name);
 
-			// paperless-ngx consumes uploaded documents via this endpoint
-			request({
-				method: "post",
-				url: "/api/documents/post_document/",
-				data: data,
-				headers: {
-					"Content-Type": "multipart/form-data"
-				}
-			}).catch(() => {
+			uploadFile(file).catch(() => {
 				dialog.showErrorBox(
 					t("documents.uploadFailed", { name: file.name }),
 					t("documents.uploadFailedMessage")
@@ -92,6 +83,7 @@ class App extends PaperlessComponent {
 				<FileDrop onDrop={this.handleDrop.bind(this)}>{t("documents.dropFiles")}</FileDrop>
 				<div className="window-content">{this.props.children}</div>
 				<Footer />
+				<UploadWidget />
 				{this.props.location && this.props.location.pathname === "/documents" ? (
 					<div>
 						<input

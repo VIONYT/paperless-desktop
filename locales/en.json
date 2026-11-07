@@ -127,5 +127,12 @@
 	"settings.developer": "Developer Settings",
 	"settings.devTools": "Open DevTools",
 	"settings.testNotification": "Test notification with 2s delay",
-	"settings.testNotificationBody": "test"
+	"settings.testNotificationBody": "test",
+
+	"upload.title": "Upload",
+	"upload.uploading": "Uploading {count} file(s)",
+	"upload.files": "{done} of {count}",
+	"upload.finishing": "Finishing...",
+	"upload.complete": "Upload complete",
+	"upload.failed": "Upload failed"
 }
