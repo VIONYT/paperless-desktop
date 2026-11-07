@@ -242,6 +242,8 @@ function createWindow() {
 		minHeight: 200,
 		minWidth: 400,
 		titleBarStyle: "hidden",
+		// vertically centers the window buttons in the toolbar of the title bar
+		trafficLightPosition: { x: 16, y: 20 },
 		webPreferences: webPreferences(),
 		center: true
 	});

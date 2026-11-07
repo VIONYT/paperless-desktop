@@ -260,8 +260,55 @@
 	color: #fb2f29;
 }
 
+/* The toolbar sits in the title bar of the window, next to the traffic lights */
 .toolbar-header {
 	-webkit-app-region: drag;
+	display: flex;
+	align-items: center;
+	height: 52px;
+	/* space for the window buttons (close, minimize, zoom) */
+	padding: 0 14px 0 100px;
+}
+
+.toolbar-header .toolbar-actions {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	margin: 0;
+	padding: 0;
+}
+
+.toolbar-header .toolbar-actions:before,
+.toolbar-header .toolbar-actions:after {
+	display: none;
+}
+
+.toolbar-header .toolbar-actions > .btn-group {
+	margin: 0 14px 0 0;
+}
+
+.toolbar-header .btn {
+	padding: 5px 13px;
+}
+
+/* bigger icons, they are easier to hit and look better on retina displays */
+.toolbar-header .btn .icon {
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	font-size: 22px;
+}
+
+.toolbar-header .search-bar {
+	float: none;
+	margin-left: auto;
+}
+
+.toolbar-header .search-bar > input[type="search"] {
+	height: 30px;
+	margin: 0;
+	padding: 4px 10px;
+	font-size: 14px;
 }
 
 .pane-two-third {
