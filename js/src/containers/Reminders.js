@@ -1,14 +1,14 @@
 import React from "react";
+import { Link } from "react-router";
 import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
-import $ from "jquery";
-import PaperlessComponent from "../components/PaperlessComponent";
 import ToolbarActions from "../actions/ToolbarActions";
-import BigCalendar from "react-big-calendar";
-import moment from "moment";
+import bus from "../bus";
+import { formatDate } from "../dates";
 import { t } from "../i18n";
 
-BigCalendar.setLocalizer(BigCalendar.momentLocalizer(moment));
+// the reminders, the next one first
+const byDate = (reminders) => reminders.slice().sort((a, b) => new Date(a.date) - new Date(b.date));
 
 class Reminders extends React.Component {
 	// CONSTRUCTOR
@@ -20,14 +20,11 @@ class Reminders extends React.Component {
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).trigger("tabs.replace", {
+		bus.trigger("tabs.replace", {
 			idx: 0,
-			tab: {
-				title: t("nav.reminders"),
-				route: "/reminders"
-			}
+			tab: { title: t("nav.reminders"), route: "/reminders" }
 		});
-		$(window).trigger("header.activeItem", { item: "reminders" });
+		bus.trigger("header.activeItem", { item: "reminders" });
 
 		RemindersStore.listen(this.onChange);
 		RemindersActions.getReminders();
@@ -35,9 +32,7 @@ class Reminders extends React.Component {
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		// clear toolbar to add new items
 		ToolbarActions.clearItems();
-
 		RemindersStore.unlisten(this.onChange);
 	}
 
@@ -51,18 +46,30 @@ class Reminders extends React.Component {
 		if (!this.state.reminders) return null;
 
 		return (
-			<BigCalendar
-				events={this.state.reminders.map((r) => {
-					return {
-						start: moment(r.date).toDate(),
-						end: moment(r.date)
-							.add(15, "minutes")
-							.toDate(),
-						title: r.note,
-						desc: r.note
-					};
-				})}
-			/>
+			<div className="pane">
+				<table className="table-striped">
+					<thead>
+						<tr>
+							<th>{t("common.date")}</th>
+							<th>{t("common.note")}</th>
+							<th>{t("nav.documents")}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{byDate(this.state.reminders).map((reminder) => (
+							<tr key={"reminder_" + reminder.id}>
+								<td>{formatDate(reminder.date, "medium")}</td>
+								<td>{reminder.note}</td>
+								<td>
+									<Link to={"/document/" + reminder.document}>
+										#{reminder.document}
+									</Link>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
 		);
 	}
 }

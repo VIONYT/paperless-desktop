@@ -1,59 +1,65 @@
 import { request } from "./api";
 
-// Keeps track of the running uploads, so the progress can be shown while the user is
-// using other parts of the app.
+// Keeps track of the running uploads, so the progress can be shown while the user is using other
+// parts of the app.
 //
 // An upload has two phases: first the file is transferred to paperless-ngx ("uploading"), then
-// paperless-ngx consumes it (OCR, "processing"). The server answers the upload with the id of
-// a task that is polled at /api/tasks/?task_id=<id> until it succeeded or failed.
+// paperless-ngx consumes it (OCR, "processing"). The server answers the upload with the id of a task
+// that is polled at /api/tasks/?task_id=<id> until it succeeded or failed.
 
 const SPEED_WINDOW = 2000;
-const COMPLETE_VISIBLE = 2500;
+const HIDE_DELAY = 2500;
 const POLL_INTERVAL = 2000;
 const POLL_TIMEOUT = 15 * 60 * 1000;
 const POLL_MAX_ERRORS = 5;
 
+const UPLOADING = "uploading";
+const PROCESSING = "processing";
+const DONE = "done";
+const FAILED = "failed";
+
 let uploads = [];
 let samples = [];
 let listeners = [];
-let hideTimeout = null;
 let visible = false;
+let hideTimeout = null;
 let pollTimeout = null;
 
-// SNAPSHOT: the current state of all uploads of this batch
-const snapshot = () => {
-	const loaded = uploads.reduce((sum, u) => sum + u.loaded, 0);
-	const total = uploads.reduce((sum, u) => sum + u.total, 0);
+const isRunning = (upload) => upload.phase === UPLOADING || upload.phase === PROCESSING;
+const countIn = (phase) => uploads.filter((upload) => upload.phase === phase).length;
+const sum = (key) => uploads.reduce((total, upload) => total + upload[key], 0);
 
-	// the speed is measured over the last seconds
+// SPEED: bytes per second, measured over the last seconds
+const currentSpeed = (loaded) => {
 	const now = Date.now();
-	samples = samples.filter((s) => now - s.time <= SPEED_WINDOW);
-	const first = samples[0];
-	const speed =
-		first && now > first.time && loaded >= first.loaded
-			? ((loaded - first.loaded) * 1000) / (now - first.time)
-			: 0;
+	samples = samples.filter((sample) => now - sample.time <= SPEED_WINDOW);
 
-	const processing = uploads.filter((u) => u.phase === "processing");
+	const first = samples[0];
+	if (!first || now <= first.time || loaded < first.loaded) return 0;
+
+	return ((loaded - first.loaded) * 1000) / (now - first.time);
+};
+
+// SNAPSHOT: the state of all uploads of this batch, as the widget shows it
+const snapshot = () => {
+	const processing = uploads.filter((upload) => upload.phase === PROCESSING);
 
 	return {
 		visible: visible,
-		// phase "uploading" (data is sent) or "processing" (paperless-ngx is recognizing the text)
-		uploading: uploads.some((u) => u.phase === "uploading"),
+		uploading: countIn(UPLOADING) > 0,
 		processing: processing.length > 0,
-		active: uploads.some((u) => u.phase === "uploading" || u.phase === "processing"),
+		active: uploads.some(isRunning),
 		// the state of the first task that is still running: PENDING (queue) or STARTED
 		taskStatus: processing.length > 0 ? processing[0].taskStatus : null,
 		files: uploads.length,
-		finished: uploads.filter((u) => u.phase === "done").length,
-		failed: uploads.filter((u) => u.phase === "failed").length,
-		loaded: loaded,
-		total: total,
-		speed: speed
+		finished: countIn(DONE),
+		failed: countIn(FAILED),
+		loaded: sum("loaded"),
+		total: sum("total"),
+		speed: currentSpeed(sum("loaded"))
 	};
 };
 
-// NOTIFY: tells the listeners about the new state
 const notify = () => {
 	const state = snapshot();
 	listeners.forEach((listener) => listener(state));
@@ -69,9 +75,9 @@ export const subscribe = (listener) => {
 	};
 };
 
-// CHECK FINISHED: hides the widget a moment after the last upload was finished
-const checkFinished = () => {
-	if (uploads.some((u) => u.phase === "uploading" || u.phase === "processing")) return;
+// HIDE LATER: hides the widget a moment after the last upload is finished, errors stay longer
+const hideLater = () => {
+	if (uploads.some(isRunning)) return;
 
 	window.clearTimeout(hideTimeout);
 	hideTimeout = window.setTimeout(
@@ -81,60 +87,54 @@ const checkFinished = () => {
 			samples = [];
 			notify();
 		},
-		// errors stay a bit longer
-		uploads.some((u) => u.phase === "failed") ? COMPLETE_VISIBLE * 2 : COMPLETE_VISIBLE
+		countIn(FAILED) > 0 ? HIDE_DELAY * 2 : HIDE_DELAY
 	);
 };
 
-// POLL TASKS: asks paperless-ngx for the state of the tasks of all uploads that are processed
-const pollTasks = () => {
+// the progress of the uploads is remembered to calculate the speed
+const recordSample = () => samples.push({ time: Date.now(), loaded: sum("loaded") });
+
+// UPDATE: the task of an upload changed
+const applyTask = (upload, task) => {
+	upload.taskStatus = task.status;
+	upload.errors = 0;
+
+	if (task.status === "SUCCESS") upload.phase = DONE;
+	if (task.status === "FAILURE" || task.status === "REVOKED") {
+		upload.phase = FAILED;
+		upload.message = task.result;
+	}
+
+	if (!isRunning(upload) && upload.onProcessed) upload.onProcessed(task);
+};
+
+// the server does not answer: stop waiting after a few tries, the document might be fine and show
+// up in the list anyway
+const applyPollError = (upload) => {
+	upload.errors = (upload.errors || 0) + 1;
+	if (upload.errors >= POLL_MAX_ERRORS) upload.phase = DONE;
+};
+
+// POLL TASK: asks paperless-ngx for the state of the task of an upload
+const pollTask = (upload) =>
+	request({ method: "get", url: "/api/tasks/", params: { task_id: upload.taskId } })
+		.then((result) => (Array.isArray(result.data) ? result.data[0] : result.data))
+		.then((task) => task && applyTask(upload, task))
+		.catch(() => applyPollError(upload))
+		.then(() => {
+			const waitedTooLong = Date.now() - upload.processingSince > POLL_TIMEOUT;
+			if (upload.phase === PROCESSING && waitedTooLong) upload.phase = DONE;
+		});
+
+// POLL ALL: asks for all tasks, again and again until all of them are finished
+const pollAll = () => {
 	pollTimeout = null;
 
-	const processing = uploads.filter((u) => u.phase === "processing");
-	if (processing.length === 0) return;
-
-	Promise.all(
-		processing.map((upload) =>
-			request({ method: "get", url: "/api/tasks/", params: { task_id: upload.taskId } })
-				.then((result) => {
-					const task = Array.isArray(result.data) ? result.data[0] : result.data;
-					upload.errors = 0;
-
-					if (!task) return;
-
-					upload.taskStatus = task.status;
-
-					if (task.status === "SUCCESS") upload.phase = "done";
-					if (task.status === "FAILURE" || task.status === "REVOKED") {
-						upload.phase = "failed";
-						upload.message = task.result;
-					}
-
-					if (upload.phase !== "processing" && upload.onProcessed)
-						upload.onProcessed(task);
-				})
-				.catch(() => {
-					// no answer of the server: stop waiting after a few tries, the document might
-					// be fine and show up in the list anyway
-					upload.errors = (upload.errors || 0) + 1;
-					if (upload.errors >= POLL_MAX_ERRORS) upload.phase = "done";
-				})
-				.then(() => {
-					if (
-						upload.phase === "processing" &&
-						Date.now() - upload.processingSince > POLL_TIMEOUT
-					) {
-						upload.phase = "done";
-					}
-				})
-		)
-	).then(() => {
+	Promise.all(uploads.filter((upload) => upload.phase === PROCESSING).map(pollTask)).then(() => {
 		notify();
-		checkFinished();
+		hideLater();
 
-		if (uploads.some((u) => u.phase === "processing")) {
-			pollTimeout = window.setTimeout(pollTasks, POLL_INTERVAL);
-		}
+		if (countIn(PROCESSING) > 0) pollTimeout = window.setTimeout(pollAll, POLL_INTERVAL);
 	});
 };
 
@@ -142,24 +142,23 @@ const pollTasks = () => {
 const startProcessing = (upload, taskId) => {
 	// older servers do not tell us a task, nothing to wait for
 	if (typeof taskId !== "string" || taskId.length === 0) {
-		upload.phase = "done";
+		upload.phase = DONE;
 		return;
 	}
 
-	upload.phase = "processing";
-	upload.taskId = taskId;
-	upload.taskStatus = "PENDING";
-	upload.processingSince = Date.now();
+	Object.assign(upload, {
+		phase: PROCESSING,
+		taskId: taskId,
+		taskStatus: "PENDING",
+		processingSince: Date.now()
+	});
 
-	if (pollTimeout === null) pollTimeout = window.setTimeout(pollTasks, POLL_INTERVAL);
+	if (pollTimeout === null) pollTimeout = window.setTimeout(pollAll, POLL_INTERVAL);
 };
 
-// UPLOAD FILE: sends a document to paperless-ngx, returns a promise that is resolved as soon
-// as the file was transferred. The optional callback onProcessed(task) is called once paperless-ngx
-// finished (or failed) to process the document.
-export const uploadFile = (file, onProcessed) => {
-	// a new batch starts when nothing is running anymore
-	if (!uploads.some((u) => u.phase === "uploading" || u.phase === "processing")) {
+// ADD UPLOAD: a new batch starts when nothing is running anymore
+const addUpload = (file, onProcessed) => {
+	if (!uploads.some(isRunning)) {
 		uploads = [];
 		samples = [];
 	}
@@ -167,21 +166,20 @@ export const uploadFile = (file, onProcessed) => {
 	window.clearTimeout(hideTimeout);
 	visible = true;
 
-	const upload = {
-		loaded: 0,
-		total: file.size || 1,
-		phase: "uploading",
-		onProcessed: onProcessed
-	};
+	const upload = { loaded: 0, total: file.size || 1, phase: UPLOADING, onProcessed: onProcessed };
 	uploads.push(upload);
-	samples.push({ time: Date.now(), loaded: uploads.reduce((sum, u) => sum + u.loaded, 0) });
+	recordSample();
 	notify();
 
+	return upload;
+};
+
+// SEND FILE: the request to paperless-ngx, it consumes uploaded documents at this endpoint
+const sendFile = (file, upload) => {
 	const data = new FormData();
 	data.append("document", file);
 	data.append("title", file.name);
 
-	// paperless-ngx consumes uploaded documents via this endpoint
 	return request({
 		method: "post",
 		url: "/api/documents/post_document/",
@@ -191,26 +189,31 @@ export const uploadFile = (file, onProcessed) => {
 			upload.loaded = Math.min(event.loaded, upload.total);
 			if (event.total) upload.total = event.total;
 
-			samples.push({
-				time: Date.now(),
-				loaded: uploads.reduce((sum, u) => sum + u.loaded, 0)
-			});
+			recordSample();
 			notify();
 		}
-	})
+	});
+};
+
+// UPLOAD FILE: sends a document to paperless-ngx, returns a promise that is resolved as soon as the
+// file was transferred. The optional callback onProcessed(task) is called once paperless-ngx
+// finished (or failed) to process the document.
+export const uploadFile = (file, onProcessed) => {
+	const upload = addUpload(file, onProcessed);
+
+	return sendFile(file, upload)
 		.then((result) => {
 			upload.loaded = upload.total;
 			startProcessing(upload, result.data);
-			notify();
-			checkFinished();
 
 			return result;
 		})
 		.catch((err) => {
-			upload.phase = "failed";
-			notify();
-			checkFinished();
-
+			upload.phase = FAILED;
 			throw err;
+		})
+		.finally(() => {
+			notify();
+			hideLater();
 		});
 };

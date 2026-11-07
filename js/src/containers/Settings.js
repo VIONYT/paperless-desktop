@@ -1,210 +1,135 @@
 import React from "react";
-import $ from "jquery";
-import { getToken, normalizeHost, fetchToken } from "../api";
-import { ipcRenderer, dialog } from "../electronBridge";
+import SignInForm from "../components/SignInForm";
+import bus from "../bus";
+import native from "../native";
+import { signIn } from "../auth";
 import { applyTheme, getTheme } from "../theme";
 import { t, getLanguageSetting, availableLanguages } from "../i18n";
+
+const SELECT_STYLE = { width: "200px", display: "block" };
+
+// A drop down for a setting: [{ value, label }]
+const SelectSetting = ({ label, name, value, options, onChange }) => (
+	<form className="settings-form">
+		<div className="form-group">
+			<label>{label}</label>
+			<select
+				name={name}
+				value={value}
+				onChange={onChange}
+				className="form-control"
+				style={SELECT_STYLE}
+			>
+				{options.map((option) => (
+					<option key={option.value} value={option.value}>
+						{option.label}
+					</option>
+				))}
+			</select>
+		</div>
+	</form>
+);
 
 class Settings extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
 
-		this.old = {
-			username: localStorage.getItem("settings.auth.username"),
-			token: getToken(),
-			host: localStorage.getItem("settings.host"),
-			documentsUpdateInterval: localStorage.getItem("settings.documentsUpdateInterval")
-		};
-
 		this.state = {
 			username: localStorage.getItem("settings.auth.username") || "",
 			password: "",
 			host: localStorage.getItem("settings.host") || "",
-			documentsUpdateInterval: localStorage.getItem("settings.documentsUpdateInterval")
+			documentsUpdateInterval: localStorage.getItem("settings.documentsUpdateInterval") || 3
 		};
 	}
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).trigger("header.activeItem", { item: "settings" });
+		bus.trigger("header.activeItem", { item: "settings" });
 	}
 
-	// HANDLE CHANGE
+	// HANDLE CHANGE: the fields of the sign in are saved with the button
 	handleChange(e) {
-		var s = this.state;
-		s[e.target.name] = e.target.value;
+		this.setState({ [e.target.name]: e.target.value });
+	}
 
-		this.setState(s);
+	// SAVE SETTING: the setting is stored right away
+	saveSetting(e) {
+		const { name, value } = e.target;
+		localStorage.setItem("settings." + name, value);
 
-		// store new settings
-		var blacklist = ["username", "password", "host"];
-		if (blacklist.indexOf(e.target.name) < 0) {
-			localStorage.setItem("settings." + e.target.name, e.target.value);
-		}
-
-		// switch the appearance right away
-		if (e.target.name === "theme") {
-			applyTheme(e.target.value);
-		}
+		if (name === "theme") applyTheme(value);
 
 		// the texts are rendered once, so the language is applied by reloading the window
-		if (e.target.name === "language") {
-			window.location.reload();
-		}
-	}
-
-	// OPEN DEV TOOLS
-	openDevTools() {
-		ipcRenderer.send("openDevTools");
+		if (name === "language") window.location.reload();
+		else this.setState({ [name]: value });
 	}
 
 	// SAVE SIGN IN
 	saveSignIn(e) {
 		e.preventDefault();
+		const { host, username, password } = this.state;
 
-		var host = normalizeHost(this.state.host);
-
-		// check if the user information works by requesting a new API token
-		fetchToken(host, this.state.username, this.state.password)
-			// the request worked out, we can save the settings
-			.then((token) => {
-				localStorage.setItem("settings.auth.username", this.state.username);
-				localStorage.setItem("settings.auth.token", token);
-				localStorage.setItem("settings.host", host);
-
-				ipcRenderer.send("login", {
-					host: host,
-					token: token
-				});
-
-				this.old = {
-					username: this.state.username,
-					token: token,
-					host: host
-				};
-
-				// the password is not stored, only the token
-				this.setState({ host: host, password: "" });
-			})
-			// the request did not work out, show an error
-			.catch(() => {
-				this.setState({
-					username: this.old.username || "",
-					password: "",
-					host: this.old.host || ""
-				});
-
-				dialog.showErrorBox(t("login.failedTitle"), t("login.failedMessage"));
-			});
+		signIn(host, username, password)
+			.then(
+				(signedInHost) =>
+					signedInHost && this.setState({ host: signedInHost, password: "" })
+			)
+			.catch(() => native.showError(t("login.failedTitle"), t("login.failedMessage")));
 	}
 
 	// TEST NOTIFICATION
 	testNotification() {
 		window.setTimeout(() => {
-			// create notification
-			var notif = new window.Notification(t("settings.testNotification"), {
+			const notification = new window.Notification(t("settings.testNotification"), {
 				body: t("settings.testNotificationBody")
 			});
 
-			// If the user clicks in the Notifications Center, show the app
-			notif.onclick = function() {
-				ipcRenderer.send("focusWindow");
-				ipcRenderer.send("openDocument", {
-					id: 1
-				});
-			};
+			notification.onclick = () => native.send("focusWindow");
 		}, 2000);
 	}
 
 	// RENDER
 	render() {
+		const themes = ["system", "light", "dark"].map((theme) => ({
+			value: theme,
+			label: t("settings.theme" + theme[0].toUpperCase() + theme.slice(1))
+		}));
+		const languages = [{ value: "system", label: t("settings.languageSystem") }].concat(
+			availableLanguages().map((l) => ({ value: l.code, label: l.name }))
+		);
+
 		return (
 			<div className="pane-group">
 				<div className="pane settings-pane">
 					<h3>{t("settings.signIn")}</h3>
 					<hr />
-
-					<form className="settings-form">
-						<div className="form-group">
-							<label>{t("login.url")}</label>
-							<input
-								type="text"
-								name="host"
-								value={this.state.host}
-								onChange={this.handleChange.bind(this)}
-								className="form-control"
-								placeholder={t("login.urlPlaceholder")}
-							/>
-						</div>
-						<div className="form-group">
-							<label>{t("login.username")}</label>
-							<input
-								type="username"
-								value={this.state.username}
-								onChange={this.handleChange.bind(this)}
-								name="username"
-								className="form-control"
-								placeholder={t("login.username")}
-							/>
-						</div>
-						<div className="form-group">
-							<label>{t("login.password")}</label>
-							<input
-								type="password"
-								value={this.state.password}
-								onChange={this.handleChange.bind(this)}
-								name="password"
-								className="form-control"
-								placeholder={t("settings.passwordPlaceholder")}
-							/>
-						</div>
-						<button
-							className="btn btn-large btn-primary"
-							onClick={this.saveSignIn.bind(this)}
-						>
-							{t("settings.update")}
-						</button>
-					</form>
+					<SignInForm
+						className="settings-form"
+						values={this.state}
+						onChange={this.handleChange.bind(this)}
+						onSubmit={this.saveSignIn.bind(this)}
+						submitLabel={t("settings.update")}
+						passwordPlaceholder={t("settings.passwordPlaceholder")}
+						buttonClass="btn btn-large btn-primary"
+					/>
 
 					<h3>{t("settings.appearance")}</h3>
 					<hr />
-					<form className="settings-form">
-						<div className="form-group">
-							<label>{t("settings.theme")}</label>
-							<select
-								name="theme"
-								value={getTheme()}
-								onChange={this.handleChange.bind(this)}
-								className="form-control"
-								style={{ width: "200px", display: "block" }}
-							>
-								<option value="system">{t("settings.themeSystem")}</option>
-								<option value="light">{t("settings.themeLight")}</option>
-								<option value="dark">{t("settings.themeDark")}</option>
-							</select>
-						</div>
-					</form>
-
-					<form className="settings-form">
-						<div className="form-group">
-							<label>{t("settings.language")}</label>
-							<select
-								name="language"
-								value={getLanguageSetting()}
-								onChange={this.handleChange.bind(this)}
-								className="form-control"
-								style={{ width: "200px", display: "block" }}
-							>
-								<option value="system">{t("settings.languageSystem")}</option>
-								{availableLanguages().map((l) => (
-									<option key={l.code} value={l.code}>
-										{l.name}
-									</option>
-								))}
-							</select>
-						</div>
-					</form>
+					<SelectSetting
+						label={t("settings.theme")}
+						name="theme"
+						value={getTheme()}
+						options={themes}
+						onChange={this.saveSetting.bind(this)}
+					/>
+					<SelectSetting
+						label={t("settings.language")}
+						name="language"
+						value={getLanguageSetting()}
+						options={languages}
+						onChange={this.saveSetting.bind(this)}
+					/>
 
 					<h3>{t("settings.documents")}</h3>
 					<hr />
@@ -217,8 +142,8 @@ class Settings extends React.Component {
 								min="1"
 								max="300"
 								step="1"
-								value={this.state.documentsUpdateInterval || 3}
-								onChange={this.handleChange.bind(this)}
+								value={this.state.documentsUpdateInterval}
+								onChange={this.saveSetting.bind(this)}
 								className="form-control"
 								style={{ width: "75px", display: "block" }}
 							/>
@@ -227,15 +152,13 @@ class Settings extends React.Component {
 
 					<h3>{t("settings.developer")}</h3>
 					<hr />
-
 					<div className="btn-group">
 						<button
 							className="btn btn-large btn-default"
-							onClick={this.openDevTools.bind(this)}
+							onClick={() => native.send("openDevTools")}
 						>
 							<span className="icon icon-tools" /> {t("settings.devTools")}
 						</button>
-
 						<button
 							className="btn btn-large btn-default"
 							onClick={this.testNotification.bind(this)}

@@ -1,7 +1,7 @@
 import React from "react";
 import LogsActions from "../actions/LogsActions";
 import LogsStore from "../stores/LogsStore";
-import $ from "jquery";
+import bus from "../bus";
 import { t } from "../i18n";
 
 class Logs extends React.Component {
@@ -14,14 +14,8 @@ class Logs extends React.Component {
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).trigger("tabs.replace", {
-			idx: 0,
-			tab: {
-				title: t("nav.logs"),
-				route: "/logs"
-			}
-		});
-		$(window).trigger("header.activeItem", { item: "logs" });
+		bus.trigger("tabs.replace", { idx: 0, tab: { title: t("nav.logs"), route: "/logs" } });
+		bus.trigger("header.activeItem", { item: "logs" });
 
 		LogsStore.listen(this.onChange);
 		LogsActions.getLogs();

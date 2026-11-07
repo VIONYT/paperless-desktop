@@ -1,134 +1,87 @@
 import React from "react";
 import { Link } from "react-router";
-import $ from "jquery";
+import bus from "../bus";
 import { t } from "../i18n";
+
+// the buttons of the toolbar, in groups: [id, route, icon]
+const NAVIGATION = [
+	[
+		["documents", "/documents", "newspaper"],
+		["correspondents", "/correspondents", "users"],
+		["tags", "/tags", "tag"],
+		["reminders", "/reminders", "bell"]
+	],
+	[
+		["settings", "/settings", "cog"],
+		["logs", "/logs", "menu"]
+	]
+];
+
+const currentRoute = () => location.hash.replace("#", "").split("?")[0];
 
 class Header extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = {
-			active: "documents",
-			route: "/documents"
-		};
+		this.state = { active: "documents", route: "/documents" };
+		this.onHashChange = () => this.setState({ route: currentRoute() });
 	}
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).on("header.activeItem", this.handleActiveHeaderChanged.bind(this));
-		$(window).on("hashchange", this.routeChanged.bind(this));
+		this.unsubscribe = bus.on("header.activeItem", (data) =>
+			this.setState({ active: data.item })
+		);
+		window.addEventListener("hashchange", this.onHashChange);
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		$(window).off("header.activeItem");
-		$(window).off("hashchange");
+		this.unsubscribe();
+		window.removeEventListener("hashchange", this.onHashChange);
 	}
 
-	// ROUTE CHANGED
-	routeChanged() {
-		var route = location.hash.replace("#", "").split("?")[0];
-		this.setState({
-			route: route
-		});
-	}
-
-	// HANDLE ACTIVE HEADER CHANGED
-	handleActiveHeaderChanged(e, data) {
-		this.setState({
-			active: data.item
-		});
-	}
-
-	// HANDLE SEARCH INPUT CHANGED
+	// HANDLE SEARCH INPUT CHANGED: an empty search shows all documents, Enter starts the search
 	handleSearchInputChanged(event) {
-		var v = event.target.value;
+		const query = event.target.value;
 
-		if (v.length === 0) {
-			$(window).trigger("loadAllDocuments");
-		} else {
-			if (v.length > 2 && event.keyCode === 13) {
-				$(window).trigger("searchDocuments", {
-					query: v
-				});
-			}
-		}
+		if (query.length === 0) bus.trigger("loadAllDocuments");
+		else if (query.length > 2 && event.keyCode === 13)
+			bus.trigger("searchDocuments", { query: query });
+	}
+
+	// RENDER BUTTON
+	renderButton([id, route, icon]) {
+		const className = "btn btn-default" + (this.state.active === id ? " active" : "");
+
+		return (
+			<Link key={id} className={className} title={t("nav." + id)} to={route}>
+				<span className={"icon icon-" + icon} />
+			</Link>
+		);
 	}
 
 	// RENDER
 	render() {
-		var documentsClass = "btn btn-default";
-		if (this.state.active === "documents") documentsClass += " active";
-
-		var logsClass = "btn btn-default";
-		if (this.state.active === "logs") logsClass += " active";
-
-		var tagsClass = "btn btn-default";
-		if (this.state.active === "tags") tagsClass += " active";
-
-		var correspondentsClass = "btn btn-default";
-		if (this.state.active === "correspondents") correspondentsClass += " active";
-
-		var settingsClass = "btn btn-default";
-		if (this.state.active === "settings") settingsClass += " active";
-
-		var remindersClass = "btn btn-default";
-		if (this.state.active === "reminders") remindersClass += " active";
-
-		var searchBar = null;
-		if (this.state.route === "/documents") {
-			searchBar = (
-				<div className="search-bar pull-right">
-					<input
-						type="search"
-						onKeyUp={this.handleSearchInputChanged.bind(this)}
-						className="form-control"
-						placeholder={t("nav.search")}
-					/>
-				</div>
-			);
-		}
-
 		return (
 			<header className="toolbar toolbar-header">
 				<div className="toolbar-actions">
-					<div className="btn-group">
-						<Link
-							className={documentsClass}
-							title={t("nav.documents")}
-							to={"/documents"}
-						>
-							<span className="icon icon-newspaper" />
-						</Link>
-						<Link
-							className={correspondentsClass}
-							title={t("nav.correspondents")}
-							to={"/correspondents"}
-						>
-							<span className="icon icon-users" />
-						</Link>
-						<Link className={tagsClass} title={t("nav.tags")} to={"/tags"}>
-							<span className="icon icon-tag" />
-						</Link>
-						<Link
-							className={remindersClass}
-							title={t("nav.reminders")}
-							to={"/reminders"}
-						>
-							<span className="icon icon-bell" />
-						</Link>
-					</div>
+					{NAVIGATION.map((group, index) => (
+						<div className="btn-group" key={index}>
+							{group.map((button) => this.renderButton(button))}
+						</div>
+					))}
 
-					<div className="btn-group">
-						<Link className={settingsClass} title={t("nav.settings")} to={"/settings"}>
-							<span className="icon icon-cog" />
-						</Link>
-						<Link className={logsClass} title={t("nav.logs")} to={"/logs"}>
-							<span className="icon icon-menu" />
-						</Link>
-					</div>
-
-					{searchBar}
+					{this.state.route === "/documents" ? (
+						<div className="search-bar pull-right">
+							<input
+								type="search"
+								onKeyUp={this.handleSearchInputChanged.bind(this)}
+								className="form-control"
+								placeholder={t("nav.search")}
+							/>
+						</div>
+					) : null}
 				</div>
 			</header>
 		);

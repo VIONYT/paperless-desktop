@@ -1,9 +1,6 @@
 import alt from "../alt";
-import { isAuthError } from "../api";
 import DocumentsActions from "../actions/DocumentsActions";
-import $ from "jquery";
-import { dialog } from "../electronBridge";
-import { t } from "../i18n";
+import { handleError } from "../errors";
 
 // DOCUMENTS STORE
 class DocumentsStore {
@@ -30,12 +27,12 @@ class DocumentsStore {
 
 	// GET DOCUMENTS SUCCESS
 	getDocumentsSuccess(result) {
-		// check if a reset is necessary
+		// another filter than before starts with an empty list
 		if (this.correspondent !== result.correspondent || this.tag !== result.tag) {
 			this.resetDocuments();
 		}
 
-		Array.prototype.push.apply(this.documents, result.data.results);
+		this.documents = this.documents.concat(result.data.results);
 		this.page = this.page + 1;
 		this.correspondent = result.correspondent;
 		this.tag = result.tag;
@@ -43,32 +40,21 @@ class DocumentsStore {
 		this.next = result.data.next;
 	}
 
+	// GET DOCUMENTS FAIL
+	getDocumentsFail(err) {
+		this.isLoading = false;
+		handleError(err, "documents.loadFailed");
+	}
+
 	// DELETE DOCUMENTS SUCCESS
 	deleteDocumentsSuccess(ids) {
 		const removed = ids.map(String);
-		this.documents = this.documents.filter((d) => removed.indexOf(String(d.id)) < 0);
+		this.documents = this.documents.filter((d) => !removed.includes(String(d.id)));
 	}
 
 	// DELETE DOCUMENTS FAIL
 	deleteDocumentsFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("documents.deleteFailed"), t("common.tryAgain"));
-	}
-
-	// GET DOCUMENTS FAIL
-	getDocumentsFail(err) {
-		this.isLoading = false;
-
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("documents.loadFailed"), t("common.tryAgain"));
+		handleError(err, "documents.deleteFailed");
 	}
 }
 

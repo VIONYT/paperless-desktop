@@ -38,7 +38,7 @@ Every release contains one build for Apple Silicon (`Paperless-darwin-arm64`) an
 -   Uploads (drag & drop) go to `/api/documents/post_document/`.
 -   Search uses the full text search (`?query=`), the sidebar filters use `correspondent__id` / `tags__id__all`.
 -   The log view shows the `paperless` log (`/api/logs/`), you need to be a superuser to see it.
--   paperless-ngx has no reminders. They are now stored locally in the app (per server) and only show up on this Mac.
+-   paperless-ngx has no reminders. They are now stored locally in the app (per server) and only show up on this Mac, as a list.
 
 ## Languages
 
@@ -54,8 +54,30 @@ _(Disclaimer: I only ever test this on macOS, any other operation system might b
 
 ```bash
 $ npm install
-$ npm start
+$ npm start          # builds with source maps and starts the app
+$ npm test           # unit tests and lint
 ```
+
+### Structure
+
+| Path                     | Content                                                                    |
+| ------------------------ | -------------------------------------------------------------------------- |
+| `main.js`, `main/`       | main process: windows, menu, IPC messages, network (token, CORS)           |
+| `preload.js`             | the only door between the app and the system (`window.native`)             |
+| `js/src/`                | the app (React): `containers/` pages, `components/`, `stores/`, `actions/` |
+| `locales/`               | translations                                                               |
+| `build.js`, `package.js` | bundling (esbuild) and packaging (electron-packager)                       |
+
+## Security
+
+-   The app runs sandboxed with context isolation: no Node.js in the window, only the messages listed in `preload.js`.
+    The main process checks everything the window sends (`main/validate.js`).
+-   The web security is on. The answers of the paperless server are allowed for the app in `main/session.js`.
+-   A content security policy only allows the own scripts, the server is only reached via XHR and images.
+-   The API token is only attached to requests to the configured server. The password is never stored.
+-   Downloads are only accepted from the configured server, windows can not navigate away or open other windows.
+-   Unused features of Electron (run as Node.js, `NODE_OPTIONS`, inspector flags) are switched off in the packaged app.
+-   An unencrypted connection (`http://` to another computer) has to be confirmed at the login.
 
 ## Deployment
 
@@ -65,7 +87,10 @@ Whenever a new macOS executable should be packaged, just call:
 $ npm run package              # Apple Silicon (arm64) and Intel (x64)
 $ npm run package:mac:arm64    # only Apple Silicon
 $ npm run package:mac:universal # one universal app
+$ npm run package:debug        # Apple Silicon, opens the DevTools
 ```
+
+If `APPLE_IDENTITY`, `APPLE_ID`, `APPLE_APP_PASSWORD` and `APPLE_TEAM_ID` are set (on a Mac), the app is signed and notarized.
 
 ## Credits
 

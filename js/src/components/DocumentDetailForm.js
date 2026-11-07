@@ -1,56 +1,32 @@
 import React from "react";
-import moment from "moment";
 import TagsInput from "./TagsInput";
-import PaperlessComponent from "./PaperlessComponent";
 import CorrespondentSelect from "./CorrespondentSelect";
 import DocumentDetailReminders from "./DocumentDetailReminders";
+import { isDateOnly, toLocalInput } from "../dates";
 import { t } from "../i18n";
 
-// paperless-ngx 2.16+ delivers the creation date of a document as a plain date
-// (YYYY-MM-DD), older versions deliver a date time
-const isDateOnly = (created) => {
-	return typeof created === "string" && created.indexOf("T") < 0;
-};
+// The value of the date input as the API expects it: a plain date for paperless-ngx 2.16+,
+// otherwise an ISO date time (the input delivers local time).
+const toApiDate = (value, created) =>
+	isDateOnly(created) || !value ? value : new Date(value).toISOString();
 
-class DocumentDetailForm extends PaperlessComponent {
-	// CONSTRUCTOR
-	constructor(props) {
-		super(props);
-		this.state = {
-			doc: this.props.doc
-		};
-	}
-
+class DocumentDetailForm extends React.Component {
 	// HANDLE DETAIL CHANGE
 	handleDetailChange(e) {
-		var doc = this.state.doc;
-		var value = e.target.value;
-
-		// a date time input delivers local time, paperless expects an ISO string
-		if (e.target.name === "created" && !isDateOnly(doc.created) && value) {
-			value = moment(value).toISOString();
-		}
-
-		doc[e.target.name] = value;
-
-		this.setState({
-			doc: doc
-		});
+		const { name, value } = e.target;
+		const doc = {
+			...this.props.doc,
+			[name]: name === "created" ? toApiDate(value, this.props.doc.created) : value
+		};
 
 		this.props.changeDoc(doc);
 	}
 
 	// RENDER
 	render() {
-		var dateOnly = isDateOnly(this.state.doc.created);
-
-		// convert the date to local time
-		var created = dateOnly
-			? this.state.doc.created
-			: moment
-					.utc(this.state.doc.created)
-					.local()
-					.format("YYYY-MM-DD[T]HH:mm");
+		const doc = this.props.doc;
+		const dateOnly = isDateOnly(doc.created);
+		const change = this.handleDetailChange.bind(this);
 
 		return (
 			<form className="form-detail-info">
@@ -61,17 +37,14 @@ class DocumentDetailForm extends PaperlessComponent {
 						className="form-control"
 						name="title"
 						placeholder={t("document.title")}
-						value={this.state.doc.title}
-						onChange={this.handleDetailChange.bind(this)}
+						value={doc.title}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
 					<label>{t("document.correspondent")}</label>
-					<CorrespondentSelect
-						value={this.state.doc.correspondent}
-						onChange={this.handleDetailChange.bind(this)}
-					/>
+					<CorrespondentSelect value={doc.correspondent} onChange={change} />
 				</div>
 
 				<div className="form-group">
@@ -81,18 +54,15 @@ class DocumentDetailForm extends PaperlessComponent {
 						rows="6"
 						name="content"
 						placeholder={t("document.content")}
-						value={this.state.doc.content || ""}
-						onChange={this.handleDetailChange.bind(this)}
+						value={doc.content || ""}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
 					<label>{t("document.tags")}</label>
 					<div className="select-wrapper">
-						<TagsInput
-							tags={this.state.doc.tags}
-							onChange={this.handleDetailChange.bind(this)}
-						/>
+						<TagsInput tags={doc.tags} onChange={change} />
 					</div>
 				</div>
 
@@ -103,14 +73,14 @@ class DocumentDetailForm extends PaperlessComponent {
 						className="form-control"
 						name="created"
 						placeholder={t("document.date")}
-						value={created}
-						onChange={this.handleDetailChange.bind(this)}
+						value={dateOnly ? doc.created : toLocalInput(doc.created)}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
 					<label>{t("document.reminders")}</label>
-					<DocumentDetailReminders doc={this.state.doc} />
+					<DocumentDetailReminders doc={doc} />
 				</div>
 			</form>
 		);

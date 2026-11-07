@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import moment from "moment";
+import { formatDate } from "../dates";
 import { t } from "../i18n";
 
 class DocumentDetailRemindersItem extends Component {
@@ -13,7 +13,7 @@ class DocumentDetailRemindersItem extends Component {
 	render() {
 		return (
 			<tr>
-				<td>{moment(this.props.reminder.date).format("lll")}</td>
+				<td>{formatDate(this.props.reminder.date, "medium")}</td>
 				<td>{this.props.reminder.note}</td>
 				<td>
 					<button

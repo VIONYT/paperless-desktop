@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta charset="utf-8" />
+		<!-- only our own scripts, the paperless server is reached via XHR and images -->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' http: https: data: blob:; connect-src http: https:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+		/>
 		<title>Paperless</title>
 		<link rel="stylesheet" href="css/photon.css" />
-		<link rel="stylesheet" href="css/select2.css" />
 		<link rel="stylesheet" href="css/main.css" />
 		<link rel="stylesheet" href="css/file-drop.css" />
-		<link rel="stylesheet" href="node_modules/react-select/dist/react-select.css" />
-		<link
-			rel="stylesheet"
-			href="node_modules/react-big-calendar/lib/css/react-big-calendar.css"
-		/>
+		<link rel="stylesheet" href="js/build/react-select.css" />
 		<link rel="stylesheet" href="css/dark.css" />
 	</head>
 

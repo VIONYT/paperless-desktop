@@ -1,21 +1,25 @@
-/* Bundles the renderer code (JSX/ES2015+) into js/build/bundle.js using esbuild. */
+/* Bundles the renderer code (JSX/ES2015+) into js/build/bundle.js using esbuild.
+ *
+ *   node build.js           production build (minified)
+ *   node build.js --dev     with source maps, for debugging
+ *   node build.js --watch   rebuilds when a file changes (development build)
+ */
 const esbuild = require("esbuild");
 const babel = require("@babel/core");
 const fs = require("fs");
 const path = require("path");
 
-const watch = process.argv.includes("--watch");
+const dev = process.argv.includes("--dev") || process.argv.includes("--watch");
+const srcDir = path.join(__dirname, "js", "src") + path.sep;
 
-// The Flux library "alt" instantiates the action / store classes without `new`, which
-// does not work with native ES classes. So the classes of our own code are compiled to
-// functions (everything else is left to esbuild).
+// The Flux library "alt" instantiates the action / store classes without `new`, which does not
+// work with native ES classes. So the classes of our own code are compiled to functions
+// (everything else is left to esbuild).
 const classesPlugin = {
 	name: "transform-classes",
 	setup(build) {
-		const srcDir = path.join(__dirname, "js", "src") + path.sep;
-
 		build.onLoad({ filter: /\.js$/ }, async (args) => {
-			if (args.path.indexOf(srcDir) !== 0) return null;
+			if (!args.path.startsWith(srcDir)) return null;
 
 			const source = await fs.promises.readFile(args.path, "utf8");
 			const result = babel.transformSync(source, {
@@ -43,27 +47,37 @@ const options = {
 	loader: { ".js": "jsx" },
 	plugins: [classesPlugin],
 	define: { "process.env.NODE_ENV": '"production"' },
-	sourcemap: "inline",
+	minify: !dev,
+	// alt names its stores and actions after the classes
+	keepNames: true,
+	sourcemap: dev ? "inline" : false,
 	logLevel: "info"
 };
 
-// the worker of pdf.js (PDF preview) is loaded at runtime next to the bundle
-const copyPdfWorker = () => {
-	fs.copyFileSync(
-		path.join(__dirname, "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
-		path.join(__dirname, "js", "build", "pdf.worker.min.mjs")
+// files of the dependencies that are loaded at runtime, next to the bundle
+const ASSETS = [
+	["pdfjs-dist/build/pdf.worker.min.mjs", "pdf.worker.min.mjs"],
+	["react-select/dist/react-select.css", "react-select.css"]
+];
+
+const copyAssets = () => {
+	ASSETS.forEach(([from, to]) =>
+		fs.copyFileSync(
+			path.join(__dirname, "node_modules", from),
+			path.join(__dirname, "js", "build", to)
+		)
 	);
 };
 
-async function main() {
-	copyPdfWorker();
+const main = async () => {
+	copyAssets();
 
-	if (watch) {
+	if (process.argv.includes("--watch")) {
 		const ctx = await esbuild.context(options);
 		await ctx.watch();
 	} else {
 		await esbuild.build(options);
 	}
-}
+};
 
 main().catch(() => process.exit(1));

@@ -1,32 +1,53 @@
 import React from "react";
 import * as pdfjs from "pdfjs-dist";
-import PaperlessComponent from "../components/PaperlessComponent";
 import { previewUrl, request } from "../api";
 import { t } from "../i18n";
 
 // the worker of pdf.js is copied next to the bundle by build.js
 pdfjs.GlobalWorkerOptions.workerSrc = "js/build/pdf.worker.min.mjs";
 
-// IS IMAGE: paperless-ngx tells us the mime type of the original file. Documents that
-// have been archived (OCR'd) are always served as PDF by the preview endpoint.
+const IMAGE_FILE = /\.(png|jpe?g|gif|webp|tiff?|bmp)$/i;
+
+// IS IMAGE: paperless-ngx tells us the mime type of the original file. Documents that have been
+// archived (OCR'd) are always served as PDF by the preview endpoint.
 const isImage = (doc) => {
 	if (doc.archived_file_name) return false;
+	if (doc.mime_type) return doc.mime_type.startsWith("image/");
 
-	if (doc.mime_type) return doc.mime_type.indexOf("image/") === 0;
-
-	return /\.(png|jpe?g|gif|webp|tiff?|bmp)$/i.test(doc.original_file_name || "");
+	return IMAGE_FILE.test(doc.original_file_name || "");
 };
 
-class DocumentRender extends PaperlessComponent {
+// the PDF as canvas, scaled to the given width (in CSS pixels)
+const renderPage = async (page, width) => {
+	const ratio = window.devicePixelRatio || 1;
+	const scale = (width / page.getViewport({ scale: 1 }).width) * ratio;
+	const viewport = page.getViewport({ scale: scale });
+
+	const canvas = document.createElement("canvas");
+	canvas.className = "pdf-page";
+	canvas.width = Math.floor(viewport.width);
+	canvas.height = Math.floor(viewport.height);
+	canvas.style.width = Math.floor(viewport.width / ratio) + "px";
+	canvas.style.height = Math.floor(viewport.height / ratio) + "px";
+
+	await page.render({ canvasContext: canvas.getContext("2d"), viewport: viewport }).promise;
+
+	return canvas;
+};
+
+class DocumentRender extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = { error: null, loading: true };
+		this.state = { error: false, loading: true };
 		this.container = null;
 		this.pdf = null;
 		this.renderId = 0;
-		this.onResize = this.onResize.bind(this);
 		this.resizeTimeout = null;
+		this.onResize = () => {
+			window.clearTimeout(this.resizeTimeout);
+			this.resizeTimeout = window.setTimeout(() => this.renderPages(), 250);
+		};
 	}
 
 	// COMPONENT DID MOUNT
@@ -42,19 +63,12 @@ class DocumentRender extends PaperlessComponent {
 		window.removeEventListener("resize", this.onResize);
 		window.clearTimeout(this.resizeTimeout);
 
-		// cancels a running render
+		// stops a running render
 		this.renderId++;
-
 		if (this.pdf) this.pdf.destroy();
 	}
 
-	// ON RESIZE: render the pages again with the new width
-	onResize() {
-		window.clearTimeout(this.resizeTimeout);
-		this.resizeTimeout = window.setTimeout(() => this.renderPages(), 250);
-	}
-
-	// LOAD PDF: downloads the PDF (with the API token) and renders it
+	// LOAD PDF: downloads the PDF and renders it
 	loadPdf() {
 		request({
 			method: "get",
@@ -68,59 +82,34 @@ class DocumentRender extends PaperlessComponent {
 
 				return this.renderPages();
 			})
-			.catch((err) => {
-				this.setState({
-					loading: false,
-					error: err && err.message ? err.message : "error"
-				});
-			});
+			.catch(() => this.setState({ loading: false, error: true }));
 	}
 
-	// RENDER PAGES: draws every page of the PDF as canvas, scaled to the width of the pane
+	// RENDER PAGES: one canvas for every page, one after the other so the first pages show up early
 	/* eslint-disable no-await-in-loop */
 	async renderPages() {
-		const pdf = this.pdf;
-		const container = this.container;
-		if (!pdf || !container) return;
+		if (!this.pdf || !this.container) return;
 
 		const id = ++this.renderId;
-		const width = Math.max(container.clientWidth - 32, 100);
-		const ratio = window.devicePixelRatio || 1;
+		const width = Math.max(this.container.clientWidth - 32, 100);
+		this.container.innerHTML = "";
 
-		container.innerHTML = "";
-
-		for (let number = 1; number <= pdf.numPages; number++) {
-			const page = await pdf.getPage(number);
+		for (let number = 1; number <= this.pdf.numPages; number++) {
+			const canvas = await renderPage(await this.pdf.getPage(number), width);
 
 			// another render started in the meantime, or the component is gone
 			if (id !== this.renderId) return;
 
-			const base = page.getViewport({ scale: 1 });
-			const scale = width / base.width;
-			const viewport = page.getViewport({ scale: scale * ratio });
-
-			const canvas = document.createElement("canvas");
-			canvas.width = Math.floor(viewport.width);
-			canvas.height = Math.floor(viewport.height);
-			canvas.style.width = Math.floor(viewport.width / ratio) + "px";
-			canvas.style.height = Math.floor(viewport.height / ratio) + "px";
-			canvas.className = "pdf-page";
-			container.appendChild(canvas);
-
-			await page.render({ canvasContext: canvas.getContext("2d"), viewport: viewport })
-				.promise;
+			this.container.appendChild(canvas);
 		}
 	}
-
 	/* eslint-enable no-await-in-loop */
 
 	// RENDER
 	render() {
 		const doc = this.props.doc;
 
-		if (isImage(doc)) {
-			return <img src={previewUrl(doc.id)} style={{ maxWidth: "100%" }} />;
-		}
+		if (isImage(doc)) return <img src={previewUrl(doc.id)} style={{ maxWidth: "100%" }} />;
 
 		return (
 			<div className="pdf-viewer">

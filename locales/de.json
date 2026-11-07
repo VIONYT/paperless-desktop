@@ -39,6 +39,7 @@
 	"documents.new": "Neues Dokument",
 	"documents.loadFailed": "Dokumente konnten nicht geladen werden!",
 	"documents.deleteFailed": "Dokument(e) konnten nicht gelöscht werden!",
+	"documents.saveFailed": "Das Dokument konnte nicht gespeichert werden!",
 	"documents.loadOneFailed": "Dokument konnte nicht geladen werden!",
 	"documents.notDisplayed": "Das Dokument konnte nicht angezeigt werden.",
 	"documents.loading": "Lädt...",
@@ -138,5 +139,8 @@
 	"upload.processing": "{count} Datei(en) werden verarbeitet",
 	"upload.ocr": "Texterkennung (OCR) läuft...",
 	"upload.queued": "Wartet in der Warteschlange...",
-	"documents.processingFailed": "paperless konnte {name} nicht verarbeiten!"
+	"documents.processingFailed": "paperless konnte {name} nicht verarbeiten!",
+
+	"login.insecureTitle": "Die Verbindung ist nicht verschlüsselt",
+	"login.insecureMessage": "Die Adresse beginnt mit http://. Dein Passwort und deine Dokumente werden unverschlüsselt über das Netzwerk gesendet. Nutze nach Möglichkeit https://. Trotzdem anmelden?"
 }

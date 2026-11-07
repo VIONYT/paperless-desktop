@@ -1,35 +1,25 @@
 import React from "react";
-import $ from "jquery";
-import { ipcRenderer } from "../electronBridge";
+import bus from "../bus";
+import native from "../native";
+import { signOut } from "../auth";
 
 class Master extends React.Component {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).on("goBackToLogin", this.goBackToLogin.bind(this));
+		this.unsubscribe = bus.on("goBackToLogin", () => this.goBackToLogin());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		$(window).off("goBackToLogin");
+		this.unsubscribe();
 	}
 
-	// GO BACK TO LOGIN
+	// GO BACK TO LOGIN: the server rejected the credentials
 	goBackToLogin() {
-		localStorage.removeItem("settings.auth.username");
-		localStorage.removeItem("settings.auth.password");
-		localStorage.removeItem("settings.auth.token");
-		localStorage.removeItem("settings.host");
+		signOut();
+		native.send("setSize", { width: 500, height: 520 });
 
-		ipcRenderer.send("login", null);
-
-		ipcRenderer.send("setSize", {
-			width: 500,
-			height: 520
-		});
-
-		if (this.context.router) {
-			this.context.router.push("/login");
-		}
+		if (this.context.router) this.context.router.push("/login");
 	}
 
 	// RENDER

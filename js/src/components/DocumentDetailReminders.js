@@ -2,7 +2,7 @@ import React from "react";
 import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import DocumentDetailRemindersItem from "./DocumentDetailRemindersItem";
-import { ipcRenderer } from "../electronBridge";
+import native from "../native";
 import { t } from "../i18n";
 
 class DocumentDetailReminders extends React.Component {
@@ -19,9 +19,7 @@ class DocumentDetailReminders extends React.Component {
 		RemindersActions.getReminders();
 
 		// EVENT: reminderAdded (reminders are stored locally, reload them)
-		ipcRenderer.on("reminderAdded", () => {
-			RemindersActions.getReminders();
-		});
+		native.on("reminderAdded", () => RemindersActions.getReminders());
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -43,7 +41,7 @@ class DocumentDetailReminders extends React.Component {
 	render() {
 		// filter out the matching reminders
 		var reminders = this.state.reminders.filter((r) => {
-			return r.document.endsWith("/" + this.props.doc.id + "/");
+			return r.document === this.props.doc.id;
 		});
 
 		// display that no reminders are available

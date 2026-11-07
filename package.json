@@ -5,33 +5,27 @@
 	"main": "main.js",
 	"scripts": {
 		"build": "node build.js",
-		"start": "node build.js && electron .",
-		"test": "npm run lint",
-		"lint": "eslint js/src",
+		"start": "node build.js --dev && electron .",
+		"test": "node --test test/*.test.js && npm run lint",
+		"lint": "eslint js/src && eslint -c .eslintrc.node.json main preload.js main.js store.js build.js locales test",
 		"precommit": "pretty-quick --staged",
-		"package": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=arm64,x64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
-		"package:mac:arm64": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=arm64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
-		"package:mac:universal": "node build.js && electron-packager ./ Paperless --platform=darwin --arch=universal --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'",
-		"package:debug": "node build.js && touch debug.flag && electron-packager ./ 'Paperless Debug' --platform=darwin --arch=arm64 --out ./build --overwrite --icon=./icon --ignore='^/(build$|icon.psd$|js/src)'; rm -f debug.flag"
+		"package": "node build.js && node package.js",
+		"package:mac:arm64": "node build.js && node package.js --arch=arm64",
+		"package:mac:universal": "node build.js && node package.js --arch=universal",
+		"package:debug": "node build.js --dev && node package.js --arch=arm64 --debug"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/thomasbrueggemann/paperless-desktop.git"
 	},
 	"dependencies": {
-		"@electron/remote": "^2.1.2",
 		"alt": "^0.17.4",
 		"axios": "^1.7.9",
-		"electron-dl": "^3.5.2",
-		"jquery": "^3.5.0",
-		"moment": "^2.29.2",
 		"pdfjs-dist": "^6.5.438",
 		"prop-types": "^15.5.8",
 		"react": "^15.4.1",
-		"react-big-calendar": "^0.13.0",
 		"react-dom": "^15.4.1",
 		"react-file-drop": "^0.1.8",
-		"react-pure-render": "^1.0.2",
 		"react-router": "^3.0.2",
 		"react-select": "^1.0.0-rc.3",
 		"react-waypoint": "^6.0.0",
@@ -41,6 +35,7 @@
 	"devDependencies": {
 		"@babel/core": "^8.1.0",
 		"@babel/plugin-transform-classes": "^8.1.0",
+		"@electron/fuses": "^2.1.3",
 		"@electron/packager": "^20.3.0",
 		"electron": "^45.2.3",
 		"esbuild": "^0.28.0",

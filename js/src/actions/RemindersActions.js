@@ -5,7 +5,7 @@ import { getHost } from "../api";
 //
 // paperless-ngx does not know the concept of reminders, so they are kept locally in
 // the app (per paperless instance). A reminder looks like this:
-// { id: 1, document: "<host>/api/documents/<id>/", date: "<ISO date>", note: "..." }
+// { id: 1, document: <id of the document>, date: "<ISO date>", note: "..." }
 
 // the key under which the reminders of the current paperless instance are stored
 const storageKey = () => {
@@ -55,7 +55,7 @@ class RemindersActions {
 
 				const reminder = {
 					id: nextId,
-					document: getHost() + "/api/documents/" + id + "/",
+					document: Number(id),
 					date: date,
 					note: note
 				};

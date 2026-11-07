@@ -1,66 +1,46 @@
 import React from "react";
-import $ from "jquery";
-import PaperlessComponent from "./PaperlessComponent";
+import bus from "../bus";
+import { tagColor } from "../utils";
 
-class SidebarTagItem extends PaperlessComponent {
+class SidebarTagItem extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = {
-			active: false
-		};
+		this.state = { active: false };
 	}
 
-	// COMPONENT DID MOUNT
+	// COMPONENT DID MOUNT: another place (e.g. the search) can change the selected tag
 	componentDidMount() {
-		$(window).on("changeExternTag", this.changeExternTag.bind(this));
+		this.unsubscribe = bus.on("changeExternTag", (data) =>
+			this.setState({ active: this.props.tag.id === data.tag })
+		);
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		$(window).off("changeExternTag");
+		this.unsubscribe();
 	}
 
-	// SET TAG FILTER
+	// SET TAG FILTER: a second click removes the filter
 	setTagFilter() {
-		$(window).trigger("changeExternTag", { tag: this.props.tag.id });
+		const { tag, setTagFilter } = this.props;
 
-		// set or unset the tag
-		if (this.state.active === true) {
-			this.props.setTagFilter(null);
-		} else {
-			this.props.setTagFilter(this.props.tag.id);
-		}
-
-		// toggle active state
-		this.setState({
-			active: !this.state.active
-		});
-	}
-
-	// CHANGE EXTERN TAG
-	changeExternTag(e, data) {
-		this.setState({
-			active: this.props.tag.id === data.tag
-		});
+		bus.trigger("changeExternTag", { tag: tag.id });
+		setTagFilter(this.state.active ? null : tag.id);
+		this.setState({ active: !this.state.active });
 	}
 
 	// RENDER
 	render() {
-		var itemClass = "nav-group-item";
-		if (this.state.active === true) {
-			itemClass += " active";
-		}
+		const { tag } = this.props;
 
 		return (
-			<span className={itemClass} onClick={this.setTagFilter.bind(this)}>
-				<span
-					className="icon icon-record"
-					style={{
-						color: this.getTagColor(this.props.tag)
-					}}
-				/>
-				{this.props.tag.name}
+			<span
+				className={"nav-group-item" + (this.state.active ? " active" : "")}
+				onClick={this.setTagFilter.bind(this)}
+			>
+				<span className="icon icon-record" style={{ color: tagColor(tag) }} />
+				{tag.name}
 			</span>
 		);
 	}

@@ -39,6 +39,7 @@
 	"documents.new": "New document",
 	"documents.loadFailed": "Could not load documents!",
 	"documents.deleteFailed": "Could not delete document(s)!",
+	"documents.saveFailed": "Could not save the document!",
 	"documents.loadOneFailed": "Could not load document!",
 	"documents.notDisplayed": "The document could not be displayed.",
 	"documents.loading": "Loading...",
@@ -138,5 +139,8 @@
 	"upload.processing": "Processing {count} file(s)",
 	"upload.ocr": "Recognizing text (OCR)...",
 	"upload.queued": "Waiting in the queue...",
-	"documents.processingFailed": "paperless could not process {name}!"
+	"documents.processingFailed": "paperless could not process {name}!",
+
+	"login.insecureTitle": "The connection is not encrypted",
+	"login.insecureMessage": "The address starts with http://. Your password and your documents are sent over the network without encryption. Use https:// if you can. Sign in anyway?"
 }

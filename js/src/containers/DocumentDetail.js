@@ -2,17 +2,16 @@ import React from "react";
 import DocumentActions from "../actions/DocumentActions";
 import DocumentsActions from "../actions/DocumentsActions";
 import DocumentStore from "../stores/DocumentStore";
-import Sidebar from "../components/Sidebar";
-import PaperlessComponent from "../components/PaperlessComponent";
+import ToolbarActions from "../actions/ToolbarActions";
 import DocumentDetailForm from "../components/DocumentDetailForm";
 import DocumentRender from "../components/DocumentRender";
-import ToolbarActions from "../actions/ToolbarActions";
-import $ from "jquery";
+import bus from "../bus";
+import native from "../native";
 import { downloadUrl } from "../api";
-import { ipcRenderer, remote, dialog } from "../electronBridge";
+import { confirmDelete } from "../dialogs";
 import { t } from "../i18n";
 
-class DocumentDetail extends PaperlessComponent {
+class DocumentDetail extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
@@ -24,83 +23,7 @@ class DocumentDetail extends PaperlessComponent {
 	componentDidMount() {
 		DocumentStore.listen(this.onChange);
 		DocumentActions.getDocument(this.props.params.id);
-
-		// clear toolbar to add new items
-		ToolbarActions.clearItems();
-
-		// toolbar: save button
-		ToolbarActions.addItem(
-			"save-detail",
-			"floppy",
-			t("common.save"),
-			"primary",
-			"right",
-			(e) => {
-				e.preventDefault();
-				this.saveDocument();
-			}
-		);
-
-		// toolbar: download file
-		ToolbarActions.addItem(
-			"download-file",
-			"download",
-			t("document.download"),
-			"default",
-			"left",
-			() => {
-				// downstream the download command
-				if (this.state.doc && this.state.doc.id) {
-					ipcRenderer.send("download", {
-						url: downloadUrl(this.state.doc.id)
-					});
-				}
-			}
-		);
-
-		// toolbar: delete document
-		ToolbarActions.addItem(
-			"add-reminder",
-			"bell",
-			t("document.addReminder"),
-			"default",
-			"right",
-			() => {
-				// add correspondent
-				ipcRenderer.send("modal", {
-					route: "/modal/reminders/add/" + this.props.params.id,
-					width: 450,
-					height: 350
-				});
-			}
-		);
-
-		// toolbar: delete document
-		ToolbarActions.addItem(
-			"delete-document",
-			"trash",
-			t("document.delete"),
-			"default",
-			"right",
-			() => {
-				// ask user if he really wants to delete the document
-				var choice =
-					dialog.showMessageBoxSync(remote.getCurrentWindow(), {
-						type: "question",
-						buttons: [t("common.yes"), t("common.no")],
-						title: t("document.deleteConfirmTitle"),
-						message: t("document.deleteConfirm")
-					}) === 0;
-
-				// yes, delete this thing!
-				if (choice === true) {
-					DocumentsActions.deleteDocuments([this.props.params.id]);
-
-					// emit event to close this tab, since the document is just deleted
-					$(window).trigger("tabs.closeCurrent");
-				}
-			}
-		);
+		this.addToolbarItems();
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -109,61 +32,91 @@ class DocumentDetail extends PaperlessComponent {
 		DocumentStore.unlisten(this.onChange);
 	}
 
-	// COMPONENT WILL UPDATE
-	componentWillUpdate(nextProps, nextState) {
-		// something changed in the state id
+	// COMPONENT WILL UPDATE: another document was opened in this view
+	componentWillUpdate(nextProps) {
 		if (nextProps.params.id !== this.props.params.id) {
-			this.setState({
-				doc: null
-			});
-
-			// fetch new document
+			this.setState({ doc: null });
 			DocumentActions.getDocument(nextProps.params.id);
 		}
 	}
 
-	// SHOULD COMPONENT UPDATE
-	shouldComponentUpdate(nextProps, nextState) {
-		try {
-			return (
-				nextState.doc.id !== this.state.doc.id ||
-				nextProps.params.id !== this.props.params.id
-			);
-		} catch (e) {
-			return true;
-		}
+	// ADD TOOLBAR ITEMS
+	addToolbarItems() {
+		const id = this.props.params.id;
+
+		ToolbarActions.clearItems();
+		ToolbarActions.addItem(
+			"save-detail",
+			"floppy",
+			t("common.save"),
+			"primary",
+			"right",
+			(e) => {
+				e.preventDefault();
+				DocumentActions.updateDocument(this.state.doc);
+			}
+		);
+		ToolbarActions.addItem(
+			"download-file",
+			"download",
+			t("document.download"),
+			"default",
+			"left",
+			() => native.send("download", downloadUrl(id))
+		);
+		ToolbarActions.addItem(
+			"add-reminder",
+			"bell",
+			t("document.addReminder"),
+			"default",
+			"right",
+			() =>
+				native.send("modal", {
+					route: "/modal/reminders/add/" + id,
+					width: 450,
+					height: 350
+				})
+		);
+		ToolbarActions.addItem(
+			"delete-document",
+			"trash",
+			t("document.delete"),
+			"default",
+			"right",
+			() => this.deleteDocument()
+		);
 	}
 
-	// ON CHANGE
+	// DELETE DOCUMENT: after the confirmation the tab is closed, the list removes the document
+	deleteDocument() {
+		confirmDelete("document.deleteConfirm").then((confirmed) => {
+			if (!confirmed) return;
+
+			DocumentsActions.deleteDocuments([this.props.params.id]);
+			bus.trigger("tabs.closeCurrent");
+		});
+	}
+
+	// ON CHANGE: the document was loaded, it gets its own tab
 	onChange(state) {
-		// the document store was changed by something else than loading a document
 		if (!state.doc) return;
 
-		// add new tab
-		$(window).trigger("tabs.push", {
+		bus.trigger("tabs.push", {
 			title: state.doc.title,
 			route: "/document/" + this.props.params.id
 		});
-
 		this.setState(state);
 	}
 
-	// SAVE DOCUMENT
-	saveDocument() {
-		DocumentActions.updateDocument(this.state.doc);
-	}
-
-	// CHANGE DOC
+	// CHANGE DOC: the form changed the document
 	changeDoc(doc) {
-		this.setState({
-			doc: doc
-		});
+		this.setState({ doc: doc });
 	}
 
 	// RENDER
 	render() {
-		// render nothing if document is empty
 		if (!this.state.doc) return null;
+
 		return (
 			<div className="pane-group">
 				<div className="pane-two-third">

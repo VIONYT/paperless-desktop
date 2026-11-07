@@ -1,14 +1,14 @@
-import { ipcRenderer } from "./electronBridge";
+import native from "./native";
 
 // THEMES: "system" follows macOS, "light" and "dark" force an appearance
-export const THEMES = ["system", "light", "dark"];
+const THEMES = ["system", "light", "dark"];
 
 const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
 
 // GET THEME
 export const getTheme = () => {
 	const theme = localStorage.getItem("settings.theme");
-	return THEMES.indexOf(theme) >= 0 ? theme : "system";
+	return THEMES.includes(theme) ? theme : "system";
 };
 
 // APPLY THEME: switches the appearance of the app (the "dark" class enables css/dark.css) and
@@ -17,7 +17,7 @@ export const applyTheme = (theme = getTheme()) => {
 	const dark = theme === "dark" || (theme === "system" && systemDark.matches);
 
 	document.documentElement.classList.toggle("dark", dark);
-	ipcRenderer.send("setTheme", theme);
+	native.send("setTheme", theme);
 };
 
 // follow the system while the theme is set to "system"

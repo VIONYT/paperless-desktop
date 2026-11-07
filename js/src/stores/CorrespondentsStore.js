@@ -1,17 +1,14 @@
 import alt from "../alt";
-import { isAuthError } from "../api";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import ToolbarActions from "../actions/ToolbarActions";
-import $ from "jquery";
-import { ipcRenderer, dialog } from "../electronBridge";
-import { t } from "../i18n";
+import native from "../native";
+import { handleError } from "../errors";
 
 // CORRESPONDENTS STORE
 class CorrespondentsStore {
 	constructor() {
 		this.bindActions(CorrespondentsActions);
 		this.correspondents = [];
-		this.selection = [];
 	}
 
 	// GET CORRESPONDENTS SUCCESS
@@ -21,75 +18,49 @@ class CorrespondentsStore {
 
 	// GET CORRESPONDENTS FAIL
 	getCorrespondentsFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("correspondents.loadFailed"), t("common.tryAgain"));
+		handleError(err, "correspondents.loadFailed");
 	}
 
 	// DELETE CORRESPONDENTS SUCCESS
 	deleteCorrespondentsSuccess(ids) {
-		this.selection = [];
-
 		if (this.correspondents.results) {
-			this.correspondents.results = this.correspondents.results.filter((t) => {
-				return !ids.find((i) => i === t.id);
-			});
+			this.correspondents.results = this.correspondents.results.filter(
+				(c) => !ids.includes(c.id)
+			);
 		}
 
 		// remove the delete button
-		window.setTimeout(() => {
-			ToolbarActions.removeItem("remove-correspondents");
-		}, 0);
+		window.setTimeout(() => ToolbarActions.removeItem("remove-correspondents"), 0);
 	}
 
 	// DELETE CORRESPONDENTS FAIL
 	deleteCorrespondentsFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("correspondents.deleteFailed"), t("common.tryAgain"));
+		handleError(err, "correspondents.deleteFailed");
 	}
 
-	// ADD CORRESPONDENTS SUCCESS
+	// ADD CORRESPONDENT SUCCESS: the modal window hands the new correspondent over to the list
 	addCorrespondentSuccess(result) {
-		ipcRenderer.send("correspondentAdd", result);
-		ipcRenderer.send("closeModal");
+		native.send("correspondentAdd", { data: result.data });
+		native.send("closeModal");
 	}
 
-	// ADD CORRESPONDENTS FAIL
+	// ADD CORRESPONDENT FAIL
 	addCorrespondentFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("correspondents.addFailed"), t("correspondents.addFailedMessage"));
+		handleError(err, "correspondents.addFailed", "correspondents.addFailedMessage");
 	}
 
-	// EDIT CORRESPONDENT SUCCESS
+	// EDIT CORRESPONDENT SUCCESS: replaces the correspondent with the edited one
 	editCorrespondentSuccess(result) {
 		if (!result.data) return;
 
-		// replace the correspondent with new edited one
-		this.correspondents.results = this.correspondents.results.map((c) => {
-			if (c.id === result.data.id) return result.data;
-			else return c;
-		});
+		this.correspondents.results = this.correspondents.results.map((c) =>
+			c.id === result.data.id ? result.data : c
+		);
 	}
 
 	// EDIT CORRESPONDENT FAIL
 	editCorrespondentFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("correspondents.editFailed"), t("correspondents.editFailedMessage"));
+		handleError(err, "correspondents.editFailed", "correspondents.editFailedMessage");
 	}
 }
 

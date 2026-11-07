@@ -1,73 +1,44 @@
 import React from "react";
 import { Link } from "react-router";
-import PaperlessComponent from "./PaperlessComponent";
-import moment from "moment";
-import TagsStore from "../stores/TagsStore";
 import TagDot from "./TagDot";
 import { thumbnailUrl } from "../api";
+import { formatDate } from "../dates";
 import { t } from "../i18n";
 
-String.prototype.trunc =
-	String.prototype.trunc ||
-	function(n) {
-		return this.length > n ? this.substr(0, n - 1) + "\u2026" : this;
-	};
+const MAX_TITLE_LENGTH = 100;
 
-class DocumentItem extends PaperlessComponent {
-	// CONSTRUCTOR
-	constructor(props) {
-		super(props);
-		this.state = TagsStore.getState();
-	}
+const shorten = (title) =>
+	title.length > MAX_TITLE_LENGTH ? title.substr(0, MAX_TITLE_LENGTH - 1) + "…" : title;
 
-	// COMPONENT DID MOUNT
-	componentDidMount() {
-		// load the image base64 data
-		super.getDataUri(thumbnailUrl(this.props.document.id), (result) => {
-			this.setState({
-				data: result
-			});
-		});
-	}
-
+class DocumentItem extends React.Component {
 	// RENDER
 	render() {
-		var divStyle = {};
-		if ("data" in this.state) {
-			divStyle["backgroundImage"] = "url(" + this.state.data + ")";
-		}
-		var tags = [];
-		if (this.state.tags && this.state.tags.results) {
-			this.state.tags.results.forEach((tag) => {
-				tags[tag.id] = tag;
-			});
-		}
+		const doc = this.props.document;
+		const tags = this.props.tags;
+
 		return (
-			<Link className="document-item" to={"/document/" + this.props.document.id}>
-				<div className="document-item-thumbnail" style={divStyle} />
+			<Link className="document-item" to={"/document/" + doc.id}>
+				<div
+					className="document-item-thumbnail"
+					style={{ backgroundImage: 'url("' + thumbnailUrl(doc.id) + '")' }}
+				/>
 				<div className="document-item-title">
-					{this.props.document.fresh ? (
+					{doc.fresh ? (
 						<span
 							title={t("documents.new")}
 							className="icon icon-plus-circled text-positive"
 						/>
 					) : null}
-					{this.props.document.fresh ? " " : null}
-					{this.props.document.title.trunc(100)}
+					{doc.fresh ? " " : null}
+					{shorten(doc.title)}
 					&nbsp;
-					{this.props.document.tags.map((tagId) => {
-						var tag = tags[tagId];
-						if (!tag) return null;
-						return (
-							<TagDot
-								tag={tag}
-								key={"sidebar_tags_" + tag.id}
-								setTagFilter={this.props.setTagFilter}
-							/>
-						);
-					})}
+					{doc.tags
+						.filter((id) => tags[id])
+						.map((id) => (
+							<TagDot tag={tags[id]} key={"tag_" + id} />
+						))}
 				</div>
-				<small>{moment(this.props.document.created).format("LLLL")}</small>
+				<small>{formatDate(doc.created)}</small>
 			</Link>
 		);
 	}

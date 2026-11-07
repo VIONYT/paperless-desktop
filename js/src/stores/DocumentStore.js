@@ -1,9 +1,7 @@
 import alt from "../alt";
-import { isAuthError } from "../api";
 import DocumentActions from "../actions/DocumentActions";
-import $ from "jquery";
-import { dialog } from "../electronBridge";
-import { t } from "../i18n";
+import bus from "../bus";
+import { handleError } from "../errors";
 
 // DOCUMENT STORE
 class DocumentStore {
@@ -19,28 +17,17 @@ class DocumentStore {
 
 	// GET DOCUMENT FAIL
 	getDocumentFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(t("documents.loadOneFailed"), t("common.tryAgain"));
+		handleError(err, "documents.loadOneFailed");
 	}
 
 	// UPDATE DOCUMENT SUCCESS
 	updateDocumentSuccess(result) {
-		if (result.data) {
-			$(window).trigger("tabs.setActiveTitle", {
-				title: result.data.title
-			});
-		}
+		if (result.data) bus.trigger("tabs.setActiveTitle", { title: result.data.title });
 	}
 
 	// UPDATE DOCUMENT FAIL
 	updateDocumentFail(err) {
-		if (isAuthError(err)) {
-			$(window).trigger("goBackToLogin");
-		}
+		handleError(err, "documents.saveFailed");
 	}
 }
 

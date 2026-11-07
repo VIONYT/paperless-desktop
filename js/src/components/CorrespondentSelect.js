@@ -1,14 +1,17 @@
 import React from "react";
+import Select from "react-select";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import CorrespondentsStore from "../stores/CorrespondentsStore";
-import Select from "react-select";
 import { t } from "../i18n";
+
+// the options of the select: the correspondents that are available on the server
+const toOptions = (correspondents) =>
+	((correspondents && correspondents.results) || []).map((c) => ({ value: c.id, label: c.name }));
 
 class CorrespondentSelect extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-
 		this.state = CorrespondentsStore.getState();
 		this.onChange = this.onChange.bind(this);
 	}
@@ -29,33 +32,20 @@ class CorrespondentSelect extends React.Component {
 		this.setState(state);
 	}
 
-	// ON CHANGE
-	selectChanged(value) {
+	// SELECT CHANGED: the correspondent of a document is referenced by its id (or none)
+	selectChanged(option) {
 		this.props.onChange({
-			target: {
-				name: "correspondent",
-				value: value ? value.value : null
-			}
+			target: { name: "correspondent", value: option ? option.value : null }
 		});
 	}
 
 	// RENDER
 	render() {
-		var results = (this.state.correspondents && this.state.correspondents.results) || [];
-
-		// the correspondent of a document is referenced by its id
-		var options = results.map((c) => {
-			return {
-				value: c.id,
-				label: c.name
-			};
-		});
-
 		return (
 			<Select
 				value={this.props.value}
 				onChange={this.selectChanged.bind(this)}
-				options={options}
+				options={toOptions(this.state.correspondents)}
 				placeholder={t("document.select")}
 			/>
 		);

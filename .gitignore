@@ -40,3 +40,4 @@ build/**
 js/build/*.js
 debug.flag
 js/build/*.mjs
+js/build/*.css

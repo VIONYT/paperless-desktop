@@ -1,7 +1,7 @@
 import alt from "../alt";
 import RemindersActions from "../actions/RemindersActions";
-import { ipcRenderer, dialog } from "../electronBridge";
-import { t } from "../i18n";
+import native from "../native";
+import { handleError } from "../errors";
 
 // REMINDERS STORE
 class RemindersStore {
@@ -16,33 +16,29 @@ class RemindersStore {
 	}
 
 	// GET REMINDERS FAIL
-	getRemindersFail() {
-		dialog.showErrorBox(t("reminders.loadFailed"), t("common.tryAgain"));
+	getRemindersFail(err) {
+		handleError(err, "reminders.loadFailed");
 	}
 
-	// ADD REMINDER SUCCESS
+	// ADD REMINDER SUCCESS: reminders are stored locally, the main window just has to reload them
 	addReminderSuccess(reminder) {
-		// the reminder is stored locally, the main window just has to reload them
-		ipcRenderer.send("reminderAdd", { data: reminder });
-		ipcRenderer.send("closeModal");
+		native.send("reminderAdd", { data: reminder });
+		native.send("closeModal");
 	}
 
 	// ADD REMINDER FAIL
-	addReminderFail() {
-		dialog.showErrorBox(t("reminders.addFailed"), t("common.tryAgain"));
+	addReminderFail(err) {
+		handleError(err, "reminders.addFailed");
 	}
 
 	// REMOVE REMINDER SUCCESS
 	removeReminderSuccess(id) {
-		// filter out the removed reminder
-		this.reminders = this.reminders.filter((r) => {
-			return r.id !== id;
-		});
+		this.reminders = this.reminders.filter((r) => r.id !== id);
 	}
 
 	// REMOVE REMINDER FAIL
-	removeReminderFail() {
-		dialog.showErrorBox(t("reminders.removeFailed"), t("common.tryAgain"));
+	removeReminderFail(err) {
+		handleError(err, "reminders.removeFailed");
 	}
 }
 
