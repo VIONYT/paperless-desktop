@@ -34,6 +34,14 @@ const lockNavigation = (webContents) => {
 	});
 };
 
+// On a Mac the sidebar is translucent: the system material for sidebars shows the desktop behind the
+// window (materials.md: "Choose materials ... based on semantic meaning"). The material is only
+// visible where the page is transparent, see "vibrancy" in css/main.css.
+const vibrancy = () =>
+	process.platform === "darwin"
+		? { vibrancy: "sidebar", visualEffectState: "followWindow", backgroundColor: "#00000000" }
+		: {};
+
 const getMainWindow = () => mainWindow;
 
 const sendToMainWindow = (channel, data) => {
@@ -59,6 +67,7 @@ const createMainWindow = () => {
 		titleBarStyle: "hidden",
 		// vertically centers the window buttons in the toolbar of the title bar
 		trafficLightPosition: { x: 16, y: 20 },
+		...vibrancy(),
 		webPreferences: webPreferences()
 	});
 

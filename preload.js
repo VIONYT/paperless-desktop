@@ -32,6 +32,9 @@ const RECEIVE = [
 ];
 
 contextBridge.exposeInMainWorld("native", {
+	// "darwin" on a Mac
+	platform: process.platform,
+
 	send: (channel, data) => {
 		if (SEND.includes(channel)) ipcRenderer.send(channel, data);
 	},

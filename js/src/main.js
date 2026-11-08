@@ -11,6 +11,9 @@ import { restoreSignIn } from "./auth";
 	window.addEventListener(name, (event) => event.preventDefault())
 );
 
+// on a Mac the sidebar is translucent (see "vibrancy" in css/main.css)
+if (window.native.platform === "darwin") document.documentElement.classList.add("vibrancy");
+
 applyTheme();
 applyLanguage();
 restoreSignIn();

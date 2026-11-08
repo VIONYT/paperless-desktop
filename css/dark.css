@@ -229,3 +229,34 @@ html.dark .document-item.selected .document-item-thumbnail {
 html.dark .drop-overlay {
 	background-color: rgba(30, 30, 32, 0.65);
 }
+
+/* vibrancy (macOS), see css/main.css */
+html.dark.vibrancy .window,
+html.dark.vibrancy .window-content,
+html.dark.vibrancy .sidebar {
+	background-color: transparent;
+}
+
+html.dark.vibrancy .sidebar {
+	border-right-color: rgba(255, 255, 255, 0.12);
+}
+
+html.dark.vibrancy .window-content .pane:not(.sidebar),
+html.dark.vibrancy .pane-two-third {
+	background-color: #1e1e1e;
+}
+
+html.dark.vibrancy .sidebar .nav-group-item:active,
+html.dark.vibrancy .sidebar .nav-group-item.active {
+	background-color: rgba(255, 255, 255, 0.14);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	html.dark.vibrancy .sidebar {
+		background-color: #262628;
+	}
+}
+
+html.dark.vibrancy body:not(:has(.window)) {
+	background-color: #1e1e1e;
+}

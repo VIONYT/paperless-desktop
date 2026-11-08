@@ -740,3 +740,46 @@ th,
 		opacity: 1;
 	}
 }
+
+/* ---- vibrancy (macOS): the sidebar shows the material of the system, the rest of the window is opaque ----
+ * The class "vibrancy" is set on a Mac, where the main process gives the window the sidebar material
+ * (BrowserWindow vibrancy). The material is visible wherever the page is transparent. */
+html.vibrancy .window,
+html.vibrancy .window-content,
+html.vibrancy .sidebar {
+	background-color: transparent;
+}
+
+html.vibrancy .sidebar {
+	border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+html.vibrancy .window-content .pane:not(.sidebar),
+html.vibrancy .pane-two-third {
+	background-color: #fff;
+}
+
+/* the selected item is a translucent gray, so the material shines through */
+html.vibrancy .sidebar .nav-group-item:active,
+html.vibrancy .sidebar .nav-group-item.active {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Reduce Transparency of the system settings: opaque like before */
+@media (prefers-reduced-transparency: reduce) {
+	html.vibrancy .sidebar {
+		background-color: #f5f5f4;
+	}
+}
+
+/* like the sidebars of macOS: the items are inset, the selected one has rounded corners */
+html.vibrancy .sidebar .nav-group-item {
+	margin: 0 8px;
+	padding-left: 17px;
+	border-radius: 6px;
+}
+
+/* pages without the sidebar (login) are opaque, the material is only for the sidebar */
+html.vibrancy body:not(:has(.window)) {
+	background-color: #fff;
+}
