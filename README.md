@@ -152,11 +152,14 @@ If `APPLE_IDENTITY`, `APPLE_ID`, `APPLE_APP_PASSWORD` and `APPLE_TEAM_ID` are se
 Releases are built automatically by GitHub Actions ([`release.yml`](.github/workflows/release.yml)) whenever a version tag is pushed:
 
 ```bash
-$ npm version minor            # raises the version in package.json and creates the tag, e.g. v0.2.0
+# 1. add a section "## 0.2.0" with the changes to CHANGELOG.md and commit it
+# 2. raise the version in package.json and create the tag (e.g. v0.2.0)
+$ npm version minor
+# 3. push the commit and the tag
 $ git push --follow-tags
 ```
 
-The workflow checks that the tag matches the version, runs the tests, builds the app for Apple Silicon and Intel, and publishes
+The workflow checks that the tag matches the version and that `CHANGELOG.md` has a section for it, runs the tests, builds the app for Apple Silicon and Intel, and publishes
 a GitHub release with the two zip files, the checksums and generated release notes.
 Every change on `master` and every pull request is checked by [`build.yml`](.github/workflows/build.yml).
 

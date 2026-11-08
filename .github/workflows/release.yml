@@ -5,6 +5,7 @@ name: Release
 #   npm version minor        # raises the version in package.json and creates the tag v<version>
 #   git push --follow-tags
 #
+# The notes of the release come from the section of the version in CHANGELOG.md (add it before the tag).
 # The release contains one zip for Apple Silicon (arm64) and one for Intel (x64), and the checksums.
 # If the secrets below are set, the apps are signed and notarized, so macOS opens them without a warning.
 #   MACOS_CERT_P12, MACOS_CERT_PASSWORD   the "Developer ID Application" certificate (base64 of the .p12)
@@ -70,8 +71,16 @@ jobs:
                   done
                   cd release && shasum -a 256 *.zip > checksums.txt
 
+            # the notes are the part of CHANGELOG.md for this version, followed by the generated list of changes
+            - name: Write the release notes
+              run: |
+                  VERSION="${GITHUB_REF_NAME#v}"
+                  awk -v version="$VERSION" '$0 ~ "^## " version "$" {found=1; next} /^## / {found=0} found' CHANGELOG.md > release-notes.md
+                  if [ ! -s release-notes.md ]; then echo "CHANGELOG.md has no section for $VERSION"; exit 1; fi
+
             - name: Publish the release
               uses: softprops/action-gh-release@v2
               with:
                   files: release/*
+                  body_path: release-notes.md
                   generate_release_notes: true
