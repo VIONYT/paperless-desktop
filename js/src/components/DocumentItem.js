@@ -30,7 +30,7 @@ class DocumentItem extends React.Component {
 			>
 				<div
 					className="document-item-thumbnail"
-					style={{ backgroundImage: 'url("' + thumbnailUrl(doc.id) + '")' }}
+					style={{ backgroundImage: `url("${thumbnailUrl(doc.id)}")` }}
 				/>
 				<div className="document-item-title">
 					{doc.fresh ? (

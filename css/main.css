@@ -614,3 +614,11 @@ th,
 .banner-message {
 	flex: 1;
 }
+
+/* the toolbar moves the window, but the search field and the buttons must be clickable */
+.toolbar-header .search-bar,
+.toolbar-header .search-bar input,
+.toolbar-items,
+.toolbar-items .btn {
+	-webkit-app-region: no-drag;
+}
