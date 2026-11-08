@@ -1,0 +1,41 @@
+name: Package the app
+description: Builds the app and packages it for macOS (Apple Silicon and Intel) into build/
+
+runs:
+    using: composite
+    steps:
+        # github.com sometimes answers a runner with 504 for the Electron downloads, although the same download
+        # works in a browser. So the files are downloaded with the API of GitHub first (with the token of the
+        # workflow). If that does not work, the packager downloads them itself.
+        - name: Download Electron
+          shell: bash
+          continue-on-error: true
+          env:
+              GH_TOKEN: ${{ github.token }}
+          run: |
+              VERSION=$(node -p "require('electron/package.json').version")
+              mkdir -p "$RUNNER_TEMP/electron"
+              for attempt in 1 2 3; do
+                gh release download "v$VERSION" --repo electron/electron --dir "$RUNNER_TEMP/electron" --clobber \
+                  --pattern "electron-v$VERSION-darwin-arm64.zip" --pattern "electron-v$VERSION-darwin-x64.zip" && exit 0
+                echo "Download failed (attempt $attempt of 3), trying again in 20 seconds"
+                sleep 20
+              done
+              exit 1
+
+        - name: Package the app
+          shell: bash
+          run: |
+              VERSION=$(node -p "require('electron/package.json').version")
+              OFFLINE=""
+              if [ -f "$RUNNER_TEMP/electron/electron-v$VERSION-darwin-arm64.zip" ] && [ -f "$RUNNER_TEMP/electron/electron-v$VERSION-darwin-x64.zip" ]; then
+                OFFLINE="--electron-zip-dir=$RUNNER_TEMP/electron"
+                echo "Using the downloaded Electron files"
+              fi
+              # the packaging is tried up to four times, in case a download fails for a moment
+              for attempt in 1 2 3 4; do
+                node build.js && node package.js $OFFLINE && exit 0
+                echo "Packaging failed (attempt $attempt of 4), trying again in 60 seconds"
+                sleep 60
+              done
+              exit 1
