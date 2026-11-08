@@ -3,19 +3,25 @@ const { app, Menu } = require("electron");
 const locales = require("../locales");
 
 let language = locales.resolve("system", app.getLocale());
+let send = () => {};
 
-// the entry point of the renderer: sends a message to the main window
-const buildMenu = (send) => {
+// what the app currently shows, items that make no sense for it are disabled:
+// { signedIn: a user is signed in, document: a document is open, tabs: more than one tab is open }
+let context = { signedIn: false, document: false, tabs: false };
+
+const buildMenu = () => {
 	const t = (key) => locales.translate(language, key);
 	const go = (key, route, accelerator) => ({
 		label: t(key),
 		accelerator: accelerator,
+		enabled: context.signedIn,
 		click: () => send("navigate", route)
 	});
 	// a command is executed by the page that is open, e.g. "save" by a document
-	const command = (key, name, accelerator) => ({
+	const command = (key, name, accelerator, enabled) => ({
 		label: t(key),
 		accelerator: accelerator,
+		enabled: enabled,
 		click: () => send("command", name)
 	});
 	const theme = (key, name) => ({ label: t(key), click: () => send("command", "theme:" + name) });
@@ -34,16 +40,22 @@ const buildMenu = (send) => {
 		{
 			label: t("menu.file"),
 			submenu: [
-				command("menu.upload", "upload", "CmdOrCtrl+O"),
+				command("menu.upload", "upload", "CmdOrCtrl+O", context.signedIn),
 				{ type: "separator" },
-				command("menu.save", "save", "CmdOrCtrl+S"),
-				command("menu.download", "download", "CmdOrCtrl+Shift+S"),
-				command("menu.addReminder", "addReminder", "CmdOrCtrl+Shift+R"),
-				command("menu.deleteDocument", "deleteDocument", "CmdOrCtrl+Backspace"),
+				command("menu.save", "save", "CmdOrCtrl+S", context.document),
+				command("menu.download", "download", "CmdOrCtrl+Shift+S", context.document),
+				command("menu.addReminder", "addReminder", "CmdOrCtrl+Shift+R", context.document),
+				command(
+					"menu.deleteDocument",
+					"deleteDocument",
+					"CmdOrCtrl+Backspace",
+					context.document
+				),
 				{ type: "separator" },
 				{
 					label: t("menu.closeTab"),
 					accelerator: "CmdOrCtrl+W",
+					enabled: context.tabs,
 					click: () => send("closeCurrentTab")
 				}
 			]
@@ -59,7 +71,7 @@ const buildMenu = (send) => {
 				{ role: "paste" },
 				{ role: "selectAll" },
 				{ type: "separator" },
-				command("menu.find", "find", "CmdOrCtrl+F")
+				command("menu.find", "find", "CmdOrCtrl+F", context.signedIn)
 			]
 		},
 		{
@@ -92,10 +104,24 @@ const buildMenu = (send) => {
 	]);
 };
 
-// the renderer tells the language that was chosen in the settings
-const setLanguage = (lang, send) => {
-	language = locales.resolve(lang, app.getLocale());
-	Menu.setApplicationMenu(buildMenu(send));
+const refresh = () => Menu.setApplicationMenu(buildMenu());
+
+// INIT MENU: `sendToWindow(channel, data)` delivers the messages of the menu to the app
+const initMenu = (sendToWindow) => {
+	send = sendToWindow;
+	refresh();
 };
 
-module.exports = { buildMenu, setLanguage };
+// the renderer tells the language that was chosen in the settings
+const setLanguage = (lang) => {
+	language = locales.resolve(lang, app.getLocale());
+	refresh();
+};
+
+// the renderer tells what it shows, see `context`
+const setContext = (newContext) => {
+	context = { ...context, ...newContext };
+	refresh();
+};
+
+module.exports = { initMenu, setLanguage, setContext };

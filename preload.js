@@ -13,6 +13,8 @@ const SEND = [
 	"focusWindow",
 	"openDocument",
 	"download",
+	"setContext",
+	"contextMenu",
 	"tagAdd",
 	"reminderAdd",
 	"correspondentAdd"
@@ -21,6 +23,7 @@ const SEND = [
 const RECEIVE = [
 	"navigate",
 	"command",
+	"contextCommand",
 	"closeCurrentTab",
 	"openDocument",
 	"tagAdded",

@@ -9,6 +9,8 @@ class DocumentsActions {
 			"getDocumentsFail",
 			"deleteDocumentsSuccess",
 			"deleteDocumentsFail",
+			"patchDocumentSuccess",
+			"patchDocumentFail",
 			"setLoading",
 			"resetDocuments"
 		);
@@ -48,6 +50,13 @@ class DocumentsActions {
 				});
 			})
 			.catch(this.actions.getDocumentsFail);
+	}
+
+	// PATCH DOCUMENT: changes some fields of a document, e.g. its correspondent
+	patchDocument(id, changes) {
+		request({ method: "patch", url: "/api/documents/" + id + "/", data: changes })
+			.then(this.actions.patchDocumentSuccess)
+			.catch(this.actions.patchDocumentFail);
 	}
 
 	// DELETE DOCUMENT

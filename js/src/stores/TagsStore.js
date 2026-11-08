@@ -2,7 +2,7 @@ import alt from "../alt";
 import TagsActions from "../actions/TagsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import native from "../native";
-import { handleError } from "../errors";
+import { handleError, handleLoadError } from "../errors";
 
 // TAGS STORE
 class TagsStore {
@@ -18,7 +18,7 @@ class TagsStore {
 
 	// GET TAGS FAIL
 	getTagsFail(err) {
-		handleError(err, "tags.loadFailed");
+		handleLoadError(err, "tags.loadFailed");
 	}
 
 	// DELETE TAGS SUCCESS

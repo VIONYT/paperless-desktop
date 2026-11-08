@@ -599,3 +599,18 @@ th,
 	font-size: 18px;
 	line-height: 18px;
 }
+
+/* ---- banner: a failed load, with a button to try it again ---- */
+.banner {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	color: #611a15;
+	background-color: #fdecea;
+	border-bottom: 1px solid #f5c6c2;
+}
+
+.banner-message {
+	flex: 1;
+}

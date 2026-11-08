@@ -1,14 +1,14 @@
 /* Entry point of the main process of Paperless Desktop. */
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow } = require("electron");
 const { registerIpc } = require("./main/ipc");
-const { buildMenu } = require("./main/menu");
+const { initMenu } = require("./main/menu");
 const { setupSession } = require("./main/session");
 const windows = require("./main/windows");
 
 const start = () => {
 	setupSession();
 	registerIpc();
-	Menu.setApplicationMenu(buildMenu(windows.sendToMainWindow));
+	initMenu(windows.sendToMainWindow);
 	windows.createMainWindow();
 };
 

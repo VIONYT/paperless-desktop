@@ -136,5 +136,12 @@
 	"menu.deleteDocument": "Dokument löschen",
 	"menu.find": "Suchen",
 	"menu.view": "Darstellung",
-	"menu.appearance": "Erscheinungsbild"
+	"menu.appearance": "Erscheinungsbild",
+	"common.retry": "Erneut versuchen",
+	"common.dismiss": "Schließen",
+	"context.edit": "Bearbeiten…",
+	"context.correspondent": "Korrespondent",
+	"context.tags": "Tags",
+	"context.none": "Keiner",
+	"context.delete": "Löschen…"
 }

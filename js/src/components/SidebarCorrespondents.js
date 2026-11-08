@@ -2,6 +2,7 @@ import React from "react";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import CorrespondentsStore from "../stores/CorrespondentsStore";
 import SidebarCorrespondentItem from "./SidebarCorrespondentItem";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 class SidebarCorrespondents extends React.Component {
@@ -16,11 +17,13 @@ class SidebarCorrespondents extends React.Component {
 	componentDidMount() {
 		CorrespondentsStore.listen(this.onChange);
 		CorrespondentsActions.getCorrespondents();
+		this.unsubscribeRetry = onRetry(() => CorrespondentsActions.getCorrespondents());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		CorrespondentsStore.unlisten(this.onChange);
+		this.unsubscribeRetry();
 	}
 
 	// ON CHANGE

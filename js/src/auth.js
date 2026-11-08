@@ -1,4 +1,5 @@
 import native from "./native";
+import { setContext } from "./context";
 import { fetchToken, getHost, getToken, normalizeHost } from "./api";
 import { confirmInsecure } from "./dialogs";
 
@@ -8,7 +9,10 @@ const KEYS = ["settings.auth.username", "settings.auth.token", "settings.host"];
 export const isSignedIn = () => !!getToken() && getHost().length > 0;
 
 // TELL MAIN: the main process attaches the token to the requests to the server
-const tellMain = (host, token) => native.send("login", { host: host, token: token });
+const tellMain = (host, token) => {
+	native.send("login", { host: host, token: token });
+	setContext({ signedIn: true });
+};
 
 // SIGN IN: exchanges the credentials for an API token, only the token is stored (not the password).
 // Resolves to the address of the server, or to null if the user does not want an unencrypted
@@ -36,4 +40,5 @@ export const restoreSignIn = () => {
 export const signOut = () => {
 	KEYS.forEach((key) => localStorage.removeItem(key));
 	native.send("login", null);
+	setContext({ signedIn: false, document: false, tabs: false });
 };

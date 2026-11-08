@@ -2,6 +2,7 @@ import React from "react";
 import LogsActions from "../actions/LogsActions";
 import LogsStore from "../stores/LogsStore";
 import bus from "../bus";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 class Logs extends React.Component {
@@ -19,11 +20,13 @@ class Logs extends React.Component {
 
 		LogsStore.listen(this.onChange);
 		LogsActions.getLogs();
+		this.unsubscribeRetry = onRetry(() => LogsActions.getLogs());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		LogsStore.unlisten(this.onChange);
+		this.unsubscribeRetry();
 	}
 
 	// ON CHANGE

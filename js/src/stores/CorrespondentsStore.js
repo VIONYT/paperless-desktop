@@ -2,7 +2,7 @@ import alt from "../alt";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import native from "../native";
-import { handleError } from "../errors";
+import { handleError, handleLoadError } from "../errors";
 
 // CORRESPONDENTS STORE
 class CorrespondentsStore {
@@ -18,7 +18,7 @@ class CorrespondentsStore {
 
 	// GET CORRESPONDENTS FAIL
 	getCorrespondentsFail(err) {
-		handleError(err, "correspondents.loadFailed");
+		handleLoadError(err, "correspondents.loadFailed");
 	}
 
 	// DELETE CORRESPONDENTS SUCCESS

@@ -1,6 +1,6 @@
 import alt from "../alt";
 import DocumentsActions from "../actions/DocumentsActions";
-import { handleError } from "../errors";
+import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENTS STORE
 class DocumentsStore {
@@ -43,7 +43,19 @@ class DocumentsStore {
 	// GET DOCUMENTS FAIL
 	getDocumentsFail(err) {
 		this.isLoading = false;
-		handleError(err, "documents.loadFailed");
+		handleLoadError(err, "documents.loadFailed");
+	}
+
+	// PATCH DOCUMENT SUCCESS: the document in the list shows the changes
+	patchDocumentSuccess(result) {
+		this.documents = this.documents.map((doc) =>
+			doc.id === result.data.id ? { ...doc, ...result.data } : doc
+		);
+	}
+
+	// PATCH DOCUMENT FAIL
+	patchDocumentFail(err) {
+		handleError(err, "documents.saveFailed");
 	}
 
 	// DELETE DOCUMENTS SUCCESS

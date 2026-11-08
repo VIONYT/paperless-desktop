@@ -3,12 +3,15 @@ import Waypoint from "react-waypoint";
 import DocumentsActions from "../actions/DocumentsActions";
 import DocumentsStore from "../stores/DocumentsStore";
 import TagsStore from "../stores/TagsStore";
+import CorrespondentsStore from "../stores/CorrespondentsStore";
 import ToolbarActions from "../actions/ToolbarActions";
 import Sidebar from "../components/Sidebar";
 import DocumentItem from "../components/DocumentItem";
 import bus from "../bus";
+import native from "../native";
 import { request, isAuthError } from "../api";
 import { tagsById } from "../utils";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 // the documents without duplicates (a document can be in the list twice after an update)
@@ -28,9 +31,15 @@ class Documents extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = { ...DocumentsStore.getState(), tags: TagsStore.getState().tags };
+		this.state = {
+			...DocumentsStore.getState(),
+			tags: TagsStore.getState().tags,
+			correspondents: CorrespondentsStore.getState().correspondents
+		};
 		this.onChange = this.onChange.bind(this);
 		this.onTagsChange = (state) => this.setState({ tags: state.tags });
+		this.onCorrespondentsChange = (state) =>
+			this.setState({ correspondents: state.correspondents });
 		this.updateInterval = null;
 		this.unsubscribe = [];
 	}
@@ -45,11 +54,13 @@ class Documents extends React.Component {
 
 		this.unsubscribe = [
 			bus.on("loadAllDocuments", () => DocumentsActions.getDocuments()),
-			bus.on("searchDocuments", (data) => this.search(data.query))
+			bus.on("searchDocuments", (data) => this.search(data.query)),
+			onRetry(() => DocumentsActions.getDocuments(this.state.correspondent, this.state.tag))
 		];
 
 		DocumentsStore.listen(this.onChange);
 		TagsStore.listen(this.onTagsChange);
+		CorrespondentsStore.listen(this.onCorrespondentsChange);
 		DocumentsActions.getDocuments(this.state.correspondent, this.state.tag);
 		this.restoreSelectedFilters();
 
@@ -67,11 +78,26 @@ class Documents extends React.Component {
 		window.clearInterval(this.updateInterval);
 		DocumentsStore.unlisten(this.onChange);
 		TagsStore.unlisten(this.onTagsChange);
+		CorrespondentsStore.unlisten(this.onCorrespondentsChange);
 	}
 
 	// ON CHANGE
 	onChange(state) {
 		this.setState(state);
+	}
+
+	// SHOW CONTEXT MENU: the native menu of a document, with the correspondents and tags to choose from
+	showContextMenu(doc) {
+		const entries = (list) =>
+			((list && list.results) || []).map(({ id, name }) => ({ id, name }));
+
+		native.send("contextMenu", {
+			documentId: doc.id,
+			correspondent: doc.correspondent,
+			tags: doc.tags,
+			correspondents: entries(this.state.correspondents),
+			allTags: entries(this.state.tags)
+		});
 	}
 
 	// RESTORE SELECTED FILTERS: the sidebar shows the filters that are still active
@@ -153,7 +179,12 @@ class Documents extends React.Component {
 				/>
 				<div className="pane">
 					{unique(documents).map((doc) => (
-						<DocumentItem document={doc} tags={tags} key={"document_list_" + doc.id} />
+						<DocumentItem
+							document={doc}
+							tags={tags}
+							onContextMenu={this.showContextMenu.bind(this)}
+							key={"document_list_" + doc.id}
+						/>
 					))}
 
 					{isLoading === false && next ? (

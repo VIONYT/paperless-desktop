@@ -4,6 +4,7 @@ import ToolbarActions from "../actions/ToolbarActions";
 import bus from "../bus";
 import native from "../native";
 import { confirmDelete } from "../dialogs";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 // Creates the page with a list of tags or correspondents, both work the same way:
@@ -34,6 +35,7 @@ const createResourceList = (config) => {
 
 			config.store.listen(this.onChange);
 			config.load();
+			this.unsubscribeRetry = onRetry(config.load);
 
 			ToolbarActions.clearItems();
 			ToolbarActions.addItem(
@@ -56,6 +58,7 @@ const createResourceList = (config) => {
 			ToolbarActions.clearItems();
 			config.store.unlisten(this.onChange);
 			this.unsubscribe();
+			this.unsubscribeRetry();
 		}
 
 		// ON CHANGE

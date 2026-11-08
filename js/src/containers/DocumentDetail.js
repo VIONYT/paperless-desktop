@@ -6,9 +6,11 @@ import ToolbarActions from "../actions/ToolbarActions";
 import DocumentDetailForm from "../components/DocumentDetailForm";
 import DocumentRender from "../components/DocumentRender";
 import bus from "../bus";
+import { setContext } from "../context";
 import native from "../native";
 import { downloadUrl } from "../api";
 import { confirmDelete } from "../dialogs";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 class DocumentDetail extends React.Component {
@@ -23,6 +25,7 @@ class DocumentDetail extends React.Component {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		bus.trigger("header.activeItem", { item: "documents" });
+		setContext({ document: true });
 
 		DocumentStore.listen(this.onChange);
 		DocumentActions.getDocument(this.props.params.id);
@@ -32,6 +35,7 @@ class DocumentDetail extends React.Component {
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
+		setContext({ document: false });
 		this.unsubscribe.forEach((unsubscribe) => unsubscribe());
 		ToolbarActions.clearItems();
 		DocumentStore.unlisten(this.onChange);
@@ -80,7 +84,8 @@ class DocumentDetail extends React.Component {
 			bus.on("command:save", () => this.save()),
 			bus.on("command:download", () => this.download()),
 			bus.on("command:addReminder", () => this.addReminder()),
-			bus.on("command:deleteDocument", () => this.deleteDocument())
+			bus.on("command:deleteDocument", () => this.deleteDocument()),
+			onRetry(() => DocumentActions.getDocument(this.props.params.id))
 		];
 	}
 

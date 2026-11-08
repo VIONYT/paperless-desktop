@@ -1,8 +1,17 @@
 /* The messages of the renderer. Every message is checked before it is used. */
-const { BrowserWindow, dialog, ipcMain, nativeTheme } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, nativeTheme } = require("electron");
+const locales = require("../locales");
 const { setAuth, getAuth } = require("./auth");
-const { setLanguage } = require("./menu");
-const { isModalRoute, isDocumentId, clampSize, isServerUrl } = require("./validate");
+const { setLanguage, setContext } = require("./menu");
+const { popupContextMenu } = require("./contextMenu");
+const {
+	isModalRoute,
+	isDocumentId,
+	clampSize,
+	isServerUrl,
+	parseContext,
+	parseContextMenu
+} = require("./validate");
 const windows = require("./windows");
 
 // the main window forwards the data of the modal windows (a new tag, ...) to the lists
@@ -63,9 +72,20 @@ const confirm = async (event, args) => {
 	return result.response === 0;
 };
 
+// the language of the app, for the texts of the context menu
+let language = "system";
+
 const registerIpc = () => {
 	ipcMain.on("login", (event, arg) => setAuth(arg));
-	ipcMain.on("setLanguage", (event, lang) => setLanguage(lang, windows.sendToMainWindow));
+	ipcMain.on("setLanguage", (event, lang) => {
+		language = lang;
+		setLanguage(lang);
+	});
+	ipcMain.on("setContext", (event, context) => setContext(parseContext(context)));
+	ipcMain.on("contextMenu", (event, data) => {
+		const parsed = parseContextMenu(data);
+		if (parsed) popupContextMenu(event, parsed, locales.resolve(language, app.getLocale()));
+	});
 	ipcMain.on("setTheme", (event, theme) => setTheme(theme));
 	ipcMain.on("download", (event, url) => download(event, url));
 	ipcMain.on("modal", (event, args) => openModal(args));

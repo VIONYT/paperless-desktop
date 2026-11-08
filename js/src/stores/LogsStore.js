@@ -1,6 +1,6 @@
 import alt from "../alt";
 import LogsActions from "../actions/LogsActions";
-import { handleError } from "../errors";
+import { handleLoadError } from "../errors";
 
 // LOGS STORE
 class LogsStore {
@@ -16,7 +16,7 @@ class LogsStore {
 
 	// GET LOGS FAIL
 	getLogsFail(err) {
-		handleError(err, "logs.loadFailed");
+		handleLoadError(err, "logs.loadFailed");
 	}
 }
 

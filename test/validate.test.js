@@ -48,3 +48,31 @@ test("credentials need a web address and a token", () => {
 	assert.strictEqual(parseAuth({ host: "http://localhost", token: "" }), null);
 	assert.strictEqual(parseAuth(null), null);
 });
+
+test("the context of the menu has three flags", () => {
+	const { parseContext } = require("../main/validate");
+	assert.deepStrictEqual(
+		parseContext({ signedIn: true, document: false, evil: 1, tabs: "yes" }),
+		{
+			signedIn: true,
+			document: false
+		}
+	);
+	assert.deepStrictEqual(parseContext(null), {});
+});
+
+test("the data of the context menu is checked", () => {
+	const { parseContextMenu } = require("../main/validate");
+	assert.strictEqual(parseContextMenu({ documentId: "1" }), null);
+
+	const parsed = parseContextMenu({
+		documentId: 5,
+		correspondent: 2,
+		tags: [1, "x", 3],
+		correspondents: [{ id: 2, name: "ACME" }, { id: "x", name: "bad" }, null],
+		allTags: [{ id: 1, name: "a".repeat(300) }]
+	});
+	assert.deepStrictEqual(parsed.tags, [1, 3]);
+	assert.deepStrictEqual(parsed.correspondents, [{ id: 2, name: "ACME" }]);
+	assert.strictEqual(parsed.allTags[0].name.length, 100);
+});

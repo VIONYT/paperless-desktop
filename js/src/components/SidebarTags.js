@@ -2,6 +2,7 @@ import React from "react";
 import TagsActions from "../actions/TagsActions";
 import TagsStore from "../stores/TagsStore";
 import SidebarTagItem from "./SidebarTagItem";
+import { onRetry } from "../errors";
 import { t } from "../i18n";
 
 class SidebarTags extends React.Component {
@@ -16,11 +17,13 @@ class SidebarTags extends React.Component {
 	componentDidMount() {
 		TagsStore.listen(this.onChange);
 		TagsActions.getTags();
+		this.unsubscribeRetry = onRetry(() => TagsActions.getTags());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		TagsStore.unlisten(this.onChange);
+		this.unsubscribeRetry();
 	}
 
 	// ON CHANGE

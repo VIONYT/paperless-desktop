@@ -36,4 +36,48 @@ const parseAuth = (arg) => {
 	}
 };
 
-module.exports = { isModalRoute, isDocumentId, clampSize, isServerUrl, parseAuth };
+// what the app shows: three flags, everything else is ignored
+const parseContext = (arg) => {
+	const source = arg || {};
+	const flags = {};
+
+	["signedIn", "document", "tabs"].forEach((key) => {
+		if (typeof source[key] === "boolean") flags[key] = source[key];
+	});
+
+	return flags;
+};
+
+const MAX_ENTRIES = 500;
+
+// a list of { id: 1, name: "..." }
+const parseEntries = (list) =>
+	(Array.isArray(list) ? list : [])
+		.filter((entry) => entry && Number.isInteger(entry.id) && typeof entry.name === "string")
+		.slice(0, MAX_ENTRIES)
+		.map((entry) => ({ id: entry.id, name: entry.name.slice(0, 100) }));
+
+// the data of the context menu of a document: the document and what can be assigned to it
+const parseContextMenu = (arg) => {
+	if (!arg || !Number.isInteger(arg.documentId)) return null;
+
+	return {
+		documentId: arg.documentId,
+		correspondent: Number.isInteger(arg.correspondent) ? arg.correspondent : null,
+		tags: (Array.isArray(arg.tags) ? arg.tags : [])
+			.filter(Number.isInteger)
+			.slice(0, MAX_ENTRIES),
+		correspondents: parseEntries(arg.correspondents),
+		allTags: parseEntries(arg.allTags)
+	};
+};
+
+module.exports = {
+	parseContext,
+	parseContextMenu,
+	isModalRoute,
+	isDocumentId,
+	clampSize,
+	isServerUrl,
+	parseAuth
+};

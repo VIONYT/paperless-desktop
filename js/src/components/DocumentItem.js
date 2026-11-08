@@ -11,13 +11,23 @@ const shorten = (title) =>
 	title.length > MAX_TITLE_LENGTH ? title.substr(0, MAX_TITLE_LENGTH - 1) + "…" : title;
 
 class DocumentItem extends React.Component {
+	// SHOW CONTEXT MENU: a right click opens the menu of the document (edit, tags, delete)
+	showContextMenu(event, doc) {
+		event.preventDefault();
+		this.props.onContextMenu(doc);
+	}
+
 	// RENDER
 	render() {
 		const doc = this.props.document;
 		const tags = this.props.tags;
 
 		return (
-			<Link className="document-item" to={"/document/" + doc.id}>
+			<Link
+				className="document-item"
+				to={"/document/" + doc.id}
+				onContextMenu={(e) => this.showContextMenu(e, doc)}
+			>
 				<div
 					className="document-item-thumbnail"
 					style={{ backgroundImage: 'url("' + thumbnailUrl(doc.id) + '")' }}

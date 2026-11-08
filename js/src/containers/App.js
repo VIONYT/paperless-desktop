@@ -4,11 +4,15 @@ import Header from "../components/Header";
 import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
 import UploadWidget from "../components/UploadWidget";
+import Banner from "../components/Banner";
 import native from "../native";
 import bus from "../bus";
 import { applyTheme } from "../theme";
 import { isSignedIn } from "../auth";
 import { uploadFile } from "../uploads";
+import DocumentsActions from "../actions/DocumentsActions";
+import DocumentsStore from "../stores/DocumentsStore";
+import { confirmDelete } from "../dialogs";
 import { t } from "../i18n";
 
 // the file types paperless-ngx can consume
@@ -53,7 +57,9 @@ class App extends React.Component {
 			// the menu bar, only when signed in
 			native.on("navigate", (route) => isSignedIn() && this.context.router.push(route)),
 			// the commands of the menu bar: the app handles some, the open page the others
-			native.on("command", (name) => this.runCommand(name))
+			native.on("command", (name) => this.runCommand(name)),
+			// the context menu of a document in the list
+			native.on("contextCommand", (command) => this.runContextCommand(command))
 		];
 	}
 
@@ -67,6 +73,33 @@ class App extends React.Component {
 		if (name === "upload") this.fileInput.click();
 		else if (name.startsWith("theme:")) this.setTheme(name.slice("theme:".length));
 		else bus.trigger("command:" + name);
+	}
+
+	// RUN CONTEXT COMMAND: the choice in the context menu of a document
+	runContextCommand({ action, documentId, id }) {
+		if (action === "edit") this.context.router.push("/document/" + documentId);
+		else if (action === "delete") this.deleteDocument(documentId);
+		else if (action === "correspondent")
+			DocumentsActions.patchDocument(documentId, { correspondent: id });
+		else if (action === "tag") this.toggleTag(documentId, id);
+	}
+
+	// DELETE DOCUMENT: after the confirmation
+	deleteDocument(documentId) {
+		confirmDelete("document.deleteConfirmTitle").then((confirmed) => {
+			if (confirmed) DocumentsActions.deleteDocuments([documentId]);
+		});
+	}
+
+	// TOGGLE TAG: the tag is added to the document, or removed if it has it already
+	toggleTag(documentId, tagId) {
+		const doc = DocumentsStore.getState().documents.find((d) => d.id === documentId);
+		if (!doc) return;
+
+		const tags = doc.tags.includes(tagId)
+			? doc.tags.filter((id) => id !== tagId)
+			: doc.tags.concat(tagId);
+		DocumentsActions.patchDocument(documentId, { tags: tags });
 	}
 
 	// SET THEME
@@ -109,6 +142,7 @@ class App extends React.Component {
 				<Header history={this.props.history} />
 				<Tabs history={this.props.history} />
 				<FileDrop onDrop={uploadFiles}>{t("documents.dropFiles")}</FileDrop>
+				<Banner />
 				<div className="window-content">{this.props.children}</div>
 				<UploadWidget />
 				<input

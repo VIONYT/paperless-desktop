@@ -2,6 +2,7 @@ import React from "react";
 import TabsItem from "./TabsItem";
 import bus from "../bus";
 import native from "../native";
+import { setContext } from "../context";
 
 // the tabs, with only the tab of the given route marked as active
 const withActive = (tabs, route) => tabs.map((tab) => ({ ...tab, active: tab.route === route }));
@@ -30,6 +31,12 @@ class Tabs extends React.Component {
 
 		window.addEventListener("hashchange", this.onHashChange);
 		native.on("closeCurrentTab", () => this.closeCurrent());
+	}
+
+	// COMPONENT DID UPDATE: "Close Tab" of the menu is only possible with more than one tab
+	componentDidUpdate(prevProps, prevState) {
+		const more = (state) => state.tabs.length > 1;
+		if (more(prevState) !== more(this.state)) setContext({ tabs: more(this.state) });
 	}
 
 	// COMPONENT WILL UNMOUNT

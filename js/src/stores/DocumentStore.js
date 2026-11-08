@@ -1,7 +1,7 @@
 import alt from "../alt";
 import DocumentActions from "../actions/DocumentActions";
 import bus from "../bus";
-import { handleError } from "../errors";
+import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENT STORE
 class DocumentStore {
@@ -17,7 +17,7 @@ class DocumentStore {
 
 	// GET DOCUMENT FAIL
 	getDocumentFail(err) {
-		handleError(err, "documents.loadOneFailed");
+		handleLoadError(err, "documents.loadOneFailed");
 	}
 
 	// UPDATE DOCUMENT SUCCESS

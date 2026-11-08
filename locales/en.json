@@ -136,5 +136,12 @@
 	"menu.deleteDocument": "Delete Document",
 	"menu.find": "Find",
 	"menu.view": "View",
-	"menu.appearance": "Appearance"
+	"menu.appearance": "Appearance",
+	"common.retry": "Try Again",
+	"common.dismiss": "Dismiss",
+	"context.edit": "Edit...",
+	"context.correspondent": "Correspondent",
+	"context.tags": "Tags",
+	"context.none": "None",
+	"context.delete": "Delete..."
 }
