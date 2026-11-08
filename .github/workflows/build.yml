@@ -1,9 +1,9 @@
 name: Build
 
+# Checks every change: lint, tests and a build of the app. Releases are built by release.yml.
 on:
     push:
         branches: [master]
-        tags: ["*"]
     pull_request:
 
 jobs:
@@ -27,8 +27,3 @@ jobs:
               with:
                   name: Paperless-macOS
                   path: build/*.zip
-            - name: Publish release
-              if: startsWith(github.ref, 'refs/tags/')
-              uses: softprops/action-gh-release@v2
-              with:
-                  files: build/*.zip
