@@ -7,7 +7,7 @@
 		"build": "node build.js",
 		"start": "node build.js --dev && electron .",
 		"test": "node --test test/*.test.js && npm run lint",
-		"lint": "eslint js/src && eslint -c .eslintrc.node.json main preload.js main.js store.js build.js locales test",
+		"lint": "eslint js/src && eslint -c .eslintrc.node.json main preload.js main.js store.js build.js locales test --ignore-pattern test/selection.test.js",
 		"precommit": "pretty-quick --staged",
 		"package": "node build.js && node package.js",
 		"package:mac:arm64": "node build.js && node package.js --arch=arm64",

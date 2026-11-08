@@ -1,5 +1,3 @@
-/* eslint-disable */
-// (the dynamic import of the module is not known by the old eslint)
 const test = require("node:test");
 const assert = require("node:assert");
 
