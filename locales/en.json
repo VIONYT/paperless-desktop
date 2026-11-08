@@ -143,5 +143,11 @@
 	"context.correspondent": "Correspondent",
 	"context.tags": "Tags",
 	"context.none": "None",
-	"context.delete": "Delete..."
+	"context.delete": "Delete...",
+	"menu.selectAll": "Select All Documents",
+	"selection.count": "{count} selected",
+	"selection.selectAll": "Select All",
+	"selection.clear": "Deselect",
+	"selection.select": "Select",
+	"documents.deleteMany": "Delete these {count} documents?"
 }

@@ -6,8 +6,9 @@ let language = locales.resolve("system", app.getLocale());
 let send = () => {};
 
 // what the app currently shows, items that make no sense for it are disabled:
-// { signedIn: a user is signed in, document: a document is open, tabs: more than one tab is open }
-let context = { signedIn: false, document: false, tabs: false };
+// { signedIn: a user is signed in, document: a document is open, tabs: more than one tab is open,
+//   list: the list of documents is shown }
+let context = { signedIn: false, document: false, tabs: false, list: false };
 
 const buildMenu = () => {
 	const t = (key) => locales.translate(language, key);
@@ -71,6 +72,7 @@ const buildMenu = () => {
 				{ role: "paste" },
 				{ role: "selectAll" },
 				{ type: "separator" },
+				command("menu.selectAll", "selectAllDocuments", "CmdOrCtrl+Shift+A", context.list),
 				command("menu.find", "find", "CmdOrCtrl+F", context.signedIn)
 			]
 		},

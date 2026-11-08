@@ -11,6 +11,23 @@ const shorten = (title) =>
 	title.length > MAX_TITLE_LENGTH ? title.substr(0, MAX_TITLE_LENGTH - 1) + "…" : title;
 
 class DocumentItem extends React.Component {
+	// HANDLE CLICK: with shift or command, or while documents are selected, a click selects.
+	// Otherwise it opens the document.
+	handleClick(event, doc) {
+		const additive = event.metaKey || event.ctrlKey || event.shiftKey || this.props.selecting;
+		if (!additive) return;
+
+		event.preventDefault();
+		this.props.onSelect(doc, event.shiftKey);
+	}
+
+	// HANDLE CHECK: the check mark at the thumbnail adds or removes the document
+	handleCheck(event, doc) {
+		event.preventDefault();
+		event.stopPropagation();
+		this.props.onSelect(doc, false);
+	}
+
 	// SHOW CONTEXT MENU: a right click opens the menu of the document (edit, tags, delete)
 	showContextMenu(event, doc) {
 		event.preventDefault();
@@ -24,10 +41,19 @@ class DocumentItem extends React.Component {
 
 		return (
 			<Link
-				className="document-item"
+				className={"document-item" + (this.props.selected ? " selected" : "")}
 				to={"/document/" + doc.id}
+				aria-selected={this.props.selected}
+				onClick={(e) => this.handleClick(e, doc)}
 				onContextMenu={(e) => this.showContextMenu(e, doc)}
 			>
+				<span
+					className="document-item-check icon icon-check"
+					role="checkbox"
+					aria-checked={this.props.selected}
+					aria-label={t("selection.select")}
+					onClick={(e) => this.handleCheck(e, doc)}
+				/>
 				<div
 					className="document-item-thumbnail"
 					style={{ backgroundImage: `url("${thumbnailUrl(doc.id)}")` }}

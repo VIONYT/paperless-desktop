@@ -3,9 +3,9 @@ import { t } from "./i18n";
 
 // CONFIRM DELETE: asks the user before something is deleted, resolves to true if confirmed.
 // The title is the question, the buttons say what they do (and Cancel is the default).
-export const confirmDelete = (titleKey) =>
+export const confirmDelete = (titleKey, values) =>
 	native.confirm({
-		title: t(titleKey),
+		title: t(titleKey, values),
 		message: t("common.cannotBeUndone"),
 		accept: t("common.delete"),
 		cancel: t("common.cancel")

@@ -46,15 +46,20 @@ class DocumentsStore {
 		handleLoadError(err, "documents.loadFailed");
 	}
 
-	// PATCH DOCUMENT SUCCESS: the document in the list shows the changes
-	patchDocumentSuccess(result) {
+	// DOCUMENTS UPDATED: the documents in the list show the changes
+	documentsUpdated(updated) {
+		const byId = {};
+		updated.forEach((doc) => {
+			byId[doc.id] = doc;
+		});
+
 		this.documents = this.documents.map((doc) =>
-			doc.id === result.data.id ? { ...doc, ...result.data } : doc
+			byId[doc.id] ? { ...doc, ...byId[doc.id] } : doc
 		);
 	}
 
-	// PATCH DOCUMENT FAIL
-	patchDocumentFail(err) {
+	// BULK EDIT FAIL
+	bulkEditFail(err) {
 		handleError(err, "documents.saveFailed");
 	}
 

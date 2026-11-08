@@ -36,12 +36,12 @@ const parseAuth = (arg) => {
 	}
 };
 
-// what the app shows: three flags, everything else is ignored
+// what the app shows: a few flags, everything else is ignored
 const parseContext = (arg) => {
 	const source = arg || {};
 	const flags = {};
 
-	["signedIn", "document", "tabs"].forEach((key) => {
+	["signedIn", "document", "tabs", "list"].forEach((key) => {
 		if (typeof source[key] === "boolean") flags[key] = source[key];
 	});
 
@@ -57,16 +57,26 @@ const parseEntries = (list) =>
 		.slice(0, MAX_ENTRIES)
 		.map((entry) => ({ id: entry.id, name: entry.name.slice(0, 100) }));
 
-// the data of the context menu of a document: the document and what can be assigned to it
+const parseIds = (list) =>
+	Array.isArray(list) ? list.filter(Number.isInteger).slice(0, MAX_ENTRIES) : [];
+
+const KINDS = ["document", "correspondent", "tags"];
+
+// The data of the context menu of one or more documents: the documents and what can be assigned.
+// `kind` is the whole menu ("document") or only the choice of a correspondent or of tags.
+// `correspondent` is the one all documents have, undefined if they differ.
 const parseContextMenu = (arg) => {
-	if (!arg || !Number.isInteger(arg.documentId)) return null;
+	const documentIds = arg ? parseIds(arg.documentIds) : [];
+	if (documentIds.length === 0) return null;
 
 	return {
-		documentId: arg.documentId,
-		correspondent: Number.isInteger(arg.correspondent) ? arg.correspondent : null,
-		tags: (Array.isArray(arg.tags) ? arg.tags : [])
-			.filter(Number.isInteger)
-			.slice(0, MAX_ENTRIES),
+		kind: KINDS.includes(arg.kind) ? arg.kind : "document",
+		documentIds: documentIds,
+		correspondent:
+			Number.isInteger(arg.correspondent) || arg.correspondent === null
+				? arg.correspondent
+				: undefined,
+		tags: parseIds(arg.tags),
 		correspondents: parseEntries(arg.correspondents),
 		allTags: parseEntries(arg.allTags)
 	};

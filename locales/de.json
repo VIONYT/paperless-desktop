@@ -143,5 +143,11 @@
 	"context.correspondent": "Korrespondent",
 	"context.tags": "Tags",
 	"context.none": "Keiner",
-	"context.delete": "Löschen…"
+	"context.delete": "Löschen…",
+	"menu.selectAll": "Alle Dokumente auswählen",
+	"selection.count": "{count} ausgewählt",
+	"selection.selectAll": "Alle auswählen",
+	"selection.clear": "Auswahl aufheben",
+	"selection.select": "Auswählen",
+	"documents.deleteMany": "Diese {count} Dokumente löschen?"
 }

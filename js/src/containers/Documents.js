@@ -9,6 +9,10 @@ import Sidebar from "../components/Sidebar";
 import DocumentItem from "../components/DocumentItem";
 import bus from "../bus";
 import native from "../native";
+import SelectionBar from "../components/SelectionBar";
+import { setContext } from "../context";
+import { nextSelection, commonCorrespondent, commonTags } from "../selection.mjs";
+import { runDocumentCommand } from "../documentCommands";
 import { request, isAuthError } from "../api";
 import { tagsById } from "../utils";
 import { onRetry } from "../errors";
@@ -34,12 +38,15 @@ class Documents extends React.Component {
 		this.state = {
 			...DocumentsStore.getState(),
 			tags: TagsStore.getState().tags,
-			correspondents: CorrespondentsStore.getState().correspondents
+			correspondents: CorrespondentsStore.getState().correspondents,
+			selection: [],
+			anchor: null
 		};
 		this.onChange = this.onChange.bind(this);
 		this.onTagsChange = (state) => this.setState({ tags: state.tags });
 		this.onCorrespondentsChange = (state) =>
 			this.setState({ correspondents: state.correspondents });
+		this.onKeyDown = (event) => event.key === "Escape" && this.clearSelection();
 		this.updateInterval = null;
 		this.unsubscribe = [];
 	}
@@ -55,9 +62,12 @@ class Documents extends React.Component {
 		this.unsubscribe = [
 			bus.on("loadAllDocuments", () => DocumentsActions.getDocuments()),
 			bus.on("searchDocuments", (data) => this.search(data.query)),
+			bus.on("command:selectAllDocuments", () => this.selectAll()),
 			onRetry(() => DocumentsActions.getDocuments(this.state.correspondent, this.state.tag))
 		];
 
+		setContext({ list: true });
+		window.addEventListener("keydown", this.onKeyDown);
 		DocumentsStore.listen(this.onChange);
 		TagsStore.listen(this.onTagsChange);
 		CorrespondentsStore.listen(this.onCorrespondentsChange);
@@ -73,6 +83,8 @@ class Documents extends React.Component {
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
+		setContext({ list: false });
+		window.removeEventListener("keydown", this.onKeyDown);
 		ToolbarActions.clearItems();
 		this.unsubscribe.forEach((unsubscribe) => unsubscribe());
 		window.clearInterval(this.updateInterval);
@@ -83,21 +95,58 @@ class Documents extends React.Component {
 
 	// ON CHANGE
 	onChange(state) {
-		this.setState(state);
+		// documents that are gone (e.g. deleted) are not selected anymore
+		const ids = state.documents.map((doc) => doc.id);
+		this.setState({
+			...state,
+			selection: this.state.selection.filter((id) => ids.includes(id))
+		});
 	}
 
-	// SHOW CONTEXT MENU: the native menu of a document, with the correspondents and tags to choose from
-	showContextMenu(doc) {
+	// SELECT: a click on a document (with shift: everything up to it)
+	selectDocument(doc, shift) {
+		this.setState((state) =>
+			nextSelection({
+				selection: state.selection,
+				anchor: state.anchor,
+				ids: unique(state.documents).map((d) => d.id),
+				id: doc.id,
+				shift: shift
+			})
+		);
+	}
+
+	// SELECT ALL
+	selectAll() {
+		this.setState({ selection: unique(this.state.documents).map((doc) => doc.id) });
+	}
+
+	// CLEAR SELECTION
+	clearSelection() {
+		if (this.state.selection.length > 0) this.setState({ selection: [], anchor: null });
+	}
+
+	// SHOW MENU: the native menu for documents, with the correspondents and tags to choose from.
+	// `kind` is the whole menu ("document") or only the "correspondent" or "tags".
+	showMenu(ids, kind) {
 		const entries = (list) =>
 			((list && list.results) || []).map(({ id, name }) => ({ id, name }));
+		const docs = this.state.documents.filter((doc) => ids.includes(doc.id));
 
 		native.send("contextMenu", {
-			documentId: doc.id,
-			correspondent: doc.correspondent,
-			tags: doc.tags,
+			kind: kind,
+			documentIds: ids,
+			correspondent: commonCorrespondent(docs),
+			tags: commonTags(docs),
 			correspondents: entries(this.state.correspondents),
 			allTags: entries(this.state.tags)
 		});
+	}
+
+	// SHOW CONTEXT MENU: for the selected documents if the document is one of them, otherwise for it
+	showContextMenu(doc) {
+		const selected = this.state.selection;
+		this.showMenu(selected.includes(doc.id) ? selected : [doc.id], "document");
 	}
 
 	// RESTORE SELECTED FILTERS: the sidebar shows the filters that are still active
@@ -111,6 +160,7 @@ class Documents extends React.Component {
 
 	// SEARCH
 	search(query) {
+		this.clearSelection();
 		DocumentsActions.searchDocuments(query);
 
 		bus.trigger("changeExternCorrespondent", {});
@@ -119,12 +169,14 @@ class Documents extends React.Component {
 
 	// SET TAG FILTER
 	setTagFilter(tag) {
+		this.clearSelection();
 		this.setState({ tag: tag });
 		DocumentsActions.getDocuments(this.state.correspondent, tag);
 	}
 
 	// SET CORRESPONDENT FILTER
 	setCorrespondentFilter(correspondent) {
+		this.clearSelection();
 		this.setState({ correspondent: correspondent });
 		DocumentsActions.getDocuments(correspondent, this.state.tag);
 	}
@@ -167,7 +219,7 @@ class Documents extends React.Component {
 
 	// RENDER
 	render() {
-		const { documents, isLoading, next } = this.state;
+		const { documents, isLoading, next, selection } = this.state;
 		const tags = tagsById(this.state.tags);
 		if (!documents) return null;
 
@@ -178,10 +230,28 @@ class Documents extends React.Component {
 					setCorrespondentFilter={this.setCorrespondentFilter.bind(this)}
 				/>
 				<div className="pane">
+					{selection.length > 0 ? (
+						<SelectionBar
+							count={selection.length}
+							total={unique(documents).length}
+							onSelectAll={this.selectAll.bind(this)}
+							onClear={this.clearSelection.bind(this)}
+							onMenu={(kind) => this.showMenu(selection, kind)}
+							onDelete={() =>
+								runDocumentCommand(
+									{ action: "delete", documentIds: selection },
+									this.context.router
+								)
+							}
+						/>
+					) : null}
 					{unique(documents).map((doc) => (
 						<DocumentItem
 							document={doc}
 							tags={tags}
+							selected={selection.includes(doc.id)}
+							selecting={selection.length > 0}
+							onSelect={this.selectDocument.bind(this)}
 							onContextMenu={this.showContextMenu.bind(this)}
 							key={"document_list_" + doc.id}
 						/>
@@ -197,5 +267,10 @@ class Documents extends React.Component {
 		);
 	}
 }
+
+// CONTEXT TYPES
+Documents.contextTypes = {
+	router: React.PropTypes.object.isRequired
+};
 
 export default Documents;

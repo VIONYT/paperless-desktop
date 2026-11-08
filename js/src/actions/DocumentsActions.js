@@ -1,6 +1,16 @@
 import alt from "../alt";
 import { request } from "../api";
 
+// RELOAD DOCUMENTS: loads the changed documents again, the list shows the changes without a new page load
+const reloadDocuments = (actions, ids) =>
+	request({
+		method: "get",
+		url: "/api/documents/",
+		params: { id__in: ids.join(","), page_size: ids.length }
+	})
+		.then((result) => actions.documentsUpdated(result.data.results))
+		.catch(actions.bulkEditFail);
+
 // DOCUMENTS ACTIONS
 class DocumentsActions {
 	constructor() {
@@ -9,8 +19,8 @@ class DocumentsActions {
 			"getDocumentsFail",
 			"deleteDocumentsSuccess",
 			"deleteDocumentsFail",
-			"patchDocumentSuccess",
-			"patchDocumentFail",
+			"documentsUpdated",
+			"bulkEditFail",
 			"setLoading",
 			"resetDocuments"
 		);
@@ -52,11 +62,20 @@ class DocumentsActions {
 			.catch(this.actions.getDocumentsFail);
 	}
 
-	// PATCH DOCUMENT: changes some fields of a document, e.g. its correspondent
-	patchDocument(id, changes) {
-		request({ method: "patch", url: "/api/documents/" + id + "/", data: changes })
-			.then(this.actions.patchDocumentSuccess)
-			.catch(this.actions.patchDocumentFail);
+	// BULK EDIT: changes or deletes several documents at once, `method` is one of the methods of
+	// paperless-ngx: "delete", "set_correspondent" or "modify_tags" (see the parameters there)
+	bulkEdit(ids, method, parameters = {}) {
+		request({
+			method: "post",
+			url: "/api/documents/bulk_edit/",
+			data: { documents: ids, method: method, parameters: parameters }
+		})
+			.then(() =>
+				method === "delete"
+					? this.actions.deleteDocumentsSuccess(ids)
+					: reloadDocuments(this.actions, ids)
+			)
+			.catch(this.actions.bulkEditFail);
 	}
 
 	// DELETE DOCUMENT

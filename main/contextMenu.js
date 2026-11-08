@@ -1,4 +1,5 @@
-/* The context menu of a document in the list: edit, assign a correspondent, tags, delete. */
+/* The context menu of one or more documents in the list: edit, assign a correspondent, tags,
+ * delete. The buttons of the selection bar show a part of it. */
 const { BrowserWindow, Menu } = require("electron");
 const locales = require("../locales");
 
@@ -11,11 +12,11 @@ const choices = (entries, isSelected, onClick) =>
 		click: () => onClick(entry.id)
 	}));
 
-// POPUP: shows the menu, the choice is sent back as { action, documentId, id }
 const popupContextMenu = (event, data, language) => {
 	const t = (key) => locales.translate(language, key);
+	// the choice is sent back as { action, documentIds, id }
 	const answer = (action, id) =>
-		event.sender.send("contextCommand", { action, documentId: data.documentId, id });
+		event.sender.send("contextCommand", { action, documentIds: data.documentIds, id });
 
 	const correspondents = [
 		{
@@ -31,29 +32,34 @@ const popupContextMenu = (event, data, language) => {
 			(id) => answer("correspondent", id)
 		)
 	];
+	const tags = choices(
+		data.allTags,
+		(id) => data.tags.includes(id),
+		(id) => answer("tag", id)
+	);
 
-	const menu = Menu.buildFromTemplate([
-		{ label: t("context.edit"), click: () => answer("edit") },
-		{ type: "separator" },
-		{
-			label: t("context.correspondent"),
-			submenu: correspondents,
-			enabled: data.correspondents.length > 0
-		},
-		{
-			label: t("context.tags"),
-			submenu: choices(
-				data.allTags,
-				(id) => data.tags.includes(id),
-				(id) => answer("tag", id)
-			),
-			enabled: data.allTags.length > 0
-		},
-		{ type: "separator" },
-		{ label: t("context.delete"), click: () => answer("delete") }
-	]);
+	const parts = {
+		correspondent: correspondents,
+		tags: tags,
+		document: [
+			// a single document can be opened
+			...(data.documentIds.length === 1
+				? [{ label: t("context.edit"), click: () => answer("edit") }, { type: "separator" }]
+				: []),
+			{
+				label: t("context.correspondent"),
+				submenu: correspondents,
+				enabled: data.correspondents.length > 0
+			},
+			{ label: t("context.tags"), submenu: tags, enabled: data.allTags.length > 0 },
+			{ type: "separator" },
+			{ label: t("context.delete"), click: () => answer("delete") }
+		]
+	};
 
-	menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
+	Menu.buildFromTemplate(parts[data.kind]).popup({
+		window: BrowserWindow.fromWebContents(event.sender)
+	});
 };
 
 module.exports = { popupContextMenu };

@@ -205,3 +205,23 @@ html.dark .banner {
 	background-color: #4a1f1c;
 	border-color: #6b2c28;
 }
+
+html.dark .selection-bar {
+	background-color: #2d2d2f;
+	border-color: #1a1a1a;
+}
+
+html.dark .document-item-check {
+	background-color: rgba(30, 30, 30, 0.9);
+	border-color: #98989d;
+}
+
+html.dark .document-item.selected .document-item-check {
+	background-color: #1f7a35;
+	border-color: #4cc364;
+	color: #fff;
+}
+
+html.dark .document-item.selected .document-item-thumbnail {
+	outline-color: #4cc364;
+}
