@@ -33,7 +33,7 @@ class DocumentsStore {
 		}
 
 		this.documents = this.documents.concat(result.data.results);
-		this.page = this.page + 1;
+		this.page += 1;
 		this.correspondent = result.correspondent;
 		this.tag = result.tag;
 		this.isLoading = false;

@@ -3,6 +3,7 @@ import SignInForm from "../components/SignInForm";
 import native from "../native";
 import { signIn, isSignedIn } from "../auth";
 import { t } from "../i18n";
+import PropTypes from "prop-types";
 
 class Login extends React.Component {
 	// CONSTRUCTOR
@@ -61,7 +62,7 @@ class Login extends React.Component {
 
 // CONTEXT TYPES
 Login.contextTypes = {
-	router: React.PropTypes.object.isRequired
+	router: PropTypes.object.isRequired
 };
 
 export default Login;

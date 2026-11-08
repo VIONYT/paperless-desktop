@@ -368,7 +368,9 @@
 	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
 	cursor: pointer;
 	-webkit-app-region: no-drag;
-	transition: transform 120ms ease, background-color 120ms ease;
+	transition:
+		transform 120ms ease,
+		background-color 120ms ease;
 }
 
 .upload-button:hover {
@@ -782,4 +784,12 @@ html.vibrancy .sidebar .nav-group-item {
 /* pages without the sidebar (login) are opaque, the material is only for the sidebar */
 html.vibrancy body:not(:has(.window)) {
 	background-color: #fff;
+}
+
+/* text that is edited in place */
+.inline-edit-value {
+	display: inline-block;
+	min-width: 60px;
+	min-height: 1.4em;
+	cursor: text;
 }

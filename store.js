@@ -7,7 +7,7 @@ const path = require("path");
 const readData = (filePath, defaults) => {
 	try {
 		return JSON.parse(fs.readFileSync(filePath, "utf8"));
-	} catch (error) {
+	} catch {
 		return defaults;
 	}
 };

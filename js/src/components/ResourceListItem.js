@@ -1,5 +1,6 @@
 import React from "react";
-import { RIEInput, RIESelect } from "riek";
+import InlineText from "./InlineText";
+import InlineSelect from "./InlineSelect";
 import { matchingAlgorithms } from "./matching";
 import { tagColor } from "../utils";
 
@@ -17,7 +18,7 @@ class ResourceListItem extends React.Component {
 
 		// the select delivers the chosen option, the API wants the number
 		if ("matching_algorithm" in edited)
-			edited.matching_algorithm = parseInt(edited.matching_algorithm.id);
+			edited.matching_algorithm = parseInt(edited.matching_algorithm.id, 10);
 
 		this.props.update({ ...this.props.item, ...edited });
 	}
@@ -39,28 +40,22 @@ class ResourceListItem extends React.Component {
 					</td>
 				) : null}
 				<td>
-					<RIEInput
-						value={item.name}
-						propName="name"
-						change={change}
-						classEditing="inplace-edit"
-					/>
+					<InlineText value={item.name} onSave={(name) => change({ name })} />
 				</td>
 				<td>
-					<RIEInput
+					<InlineText
 						value={item.match}
-						propName="match"
-						change={change}
-						classEditing="inplace-edit"
 						className="tags-match"
+						onSave={(match) => change({ match })}
 					/>
 				</td>
 				<td>
-					<RIESelect
-						value={algorithms.find((a) => parseInt(a.id) === item.matching_algorithm)}
-						propName="matching_algorithm"
-						change={change}
+					<InlineSelect
+						value={algorithms.find(
+							(a) => parseInt(a.id, 10) === item.matching_algorithm
+						)}
 						options={algorithms}
+						onSave={(option) => change({ matching_algorithm: option })}
 					/>
 				</td>
 			</tr>

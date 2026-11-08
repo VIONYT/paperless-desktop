@@ -12,6 +12,7 @@ import { isSignedIn } from "../auth";
 import { uploadFile } from "../uploads";
 import { runDocumentCommand } from "../documentCommands";
 import { t } from "../i18n";
+import PropTypes from "prop-types";
 
 // the file types paperless-ngx can consume
 const UPLOAD_TYPES =
@@ -138,7 +139,7 @@ class App extends React.Component {
 
 // CONTEXT TYPES
 App.contextTypes = {
-	router: React.PropTypes.object.isRequired
+	router: PropTypes.object.isRequired
 };
 
 export default App;

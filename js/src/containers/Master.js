@@ -2,6 +2,7 @@ import React from "react";
 import bus from "../bus";
 import native from "../native";
 import { signOut } from "../auth";
+import PropTypes from "prop-types";
 
 class Master extends React.Component {
 	// COMPONENT DID MOUNT
@@ -30,7 +31,7 @@ class Master extends React.Component {
 
 // CONTEXT TYPES
 Master.contextTypes = {
-	router: React.PropTypes.object.isRequired
+	router: PropTypes.object.isRequired
 };
 
 export default Master;

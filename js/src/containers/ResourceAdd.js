@@ -28,7 +28,7 @@ class ResourceAdd extends React.Component {
 	// HANDLE CHANGE: the API expects the matching algorithm as number
 	handleChange(e) {
 		const { name, value } = e.target;
-		this.setState({ [name]: name === "matching_algorithm" ? parseInt(value) : value });
+		this.setState({ [name]: name === "matching_algorithm" ? parseInt(value, 10) : value });
 	}
 
 	// SAVE
@@ -87,7 +87,7 @@ class ResourceAdd extends React.Component {
 								value={this.state.color}
 								onChange={change}
 							/>
-					  )
+						)
 					: null}
 
 				{this.renderField(t("common.match"), text("match"))}

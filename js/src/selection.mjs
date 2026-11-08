@@ -28,10 +28,11 @@ export const nextSelection = ({ selection, anchor, ids, id, shift }) => {
 	return { selection: toggle(selection, id), anchor: id };
 };
 
-// COMMON CORRESPONDENT: the correspondent all documents have, `undefined` if they differ
+// COMMON CORRESPONDENT: the correspondent all documents have (null: none), `undefined` if they differ
 export const commonCorrespondent = (docs) => {
-	const first = docs.length > 0 ? docs[0].correspondent : undefined;
+	const first = docs.length > 0 ? docs[0].correspondent : null;
 
+	// eslint-disable-next-line no-undefined
 	return docs.every((doc) => doc.correspondent === first) ? first : undefined;
 };
 

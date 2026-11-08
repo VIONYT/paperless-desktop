@@ -3,6 +3,7 @@ import TabsItem from "./TabsItem";
 import bus from "../bus";
 import native from "../native";
 import { setContext } from "../context";
+import PropTypes from "prop-types";
 
 // the tabs, with only the tab of the given route marked as active
 const withActive = (tabs, route) => tabs.map((tab) => ({ ...tab, active: tab.route === route }));
@@ -109,7 +110,7 @@ class Tabs extends React.Component {
 
 // CONTEXT TYPES
 Tabs.contextTypes = {
-	router: React.PropTypes.object.isRequired
+	router: PropTypes.object.isRequired
 };
 
 export default Tabs;

@@ -79,7 +79,7 @@ const options = (name) => ({
 					appleIdPassword: env.APPLE_APP_PASSWORD,
 					teamId: env.APPLE_TEAM_ID
 				}
-		  }
+			}
 		: {})
 });
 

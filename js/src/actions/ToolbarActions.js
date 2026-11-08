@@ -3,11 +3,7 @@ import alt from "../alt";
 // TOOLBAR ACTIONS
 class ToolbarActions {
 	constructor() {
-		this.generateActions(
-			"addItemSuccess",
-			"clearItemsSuccess",
-			"removeItemSuccess"
-		);
+		this.generateActions("addItemSuccess", "clearItemsSuccess", "removeItemSuccess");
 	}
 
 	// CLEAR ITEMS
