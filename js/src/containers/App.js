@@ -114,9 +114,11 @@ class App extends React.Component {
 				<RemindersNotification />
 				<Header history={this.props.history} />
 				<Tabs history={this.props.history} />
-				<DropOverlay onDrop={uploadFiles} />
 				<Banner />
-				<div className="window-content">{this.props.children}</div>
+				<div className="window-content">
+					{this.props.children}
+					<DropOverlay onDrop={uploadFiles} />
+				</div>
 				<UploadWidget />
 				<input
 					type="file"
