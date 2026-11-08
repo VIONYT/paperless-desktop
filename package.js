@@ -3,6 +3,7 @@
  *   node package.js                       Apple Silicon and Intel
  *   node package.js --arch=arm64          only Apple Silicon (arm64, x64 or universal)
  *   node package.js --debug               "Paperless Debug", opens the DevTools at the start
+ *   node package.js --electron-zip-dir=<folder>   use downloaded Electron zip files (offline)
  *
  * The app is signed and notarized if APPLE_IDENTITY, APPLE_ID, APPLE_APP_PASSWORD and
  * APPLE_TEAM_ID are set (only possible on a Mac).
@@ -71,6 +72,9 @@ const options = (name) => ({
 			await hardenFuses(buildPath, name);
 		}
 	],
+	...(argument("electron-zip-dir", "")
+		? { electronZipDir: argument("electron-zip-dir", "") }
+		: {}),
 	...(signing
 		? {
 				osxSign: { identity: env.APPLE_IDENTITY },
