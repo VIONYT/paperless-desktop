@@ -149,5 +149,6 @@
 	"selection.selectAll": "Select All",
 	"selection.clear": "Deselect",
 	"selection.select": "Select",
-	"documents.deleteMany": "Delete these {count} documents?"
+	"documents.deleteMany": "Delete these {count} documents?",
+	"document.noOptions": "No entries"
 }

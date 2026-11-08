@@ -68,9 +68,4 @@ class Logs extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-Logs.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
 export default Logs;

@@ -1,5 +1,5 @@
 import React from "react";
-import Waypoint from "react-waypoint";
+import LoadMore from "../components/LoadMore";
 import DocumentsActions from "../actions/DocumentsActions";
 import DocumentsStore from "../stores/DocumentsStore";
 import TagsStore from "../stores/TagsStore";
@@ -17,6 +17,7 @@ import { request, isAuthError } from "../api";
 import { tagsById } from "../utils";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
+import withRouter from "../withRouter";
 
 // the documents without duplicates (a document can be in the list twice after an update)
 const unique = (documents) =>
@@ -74,7 +75,7 @@ class Documents extends React.Component {
 		DocumentsActions.getDocuments(this.state.correspondent, this.state.tag);
 		this.restoreSelectedFilters();
 
-		const seconds = parseInt(localStorage.getItem("settings.documentsUpdateInterval") || 3);
+		const seconds = parseInt(localStorage.getItem("settings.documentsUpdateInterval") || 3, 10);
 		this.updateInterval = window.setInterval(() => this.checkForNewDocuments(), seconds * 1000);
 
 		// documents that were modified after this moment are new
@@ -207,7 +208,7 @@ class Documents extends React.Component {
 
 	// ADD FRESH DOCUMENTS
 	addFreshDocuments(documents) {
-		const since = new Date(parseInt(localStorage.getItem("documents.maxModified")));
+		const since = new Date(parseInt(localStorage.getItem("documents.maxModified"), 10));
 		const fresh = documents.filter((doc) => new Date(doc.modified) > since);
 		if (fresh.length === 0) return;
 
@@ -240,7 +241,7 @@ class Documents extends React.Component {
 							onDelete={() =>
 								runDocumentCommand(
 									{ action: "delete", documentIds: selection },
-									this.context.router
+									this.props.router
 								)
 							}
 						/>
@@ -258,9 +259,9 @@ class Documents extends React.Component {
 					))}
 
 					{isLoading === false && next ? (
-						<Waypoint onEnter={this.loadMoreDocuments.bind(this)} threshold={2.0}>
-							<div className="load-more">{t("documents.loading")}</div>
-						</Waypoint>
+						<LoadMore onVisible={this.loadMoreDocuments.bind(this)}>
+							{t("documents.loading")}
+						</LoadMore>
 					) : null}
 				</div>
 			</div>
@@ -268,9 +269,4 @@ class Documents extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-Documents.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
-export default Documents;
+export default withRouter(Documents);

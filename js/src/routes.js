@@ -1,5 +1,4 @@
-import React from "react";
-import { Route, IndexRoute } from "react-router";
+import { createHashRouter } from "react-router";
 import App from "./containers/App";
 import Modal from "./components/Modal";
 import Documents from "./containers/Documents";
@@ -15,23 +14,37 @@ import Master from "./containers/Master";
 import Reminders from "./containers/Reminders";
 import RemindersAdd from "./containers/RemindersAdd";
 
-export default (
-	<Route path="/" component={Master}>
-		<IndexRoute component={Login} />
-		<Route path="/" component={App}>
-			<Route path="/documents" component={Documents} />
-			<Route path="/document/:id" component={DocumentDetail} />
-			<Route path="/logs" component={Logs} />
-			<Route path="/tags" component={Tags} />
-			<Route path="/correspondents" component={Correspondents} />
-			<Route path="/settings" component={Settings} />
-			<Route path="/login" component={Login} />
-			<Route path="/reminders" component={Reminders} />
-		</Route>
-		<Route path="/modal" component={Modal}>
-			<Route path="/modal/correspondents/add" component={CorrespondentsAdd} />
-			<Route path="/modal/tags/add" component={TagsAdd} />
-			<Route path="/modal/reminders/add/:doc" component={RemindersAdd} />
-		</Route>
-	</Route>
-);
+// The pages of the app. The address is in the hash of the URL (index.html#/documents).
+export default createHashRouter([
+	{
+		path: "/",
+		Component: Master,
+		children: [
+			{ index: true, Component: Login },
+			{ path: "login", Component: Login },
+			{
+				// the window with the toolbar and the tabs
+				Component: App,
+				children: [
+					{ path: "documents", Component: Documents },
+					{ path: "document/:id", Component: DocumentDetail },
+					{ path: "logs", Component: Logs },
+					{ path: "tags", Component: Tags },
+					{ path: "correspondents", Component: Correspondents },
+					{ path: "settings", Component: Settings },
+					{ path: "reminders", Component: Reminders }
+				]
+			},
+			{
+				// the content of the modal windows
+				path: "modal",
+				Component: Modal,
+				children: [
+					{ path: "correspondents/add", Component: CorrespondentsAdd },
+					{ path: "tags/add", Component: TagsAdd },
+					{ path: "reminders/add/:doc", Component: RemindersAdd }
+				]
+			}
+		]
+	}
+]);

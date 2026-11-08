@@ -3,6 +3,7 @@ import DropOverlay from "../components/DropOverlay";
 import Header from "../components/Header";
 import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
+import { Outlet } from "react-router";
 import UploadWidget from "../components/UploadWidget";
 import Banner from "../components/Banner";
 import native from "../native";
@@ -12,6 +13,7 @@ import { isSignedIn } from "../auth";
 import { uploadFile } from "../uploads";
 import { runDocumentCommand } from "../documentCommands";
 import { t } from "../i18n";
+import withRouter from "../withRouter";
 
 // the file types paperless-ngx can consume
 const UPLOAD_TYPES =
@@ -51,15 +53,13 @@ class App extends React.Component {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		this.unsubscribe = [
-			native.on("openDocument", (id) => this.context.router.push("/document/" + id)),
+			native.on("openDocument", (id) => this.props.router.push("/document/" + id)),
 			// the menu bar, only when signed in
-			native.on("navigate", (route) => isSignedIn() && this.context.router.push(route)),
+			native.on("navigate", (route) => isSignedIn() && this.props.router.push(route)),
 			// the commands of the menu bar: the app handles some, the open page the others
 			native.on("command", (name) => this.runCommand(name)),
 			// the context menu of a document in the list
-			native.on("contextCommand", (command) =>
-				runDocumentCommand(command, this.context.router)
-			)
+			native.on("contextCommand", (command) => runDocumentCommand(command, this.props.router))
 		];
 	}
 
@@ -112,11 +112,11 @@ class App extends React.Component {
 		return (
 			<div className="window">
 				<RemindersNotification />
-				<Header history={this.props.history} />
-				<Tabs history={this.props.history} />
+				<Header />
+				<Tabs />
 				<Banner />
 				<div className="window-content">
-					{this.props.children}
+					<Outlet />
 					<DropOverlay onDrop={uploadFiles} />
 				</div>
 				<UploadWidget />
@@ -136,9 +136,4 @@ class App extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-App.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
-export default App;
+export default withRouter(App);

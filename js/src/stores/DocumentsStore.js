@@ -1,10 +1,11 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import DocumentsActions from "../actions/DocumentsActions";
 import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENTS STORE
-class DocumentsStore {
+class DocumentsStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(DocumentsActions);
 		this.documents = [];
 		this.correspondent = null;
@@ -33,7 +34,7 @@ class DocumentsStore {
 		}
 
 		this.documents = this.documents.concat(result.data.results);
-		this.page = this.page + 1;
+		this.page += 1;
 		this.correspondent = result.correspondent;
 		this.tag = result.tag;
 		this.isLoading = false;
@@ -75,4 +76,4 @@ class DocumentsStore {
 	}
 }
 
-export default alt.createStore(DocumentsStore);
+export default createStore(DocumentsStore);

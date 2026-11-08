@@ -1,12 +1,13 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import CorrespondentsActions from "../actions/CorrespondentsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import native from "../native";
 import { handleError, handleLoadError } from "../errors";
 
 // CORRESPONDENTS STORE
-class CorrespondentsStore {
+class CorrespondentsStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(CorrespondentsActions);
 		this.correspondents = [];
 	}
@@ -64,4 +65,4 @@ class CorrespondentsStore {
 	}
 }
 
-export default alt.createStore(CorrespondentsStore);
+export default createStore(CorrespondentsStore);

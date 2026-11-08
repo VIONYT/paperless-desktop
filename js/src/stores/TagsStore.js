@@ -1,12 +1,13 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import TagsActions from "../actions/TagsActions";
 import ToolbarActions from "../actions/ToolbarActions";
 import native from "../native";
 import { handleError, handleLoadError } from "../errors";
 
 // TAGS STORE
-class TagsStore {
+class TagsStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(TagsActions);
 		this.tags = [];
 	}
@@ -62,4 +63,4 @@ class TagsStore {
 	}
 }
 
-export default alt.createStore(TagsStore);
+export default createStore(TagsStore);

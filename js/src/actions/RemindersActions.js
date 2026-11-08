@@ -1,4 +1,4 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { getHost } from "../api";
 
 // REMINDERS ACTIONS
@@ -34,8 +34,9 @@ const defer = (fn) => {
 	window.setTimeout(fn, 0);
 };
 
-class RemindersActions {
+class RemindersActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions(
 			"getRemindersSuccess",
 			"getRemindersFail",
@@ -94,4 +95,4 @@ class RemindersActions {
 	}
 }
 
-export default alt.createActions(RemindersActions);
+export default createActions(RemindersActions);

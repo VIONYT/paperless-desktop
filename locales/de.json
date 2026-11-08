@@ -149,5 +149,6 @@
 	"selection.selectAll": "Alle auswählen",
 	"selection.clear": "Auswahl aufheben",
 	"selection.select": "Auswählen",
-	"documents.deleteMany": "Diese {count} Dokumente löschen?"
+	"documents.deleteMany": "Diese {count} Dokumente löschen?",
+	"document.noOptions": "Keine Einträge"
 }

@@ -1,11 +1,12 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import DocumentActions from "../actions/DocumentActions";
 import bus from "../bus";
 import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENT STORE
-class DocumentStore {
+class DocumentStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(DocumentActions);
 		this.doc = null;
 	}
@@ -31,4 +32,4 @@ class DocumentStore {
 	}
 }
 
-export default alt.createStore(DocumentStore);
+export default createStore(DocumentStore);

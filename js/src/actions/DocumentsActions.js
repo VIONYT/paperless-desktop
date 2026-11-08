@@ -1,4 +1,4 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { request } from "../api";
 
 // RELOAD DOCUMENTS: loads the changed documents again, the list shows the changes without a new page load
@@ -12,8 +12,9 @@ const reloadDocuments = (actions, ids) =>
 		.catch(actions.bulkEditFail);
 
 // DOCUMENTS ACTIONS
-class DocumentsActions {
+class DocumentsActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions(
 			"getDocumentsSuccess",
 			"getDocumentsFail",
@@ -88,4 +89,4 @@ class DocumentsActions {
 	}
 }
 
-export default alt.createActions(DocumentsActions);
+export default createActions(DocumentsActions);

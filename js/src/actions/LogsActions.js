@@ -1,9 +1,10 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { request } from "../api";
 
 // LOGS ACTIONS
-class LogsActions {
+class LogsActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions("getLogsSuccess", "getLogsFail");
 	}
 
@@ -28,4 +29,4 @@ class LogsActions {
 	}
 }
 
-export default alt.createActions(LogsActions);
+export default createActions(LogsActions);

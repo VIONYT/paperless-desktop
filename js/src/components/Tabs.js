@@ -3,6 +3,7 @@ import TabsItem from "./TabsItem";
 import bus from "../bus";
 import native from "../native";
 import { setContext } from "../context";
+import withRouter from "../withRouter";
 
 // the tabs, with only the tab of the given route marked as active
 const withActive = (tabs, route) => tabs.map((tab) => ({ ...tab, active: tab.route === route }));
@@ -85,7 +86,7 @@ class Tabs extends React.Component {
 		const remaining = tabs.filter((tab) => tab.route !== route);
 
 		this.setState({ tabs: remaining });
-		if (index >= 0) this.context.router.replace(remaining[Math.max(0, index - 1)].route);
+		if (index >= 0) this.props.router.replace(remaining[Math.max(0, index - 1)].route);
 	}
 
 	// RENDER
@@ -107,9 +108,4 @@ class Tabs extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-Tabs.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
-export default Tabs;
+export default withRouter(Tabs);

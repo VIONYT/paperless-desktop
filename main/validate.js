@@ -31,7 +31,7 @@ const parseAuth = (arg) => {
 		return isWeb && arg.token.length > 0
 			? { host: arg.host.replace(/\/+$/, ""), token: arg.token }
 			: null;
-	} catch (e) {
+	} catch {
 		return null;
 	}
 };

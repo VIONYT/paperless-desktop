@@ -52,9 +52,4 @@ class SidebarCorrespondents extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-SidebarCorrespondents.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
 export default SidebarCorrespondents;

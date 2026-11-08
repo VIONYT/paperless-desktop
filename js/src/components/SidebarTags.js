@@ -52,9 +52,4 @@ class SidebarTags extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-SidebarTags.contextTypes = {
-	router: React.PropTypes.object.isRequired
-};
-
 export default SidebarTags;

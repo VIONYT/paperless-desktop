@@ -12,6 +12,7 @@ import { downloadUrl } from "../api";
 import { confirmDelete } from "../dialogs";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
+import withRouter from "../withRouter";
 
 class DocumentDetail extends React.Component {
 	// CONSTRUCTOR
@@ -41,11 +42,11 @@ class DocumentDetail extends React.Component {
 		DocumentStore.unlisten(this.onChange);
 	}
 
-	// COMPONENT WILL UPDATE: another document was opened in this view
-	componentWillUpdate(nextProps) {
-		if (nextProps.params.id !== this.props.params.id) {
+	// COMPONENT DID UPDATE: another document was opened in this view
+	componentDidUpdate(prevProps) {
+		if (prevProps.params.id !== this.props.params.id) {
 			this.setState({ doc: null });
-			DocumentActions.getDocument(nextProps.params.id);
+			DocumentActions.getDocument(this.props.params.id);
 		}
 	}
 
@@ -165,4 +166,4 @@ class DocumentDetail extends React.Component {
 	}
 }
 
-export default DocumentDetail;
+export default withRouter(DocumentDetail);
