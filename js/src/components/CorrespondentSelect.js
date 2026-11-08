@@ -41,12 +41,19 @@ class CorrespondentSelect extends React.Component {
 
 	// RENDER
 	render() {
+		const options = toOptions(this.state.correspondents);
+
 		return (
 			<Select
-				value={this.props.value}
+				unstyled
+				isClearable
+				className="select-container"
+				classNamePrefix="select"
+				value={options.find((option) => option.value === this.props.value) || null}
 				onChange={this.selectChanged.bind(this)}
-				options={toOptions(this.state.correspondents)}
+				options={options}
 				placeholder={t("document.select")}
+				noOptionsMessage={() => t("document.noOptions")}
 			/>
 		);
 	}

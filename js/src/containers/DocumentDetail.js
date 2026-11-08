@@ -12,6 +12,7 @@ import { downloadUrl } from "../api";
 import { confirmDelete } from "../dialogs";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
+import withRouter from "../withRouter";
 
 class DocumentDetail extends React.Component {
 	// CONSTRUCTOR
@@ -165,4 +166,4 @@ class DocumentDetail extends React.Component {
 	}
 }
 
-export default DocumentDetail;
+export default withRouter(DocumentDetail);

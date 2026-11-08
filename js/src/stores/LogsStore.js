@@ -1,10 +1,11 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import LogsActions from "../actions/LogsActions";
 import { handleLoadError } from "../errors";
 
 // LOGS STORE
-class LogsStore {
+class LogsStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(LogsActions);
 		this.logs = [];
 	}
@@ -20,4 +21,4 @@ class LogsStore {
 	}
 }
 
-export default alt.createStore(LogsStore);
+export default createStore(LogsStore);

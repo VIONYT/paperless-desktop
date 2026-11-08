@@ -4,7 +4,6 @@ import CorrespondentsStore from "../stores/CorrespondentsStore";
 import SidebarCorrespondentItem from "./SidebarCorrespondentItem";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
 
 class SidebarCorrespondents extends React.Component {
 	// CONSTRUCTOR
@@ -52,10 +51,5 @@ class SidebarCorrespondents extends React.Component {
 		);
 	}
 }
-
-// CONTEXT TYPES
-SidebarCorrespondents.contextTypes = {
-	router: PropTypes.object.isRequired
-};
 
 export default SidebarCorrespondents;

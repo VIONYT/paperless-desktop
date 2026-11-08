@@ -1,11 +1,12 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import RemindersActions from "../actions/RemindersActions";
 import native from "../native";
 import { handleError } from "../errors";
 
 // REMINDERS STORE
-class RemindersStore {
+class RemindersStore extends Store {
 	constructor() {
+		super();
 		this.bindActions(RemindersActions);
 		this.reminders = [];
 	}
@@ -42,4 +43,4 @@ class RemindersStore {
 	}
 }
 
-export default alt.createStore(RemindersStore);
+export default createStore(RemindersStore);

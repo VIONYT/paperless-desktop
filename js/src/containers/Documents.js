@@ -17,7 +17,7 @@ import { request, isAuthError } from "../api";
 import { tagsById } from "../utils";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
+import withRouter from "../withRouter";
 
 // the documents without duplicates (a document can be in the list twice after an update)
 const unique = (documents) =>
@@ -241,7 +241,7 @@ class Documents extends React.Component {
 							onDelete={() =>
 								runDocumentCommand(
 									{ action: "delete", documentIds: selection },
-									this.context.router
+									this.props.router
 								)
 							}
 						/>
@@ -269,9 +269,4 @@ class Documents extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-Documents.contextTypes = {
-	router: PropTypes.object.isRequired
-};
-
-export default Documents;
+export default withRouter(Documents);

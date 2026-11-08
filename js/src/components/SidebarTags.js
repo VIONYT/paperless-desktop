@@ -4,7 +4,6 @@ import TagsStore from "../stores/TagsStore";
 import SidebarTagItem from "./SidebarTagItem";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
 
 class SidebarTags extends React.Component {
 	// CONSTRUCTOR
@@ -52,10 +51,5 @@ class SidebarTags extends React.Component {
 		);
 	}
 }
-
-// CONTEXT TYPES
-SidebarTags.contextTypes = {
-	router: PropTypes.object.isRequired
-};
 
 export default SidebarTags;

@@ -1,7 +1,7 @@
 import React from "react";
-import { Router, Route, hashHistory } from "react-router";
-import ReactDOM from "react-dom";
-import routes from "./routes";
+import { createRoot } from "react-dom/client";
+import { RouterProvider } from "react-router/dom";
+import router from "./routes";
 import { applyTheme } from "./theme";
 import { applyLanguage } from "./i18n";
 import { restoreSignIn } from "./auth";
@@ -18,4 +18,4 @@ applyTheme();
 applyLanguage();
 restoreSignIn();
 
-ReactDOM.render(<Router history={hashHistory}>{routes}</Router>, document.getElementById("app"));
+createRoot(document.getElementById("app")).render(<RouterProvider router={router} />);

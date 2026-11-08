@@ -47,14 +47,20 @@ class TagsInput extends React.Component {
 
 	// RENDER
 	render() {
+		const options = toOptions(this.state.tags);
+
 		return (
 			<Select
+				unstyled
+				isMulti
+				className="select-container"
+				classNamePrefix="select"
 				name="tags"
-				value={this.props.tags}
-				options={toOptions(this.state.tags)}
+				value={options.filter((option) => (this.props.tags || []).includes(option.value))}
+				options={options}
 				onChange={this.changeSelection.bind(this)}
-				multi={true}
 				placeholder={t("document.select")}
+				noOptionsMessage={() => t("document.noOptions")}
 			/>
 		);
 	}

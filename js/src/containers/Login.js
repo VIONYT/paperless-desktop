@@ -3,7 +3,7 @@ import SignInForm from "../components/SignInForm";
 import native from "../native";
 import { signIn, isSignedIn } from "../auth";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
+import withRouter from "../withRouter";
 
 class Login extends React.Component {
 	// CONSTRUCTOR
@@ -36,7 +36,7 @@ class Login extends React.Component {
 	// GO HOME
 	goHome() {
 		native.send("setSize", { width: 1200, height: 750 });
-		this.context.router.push("/documents");
+		this.props.router.push("/documents");
 	}
 
 	// RENDER
@@ -60,9 +60,4 @@ class Login extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-Login.contextTypes = {
-	router: PropTypes.object.isRequired
-};
-
-export default Login;
+export default withRouter(Login);

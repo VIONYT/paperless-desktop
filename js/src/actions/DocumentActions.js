@@ -1,12 +1,13 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { request } from "../api";
 
 // the fields of a document the user can edit in the app
 const EDITABLE_FIELDS = ["title", "content", "correspondent", "tags", "created"];
 
 // DOCUMENT ACTIONS
-class DocumentActions {
+class DocumentActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions(
 			"getDocumentSuccess",
 			"getDocumentFail",
@@ -36,4 +37,4 @@ class DocumentActions {
 	}
 }
 
-export default alt.createActions(DocumentActions);
+export default createActions(DocumentActions);

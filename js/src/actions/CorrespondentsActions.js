@@ -1,9 +1,10 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { request, MAX_PAGE_SIZE } from "../api";
 
 // CORRESPONDENTS ACTIONS
-class CorrespondentsActions {
+class CorrespondentsActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions(
 			"getCorrespondentsSuccess",
 			"getCorrespondentsFail",
@@ -51,4 +52,4 @@ class CorrespondentsActions {
 	}
 }
 
-export default alt.createActions(CorrespondentsActions);
+export default createActions(CorrespondentsActions);

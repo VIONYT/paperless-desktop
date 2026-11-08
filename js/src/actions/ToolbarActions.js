@@ -1,8 +1,9 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 
 // TOOLBAR ACTIONS
-class ToolbarActions {
+class ToolbarActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions("addItemSuccess", "clearItemsSuccess", "removeItemSuccess");
 	}
 
@@ -33,4 +34,4 @@ class ToolbarActions {
 	}
 }
 
-export default alt.createActions(ToolbarActions);
+export default createActions(ToolbarActions);

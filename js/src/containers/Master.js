@@ -1,8 +1,9 @@
 import React from "react";
+import { Outlet } from "react-router";
 import bus from "../bus";
 import native from "../native";
 import { signOut } from "../auth";
-import PropTypes from "prop-types";
+import withRouter from "../withRouter";
 
 class Master extends React.Component {
 	// COMPONENT DID MOUNT
@@ -20,18 +21,13 @@ class Master extends React.Component {
 		signOut();
 		native.send("setSize", { width: 500, height: 520 });
 
-		if (this.context.router) this.context.router.push("/login");
+		if (this.props.router) this.props.router.push("/login");
 	}
 
 	// RENDER
 	render() {
-		return this.props.children;
+		return <Outlet />;
 	}
 }
 
-// CONTEXT TYPES
-Master.contextTypes = {
-	router: PropTypes.object.isRequired
-};
-
-export default Master;
+export default withRouter(Master);

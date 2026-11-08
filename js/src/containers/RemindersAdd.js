@@ -2,13 +2,13 @@ import React from "react";
 import RemindersActions from "../actions/RemindersActions";
 import native from "../native";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
+import withRouter from "../withRouter";
 
 class RemindersAdd extends React.Component {
 	// CONSTRUCTOR
 	constructor(props, context) {
 		super(props, context);
-		this.state = { doc: context.router.params.doc, date: "", note: "" };
+		this.state = { doc: props.params.doc, date: "", note: "" };
 	}
 
 	// CLOSE MODAL
@@ -83,9 +83,4 @@ class RemindersAdd extends React.Component {
 	}
 }
 
-// CONTEXT TYPES
-RemindersAdd.contextTypes = {
-	router: PropTypes.object.isRequired
-};
-
-export default RemindersAdd;
+export default withRouter(RemindersAdd);

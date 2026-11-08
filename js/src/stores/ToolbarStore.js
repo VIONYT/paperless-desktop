@@ -1,10 +1,11 @@
-import alt from "../alt";
+import { Store, createStore } from "../flux.mjs";
 import ToolbarActions from "../actions/ToolbarActions";
 
 // TOOLBAR STORE
-class ToolbarStore {
+class ToolbarStore extends Store {
 	// CONSTRUCTOR
 	constructor() {
+		super();
 		this.bindActions(ToolbarActions);
 		this.items = [];
 	}
@@ -33,4 +34,4 @@ class ToolbarStore {
 	}
 }
 
-export default alt.createStore(ToolbarStore);
+export default createStore(ToolbarStore);

@@ -117,48 +117,27 @@ html.dark .document-item-thumbnail {
 	box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.7);
 }
 
-/* react-select */
+/* react-select (the classes have the prefix "select") */
 
-html.dark .Select-control,
-html.dark .Select-menu-outer,
-html.dark .Select-option {
+html.dark .select__control,
+html.dark .select__menu {
 	color: #e4e4e6;
 	background-color: #2b2b2d;
 	border-color: #4a4a4d;
 }
 
-html.dark .Select-option.is-focused {
+html.dark .select__option--is-focused {
 	background-color: #3a3a3d;
 }
 
-html.dark .Select-value-label,
-html.dark .Select-placeholder,
-html.dark .Select--single > .Select-control .Select-value {
-	color: #e4e4e6 !important;
-}
-
-html.dark .Select--multi .Select-value {
+html.dark .select__multi-value {
 	background-color: #1d3a5a;
 	border-color: #2e5a8a;
 }
 
-/* calendar of the reminders */
-
-html.dark .rbc-calendar,
-html.dark .rbc-month-view,
-html.dark .rbc-header,
-html.dark .rbc-day-bg,
-html.dark .rbc-month-row,
-html.dark .rbc-off-range-bg {
-	border-color: #3a3a3c !important;
-}
-
-html.dark .rbc-off-range-bg {
-	background: #262628;
-}
-
-html.dark .rbc-today {
-	background-color: #2a3a4a;
+html.dark .select__indicator,
+html.dark .select__placeholder {
+	color: #98989d;
 }
 
 html.dark .btn-group .btn + .btn {

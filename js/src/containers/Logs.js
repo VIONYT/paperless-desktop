@@ -4,7 +4,6 @@ import LogsStore from "../stores/LogsStore";
 import bus from "../bus";
 import { onRetry } from "../errors";
 import { t } from "../i18n";
-import PropTypes from "prop-types";
 
 class Logs extends React.Component {
 	// CONSTRUCTOR
@@ -68,10 +67,5 @@ class Logs extends React.Component {
 		);
 	}
 }
-
-// CONTEXT TYPES
-Logs.contextTypes = {
-	router: PropTypes.object.isRequired
-};
 
 export default Logs;

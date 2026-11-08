@@ -1,9 +1,10 @@
-import alt from "../alt";
+import { Actions, createActions } from "../flux.mjs";
 import { request, MAX_PAGE_SIZE } from "../api";
 
 // TAGS ACTIONS
-class TagsActions {
+class TagsActions extends Actions {
 	constructor() {
+		super();
 		this.generateActions(
 			"getTagsSuccess",
 			"getTagsFail",
@@ -49,4 +50,4 @@ class TagsActions {
 	}
 }
 
-export default alt.createActions(TagsActions);
+export default createActions(TagsActions);
