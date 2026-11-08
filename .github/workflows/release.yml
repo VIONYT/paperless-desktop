@@ -47,6 +47,11 @@ jobs:
                   fi
 
             - run: npm ci
+            # the Electron downloads (about 120 MB per architecture) are cached, github.com sometimes answers with 504
+            - uses: actions/cache@v4
+              with:
+                  path: ~/Library/Caches/electron
+                  key: electron-${{ hashFiles('package-lock.json') }}
             - run: npm test
 
             - name: Import the signing certificate
@@ -61,7 +66,15 @@ jobs:
                   rm "$RUNNER_TEMP/cert.p12"
 
             # package.js signs and notarizes when the APPLE_* variables are set
-            - run: npm run package
+            # downloading Electron can fail for a moment, so the packaging is tried up to four times
+            - name: Package the app
+              run: |
+                  for attempt in 1 2 3 4; do
+                    npm run package && exit 0
+                    echo "Packaging failed (attempt $attempt of 4), trying again in 60 seconds"
+                    sleep 60
+                  done
+                  exit 1
 
             - name: Zip the apps
               run: |
