@@ -1,111 +1,80 @@
 import React from "react";
-import PaperlessComponent from "../components/PaperlessComponent";
 import RemindersActions from "../actions/RemindersActions";
-import RemindersStore from "../stores/RemindersStore";
-import moment from "moment";
+import native from "../native";
+import { t } from "../i18n";
 
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
-const remote = electron.remote;
-const dialog = remote.dialog;
-
-class RemindersAdd extends PaperlessComponent {
+class RemindersAdd extends React.Component {
 	// CONSTRUCTOR
 	constructor(props, context) {
 		super(props, context);
-
-		this.state = {
-			doc: context.router.params.doc,
-			date: null,
-			note: null
-		};
+		this.state = { doc: context.router.params.doc, date: "", note: "" };
 	}
 
 	// CLOSE MODAL
 	closeModal() {
-		ipcRenderer.send("closeModal");
+		native.send("closeModal");
 	}
 
-	// SAVE REMINDER
+	// SAVE REMINDER: the date has to be in the future and the reminder needs a note
 	saveReminder(e) {
 		e.preventDefault();
+		const date = new Date(this.state.date);
 
-		var date = moment(this.state.date)
-			.utc()
-			.toISOString();
-
-		// check if reminder is in the future
-		if (
-			moment(this.state.date)
-				.utc()
-				.isBefore(moment.utc())
-		) {
-			return dialog.showErrorBox(
-				"Time travel as not been invented yet.... or has it?",
-				"Select a reminder date in the future!"
-			);
+		if (!(date > new Date())) {
+			native.showError(t("reminders.pastTitle"), t("reminders.pastMessage"));
+		} else if (this.state.note.trim().length === 0) {
+			native.showError(t("reminders.noteMissingTitle"), t("reminders.noteMissing"));
+		} else {
+			RemindersActions.addReminder(this.state.doc, date.toISOString(), this.state.note);
 		}
-
-		// check if a note is available
-		if (this.state.note === null || this.state.note.trim().length <= 0) {
-			return dialog.showErrorBox("Could not add reminder", "Please add a note text!");
-		}
-
-		RemindersActions.addReminder(this.state.doc, date, this.state.note);
 	}
 
 	// HANDLE CHANGE
 	handleChange(e) {
-		var s = this.state;
-		s[e.target.name] = e.target.value;
-
-		this.setState(s);
+		this.setState({ [e.target.name]: e.target.value });
 	}
 
 	// RENDER
 	render() {
+		const change = this.handleChange.bind(this);
+
 		return (
 			<form className="form-detail-info">
-				<h3>Add Reminder</h3>
+				<h3>{t("reminders.add")}</h3>
 				<div className="form-group">
-					<label>Date</label>
+					<label>{t("common.date")}</label>
 					<input
 						type="datetime-local"
 						className="form-control"
 						name="date"
-						onChange={this.handleChange.bind(this)}
-						placeholder="Reminder"
+						onChange={change}
 					/>
 				</div>
 				<div className="form-group">
-					<label>Note</label>
+					<label>{t("common.note")}</label>
 					<textarea
 						className="form-control"
 						rows="2"
 						name="note"
-						onChange={this.handleChange.bind(this)}
-						placeholder="Add a note to your reminder, if you'd like."
+						onChange={change}
+						placeholder={t("reminders.notePlaceholder")}
 					/>
 				</div>
 
-				<p style={{ color: "grey" }}>
-					Note: reminder notifications only show up, while this app is open on your Mac!
-				</p>
+				<p style={{ color: "grey" }}>{t("reminders.hint")}</p>
 
 				<div className="btn-group">
 					<button
 						className="btn btn-large btn-default"
 						onClick={this.closeModal.bind(this)}
 					>
-						Close
+						{t("common.close")}
 					</button>
 					<button
 						className="btn btn-large btn-primary"
 						onClick={this.saveReminder.bind(this)}
 					>
-						<span className="icon icon-floppy" /> Save
+						<span className="icon icon-floppy" /> {t("common.save")}
 					</button>
 				</div>
 			</form>

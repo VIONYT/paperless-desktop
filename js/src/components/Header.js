@@ -1,147 +1,137 @@
 import React from "react";
 import { Link } from "react-router";
-import $ from "jquery";
+import ToolbarStore from "../stores/ToolbarStore";
+import bus from "../bus";
+import { t } from "../i18n";
+
+// the buttons of the toolbar, in groups: [id, route, icon]
+const NAVIGATION = [
+	[
+		["documents", "/documents", "newspaper"],
+		["correspondents", "/correspondents", "users"],
+		["tags", "/tags", "tag"],
+		["reminders", "/reminders", "bell"]
+	],
+	[
+		["settings", "/settings", "cog"],
+		["logs", "/logs", "menu"]
+	]
+];
+
+const currentRoute = () => location.hash.replace("#", "").split("?")[0];
 
 class Header extends React.Component {
-    // CONSTRUCTOR
-    constructor(props) {
-        super(props);
-        this.state = {
-            active: "documents",
-            route: "/documents"
-        };
-    }
+	// CONSTRUCTOR
+	constructor(props) {
+		super(props);
+		this.state = {
+			active: "documents",
+			route: "/documents",
+			items: ToolbarStore.getState().items
+		};
+		this.searchInput = null;
+		this.onHashChange = () => this.setState({ route: currentRoute() });
+		this.onToolbarChange = (state) => this.setState({ items: state.items });
+	}
 
-    // COMPONENT DID MOUNT
-    componentDidMount() {
-        $(window).on(
-            "header.activeItem",
-            this.handleActiveHeaderChanged.bind(this)
-        );
-        $(window).on("hashchange", this.routeChanged.bind(this));
-    }
+	// COMPONENT DID MOUNT
+	componentDidMount() {
+		this.unsubscribe = bus.on("header.activeItem", (data) =>
+			this.setState({ active: data.item })
+		);
+		window.addEventListener("hashchange", this.onHashChange);
+		ToolbarStore.listen(this.onToolbarChange);
+		this.unsubscribeFind = bus.on("command:find", () => this.focusSearch());
+	}
 
-    // COMPONENT WILL UNMOUNT
-    componentWillUnmount() {
-        $(window).off("header.activeItem");
-        $(window).off("hashchange");
-    }
+	// COMPONENT WILL UNMOUNT
+	componentWillUnmount() {
+		this.unsubscribe();
+		this.unsubscribeFind();
+		ToolbarStore.unlisten(this.onToolbarChange);
+		window.removeEventListener("hashchange", this.onHashChange);
+	}
 
-    // ROUTE CHANGED
-    routeChanged() {
-        var route = location.hash.replace("#", "").split("?")[0];
-        this.setState({
-            route: route
-        });
-    }
+	// HANDLE SEARCH INPUT CHANGED: an empty search shows all documents, Enter starts the search
+	handleSearchInputChanged(event) {
+		const query = event.target.value;
 
-    // HANDLE ACTIVE HEADER CHANGED
-    handleActiveHeaderChanged(e, data) {
-        this.setState({
-            active: data.item
-        });
-    }
+		if (query.length === 0) bus.trigger("loadAllDocuments");
+		else if (query.length > 2 && event.keyCode === 13)
+			bus.trigger("searchDocuments", { query: query });
+	}
 
-    // HANDLE SEARCH INPUT CHANGED
-    handleSearchInputChanged(event) {
-        var v = event.target.value;
+	// FOCUS SEARCH: the menu "Find" shows the documents and puts the cursor in the search field
+	focusSearch() {
+		if (this.state.route !== "/documents") location.hash = "#/documents";
 
-        if (v.length === 0) {
-            $(window).trigger("loadAllDocuments");
-        } else {
-            if (v.length > 2 && event.keyCode === 13) {
-                $(window).trigger("searchDocuments", {
-                    query: v
-                });
-            }
-        }
-    }
+		window.setTimeout(() => this.searchInput && this.searchInput.focus(), 200);
+	}
 
-    // RENDER
-    render() {
-        var documentsClass = "btn btn-default";
-        if (this.state.active === "documents") documentsClass += " active";
+	// RENDER ITEM: an action of the page, only the main action has a text, the others a tooltip
+	renderItem(item) {
+		const primary = item.flavor === "primary";
 
-        var logsClass = "btn btn-default";
-        if (this.state.active === "logs") logsClass += " active";
+		return (
+			<button
+				key={item.id}
+				className={"btn btn-" + item.flavor}
+				title={item.text}
+				aria-label={item.text}
+				onClick={item.click}
+			>
+				{item.icon ? <span className={"icon icon-" + item.icon} /> : null}
+				{primary ? <span>{item.text}</span> : null}
+			</button>
+		);
+	}
 
-        var tagsClass = "btn btn-default";
-        if (this.state.active === "tags") tagsClass += " active";
+	// RENDER BUTTON
+	renderButton([id, route, icon]) {
+		const className = "btn btn-default" + (this.state.active === id ? " active" : "");
 
-        var correspondentsClass = "btn btn-default";
-        if (this.state.active === "correspondents")
-            correspondentsClass += " active";
+		return (
+			<Link key={id} className={className} title={t("nav." + id)} to={route}>
+				<span className={"icon icon-" + icon} />
+			</Link>
+		);
+	}
 
-        var settingsClass = "btn btn-default";
-        if (this.state.active === "settings") settingsClass += " active";
+	// RENDER
+	render() {
+		return (
+			<header className="toolbar toolbar-header">
+				<div className="toolbar-actions">
+					{NAVIGATION.map((group, index) => (
+						<div className="btn-group" key={index}>
+							{group.map((button) => this.renderButton(button))}
+						</div>
+					))}
 
-        var remindersClass = "btn btn-default";
-        if (this.state.active === "reminders") remindersClass += " active";
+					<div className="toolbar-items">
+						{this.state.items
+							.slice()
+							.sort((a, b) => (a.flavor === "primary") - (b.flavor === "primary"))
+							.map((item) => this.renderItem(item))}
+					</div>
 
-        var searchBar = null;
-        if (this.state.route === "/documents") {
-            searchBar = (
-                <div className="search-bar pull-right">
-                    <input
-                        type="search"
-                        onKeyUp={this.handleSearchInputChanged.bind(this)}
-                        className="form-control"
-                        placeholder="Search"
-                    />
-                </div>
-            );
-        }
-
-        return (
-            <header className="toolbar toolbar-header">
-                <h1 className="title">Paperless</h1>
-
-                <div className="toolbar-actions">
-                    <div className="btn-group">
-                        <Link
-                            className={documentsClass}
-                            title="Documents"
-                            to={"/documents"}
-                        >
-                            <span className="icon icon-newspaper" />
-                        </Link>
-                        <Link
-                            className={correspondentsClass}
-                            title="Correspondents"
-                            to={"/correspondents"}
-                        >
-                            <span className="icon icon-users" />
-                        </Link>
-                        <Link className={tagsClass} title="Tags" to={"/tags"}>
-                            <span className="icon icon-tag" />
-                        </Link>
-                        <Link
-                            className={remindersClass}
-                            title="Reminders"
-                            to={"/reminders"}
-                        >
-                            <span className="icon icon-bell" />
-                        </Link>
-                    </div>
-
-                    <div className="btn-group">
-                        <Link
-                            className={settingsClass}
-                            title="Settings"
-                            to={"/settings"}
-                        >
-                            <span className="icon icon-cog" />
-                        </Link>
-                        <Link className={logsClass} title="Logs" to={"/logs"}>
-                            <span className="icon icon-menu" />
-                        </Link>
-                    </div>
-
-                    {searchBar}
-                </div>
-            </header>
-        );
-    }
+					{this.state.route === "/documents" ? (
+						<div className="search-bar pull-right">
+							<input
+								type="search"
+								onKeyUp={this.handleSearchInputChanged.bind(this)}
+								className="form-control"
+								placeholder={t("nav.search")}
+								ref={(el) => {
+									this.searchInput = el;
+								}}
+							/>
+						</div>
+					) : null}
+				</div>
+			</header>
+		);
+	}
 }
 
 export default Header;

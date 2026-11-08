@@ -2,11 +2,8 @@ import React from "react";
 import RemindersActions from "../actions/RemindersActions";
 import RemindersStore from "../stores/RemindersStore";
 import DocumentDetailRemindersItem from "./DocumentDetailRemindersItem";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import native from "../native";
+import { t } from "../i18n";
 
 class DocumentDetailReminders extends React.Component {
 	// CONSTRUCTOR
@@ -21,18 +18,8 @@ class DocumentDetailReminders extends React.Component {
 		RemindersStore.listen(this.onChange);
 		RemindersActions.getReminders();
 
-		// EVENT: tagAdded
-		ipcRenderer.on("reminderAdded", (e, data) => {
-			// add the newly created tag to the store
-			var reminders = this.state.reminders;
-			if (reminders) {
-				reminders.push(data);
-
-				this.setState({
-					reminders: reminders
-				});
-			}
-		});
+		// EVENT: reminderAdded (reminders are stored locally, reload them)
+		native.on("reminderAdded", () => RemindersActions.getReminders());
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -53,12 +40,12 @@ class DocumentDetailReminders extends React.Component {
 	// RENDER
 	render() {
 		// filter out the matching reminders
-		var reminders = this.state.reminders.filter(r => {
-			return r.document.endsWith("/" + this.props.doc.id + "/");
+		var reminders = this.state.reminders.filter((r) => {
+			return r.document === this.props.doc.id;
 		});
 
 		// display that no reminders are available
-		var content = <span className="no-reminders">no reminders set</span>;
+		var content = <span className="no-reminders">{t("reminders.none")}</span>;
 
 		// if there are reminders available, show them
 		if (reminders.length > 0) {
@@ -76,8 +63,8 @@ class DocumentDetailReminders extends React.Component {
 				<table className="table-striped">
 					<thead>
 						<tr>
-							<th>Date</th>
-							<th>Note</th>
+							<th>{t("common.date")}</th>
+							<th>{t("common.note")}</th>
 							<th />
 						</tr>
 					</thead>

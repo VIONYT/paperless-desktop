@@ -1,30 +1,31 @@
 import React from "react";
-import PaperlessComponent from "./PaperlessComponent";
+import Select from "react-select";
 import TagsActions from "../actions/TagsActions";
 import TagsStore from "../stores/TagsStore";
-import Select from "react-select";
+import { t } from "../i18n";
 
-class TagsInput extends PaperlessComponent {
+// the options of the select: the tags that are available on the server (the color of a tag is
+// not used for the text, light colors can not be read)
+const toOptions = (tags) =>
+	((tags && tags.results) || []).map((tag) => ({
+		label: tag.name,
+		value: tag.id
+	}));
+
+class TagsInput extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-
 		this.state = TagsStore.getState();
 		this.onChange = this.onChange.bind(this);
-
-		if (props.tags) {
-			// extract the tags selection
-			this.state.selection = this.props.tags.map(t => {
-				var s = t.replace(/\/$/, "").split("/");
-				return parseInt(s[s.length - 1]);
-			});
-		}
 	}
 
 	// COMPONENT DID MOUNT
 	componentDidMount() {
 		TagsStore.listen(this.onChange);
-		//TagsActions.getTags();
+
+		// make sure the tags are available, even if the sidebar did not load them yet
+		if (!this.state.tags || !this.state.tags.results) TagsActions.getTags();
 	}
 
 	// COMPONENT WILL UNMOUNT
@@ -37,53 +38,23 @@ class TagsInput extends PaperlessComponent {
 		this.setState(state);
 	}
 
-	// CHANGE SELECTION
-	changeSelection(val) {
-		this.setState({
-			selection: val
-		});
-
-		// prepare the paperless API value for the tags
-		var updateTags = val.map(v => {
-			return (
-				localStorage.getItem("settings.host") +
-				"/api/tags/" +
-				v.value +
-				"/"
-			);
-		});
-
+	// CHANGE SELECTION: the tags of a document are the ids of the tags
+	changeSelection(selected) {
 		this.props.onChange({
-			target: {
-				name: "tags",
-				value: updateTags
-			}
+			target: { name: "tags", value: selected.map((option) => option.value) }
 		});
 	}
 
 	// RENDER
 	render() {
-		var possibles = [];
-
-		// prepare the selection tag ids
-		if (this.state.tags && this.state.tags.count > 0) {
-			// possible tags
-			possibles = this.state.tags.results.map(t => {
-				return {
-					label: t.name,
-					value: t.id,
-					style: { color: this.getTagColor(t.colour) }
-				};
-			});
-		}
-
 		return (
 			<Select
 				name="tags"
-				value={this.state.selection}
-				options={possibles}
+				value={this.props.tags}
+				options={toOptions(this.state.tags)}
 				onChange={this.changeSelection.bind(this)}
 				multi={true}
+				placeholder={t("document.select")}
 			/>
 		);
 	}

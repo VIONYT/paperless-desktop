@@ -1,13 +1,7 @@
 import alt from "../alt";
 import RemindersActions from "../actions/RemindersActions";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import native from "../native";
+import { handleError } from "../errors";
 
 // REMINDERS STORE
 class RemindersStore {
@@ -23,49 +17,28 @@ class RemindersStore {
 
 	// GET REMINDERS FAIL
 	getRemindersFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not load reminders!", "Please try again.");
+		handleError(err, "reminders.loadFailed");
 	}
 
-	// ADD REMINDER SUCCESS
-	addReminderSuccess(result) {
-		ipcRenderer.send("reminderAdd", result);
-		ipcRenderer.send("closeModal");
+	// ADD REMINDER SUCCESS: reminders are stored locally, the main window just has to reload them
+	addReminderSuccess(reminder) {
+		native.send("reminderAdd", { data: reminder });
+		native.send("closeModal");
 	}
 
 	// ADD REMINDER FAIL
 	addReminderFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not add the reminder!", "Please try again.");
+		handleError(err, "reminders.addFailed");
 	}
 
 	// REMOVE REMINDER SUCCESS
-	removeReminderSuccess(result) {
-		var parts = result.request.responseURL.split("/");
-		var id = parseInt(parts[parts.length - 2]);
-
-		// filter out the removed reminder
-		this.reminders = this.reminders.filter((r) => {
-			return r.id !== id;
-		});
+	removeReminderSuccess(id) {
+		this.reminders = this.reminders.filter((r) => r.id !== id);
 	}
 
 	// REMOVE REMINDER FAIL
 	removeReminderFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not remove the reminder!", "Please try again.");
+		handleError(err, "reminders.removeFailed");
 	}
 }
 

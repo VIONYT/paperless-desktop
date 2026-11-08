@@ -1,6 +1,15 @@
 import alt from "../alt";
-import axios from "axios";
-import async from "async";
+import { request } from "../api";
+
+// RELOAD DOCUMENTS: loads the changed documents again, the list shows the changes without a new page load
+const reloadDocuments = (actions, ids) =>
+	request({
+		method: "get",
+		url: "/api/documents/",
+		params: { id__in: ids.join(","), page_size: ids.length }
+	})
+		.then((result) => actions.documentsUpdated(result.data.results))
+		.catch(actions.bulkEditFail);
 
 // DOCUMENTS ACTIONS
 class DocumentsActions {
@@ -10,53 +19,23 @@ class DocumentsActions {
 			"getDocumentsFail",
 			"deleteDocumentsSuccess",
 			"deleteDocumentsFail",
+			"documentsUpdated",
+			"bulkEditFail",
 			"setLoading",
 			"resetDocuments"
 		);
 	}
 
 	// GET DOCS
+	// correspondent and tag are the ids that are used as a filter
 	getDocuments(correspondent, tag, page = 1) {
 		this.actions.setLoading(true);
 
-		var toQueryString = function(obj) {
-			var parts = [];
-			for (var i in obj) {
-				if (obj.hasOwnProperty(i) && obj[i]) {
-					parts.push(
-						encodeURIComponent(i) + "=" + encodeURIComponent(obj[i])
-					);
-				}
-			}
-			return parts.join("&");
-		};
+		const params = { ordering: "-created", page: page };
+		if (correspondent) params.correspondent__id = correspondent;
+		if (tag) params.tags__id__all = tag;
 
-		var url = localStorage.getItem("settings.host") + "/api/documents/";
-
-		// add parameters to url
-		const parameters = toQueryString({
-			correspondent__slug__startswith: correspondent,
-			correspondent__slug__endswith: correspondent,
-			tags__slug__startswith: tag,
-			tags__slug__endswith: tag,
-			ordering: "-created",
-			page: page
-		});
-
-		// attach parameters if availble
-		if (parameters.length > 0) {
-			url += "?" + parameters;
-		}
-
-		// fetch documents
-		axios({
-			method: "get",
-			url: url,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "get", url: "/api/documents/", params: params })
 			.then((result) => {
 				return this.actions.getDocumentsSuccess({
 					data: result.data,
@@ -72,20 +51,7 @@ class DocumentsActions {
 		this.actions.setLoading(true);
 		this.actions.resetDocuments();
 
-		const url =
-			localStorage.getItem("settings.host") +
-			"/api/documents/?search=" +
-			query;
-
-		// fetch documents
-		axios({
-			method: "get",
-			url: url,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "get", url: "/api/documents/", params: { query: query } })
 			.then((result) => {
 				return this.actions.getDocumentsSuccess({
 					data: result.data,
@@ -96,46 +62,29 @@ class DocumentsActions {
 			.catch(this.actions.getDocumentsFail);
 	}
 
+	// BULK EDIT: changes or deletes several documents at once, `method` is one of the methods of
+	// paperless-ngx: "delete", "set_correspondent" or "modify_tags" (see the parameters there)
+	bulkEdit(ids, method, parameters = {}) {
+		request({
+			method: "post",
+			url: "/api/documents/bulk_edit/",
+			data: { documents: ids, method: method, parameters: parameters }
+		})
+			.then(() =>
+				method === "delete"
+					? this.actions.deleteDocumentsSuccess(ids)
+					: reloadDocuments(this.actions, ids)
+			)
+			.catch(this.actions.bulkEditFail);
+	}
+
 	// DELETE DOCUMENT
 	deleteDocuments(ids) {
-		var that = this;
-
-		// asyncroniously delete all document ids
-		async.every(
-			ids,
-			(id, callback) => {
-				var url =
-					localStorage.getItem("settings.host") +
-					"/api/documents/" +
-					id;
-
-				// delete document
-				axios({
-					method: "delete",
-					url: url,
-					auth: {
-						username: localStorage.getItem(
-							"settings.auth.username"
-						),
-						password: localStorage.getItem("settings.auth.password")
-					}
-				})
-					.then((r) => {
-						return callback(null, r);
-					})
-					.catch((e) => {
-						return callback(e);
-					});
-			},
-			(err, result) => {
-				if (err) {
-					return that.actions.deleteDocumentsFail(err);
-				}
-
-				// if result is true then every file exists
-				return that.actions.deleteDocumentsSuccess(result);
-			}
-		);
+		Promise.all(
+			ids.map((id) => request({ method: "delete", url: "/api/documents/" + id + "/" }))
+		)
+			.then(() => this.actions.deleteDocumentsSuccess(ids))
+			.catch(this.actions.deleteDocumentsFail);
 	}
 }
 

@@ -2,6 +2,8 @@ import React from "react";
 import TagsActions from "../actions/TagsActions";
 import TagsStore from "../stores/TagsStore";
 import SidebarTagItem from "./SidebarTagItem";
+import { onRetry } from "../errors";
+import { t } from "../i18n";
 
 class SidebarTags extends React.Component {
 	// CONSTRUCTOR
@@ -15,11 +17,13 @@ class SidebarTags extends React.Component {
 	componentDidMount() {
 		TagsStore.listen(this.onChange);
 		TagsActions.getTags();
+		this.unsubscribeRetry = onRetry(() => TagsActions.getTags());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
 		TagsStore.unlisten(this.onChange);
+		this.unsubscribeRetry();
 	}
 
 	// ON CHANGE
@@ -33,7 +37,7 @@ class SidebarTags extends React.Component {
 
 		return (
 			<nav className="nav-group">
-				<h5 className="nav-group-title">Tags</h5>
+				<h5 className="nav-group-title">{t("nav.tags")}</h5>
 				{this.state.tags.results.map((tag) => {
 					return (
 						<SidebarTagItem

@@ -1,0 +1,29 @@
+name: Build
+
+# Checks every change: lint, tests and a build of the app. Releases are built by release.yml.
+on:
+    push:
+        branches: [master]
+    pull_request:
+
+jobs:
+    mac:
+        # macos-latest runs on Apple Silicon (arm64)
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+            - run: npm ci
+            - run: npm test
+            - run: npm run package
+            - name: Zip the apps
+              run: |
+                  cd build
+                  for dir in Paperless-darwin-*; do ditto -c -k --keepParent "$dir/Paperless.app" "$dir.zip"; done
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: Paperless-macOS
+                  path: build/*.zip

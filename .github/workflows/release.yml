@@ -1,0 +1,86 @@
+name: Release
+
+# Builds the app and publishes a GitHub release whenever a version tag is pushed:
+#
+#   npm version minor        # raises the version in package.json and creates the tag v<version>
+#   git push --follow-tags
+#
+# The notes of the release come from the section of the version in CHANGELOG.md (add it before the tag).
+# The release contains one zip for Apple Silicon (arm64) and one for Intel (x64), and the checksums.
+# If the secrets below are set, the apps are signed and notarized, so macOS opens them without a warning.
+#   MACOS_CERT_P12, MACOS_CERT_PASSWORD   the "Developer ID Application" certificate (base64 of the .p12)
+#   APPLE_IDENTITY                        e.g. "Developer ID Application: Your Name (TEAMID)"
+#   APPLE_ID, APPLE_APP_PASSWORD          Apple ID and an app specific password
+#   APPLE_TEAM_ID                         the team id
+on:
+    push:
+        tags: ["v*"]
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        # macos-latest runs on Apple Silicon (arm64)
+        runs-on: macos-latest
+        env:
+            MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+            MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+            APPLE_IDENTITY: ${{ secrets.APPLE_IDENTITY }}
+            APPLE_ID: ${{ secrets.APPLE_ID }}
+            APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+            APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - name: The tag has to match the version of the app
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+                    echo "Tag $GITHUB_REF_NAME does not match version $VERSION in package.json"
+                    exit 1
+                  fi
+
+            - run: npm ci
+            - run: npm test
+
+            - name: Import the signing certificate
+              if: env.MACOS_CERT_P12 != ''
+              run: |
+                  echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+                  security create-keychain -p ci build.keychain
+                  security default-keychain -s build.keychain
+                  security unlock-keychain -p ci build.keychain
+                  security import "$RUNNER_TEMP/cert.p12" -k build.keychain -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+                  security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+                  rm "$RUNNER_TEMP/cert.p12"
+
+            # package.js signs and notarizes when the APPLE_* variables are set
+            - run: npm run package
+
+            - name: Zip the apps
+              run: |
+                  mkdir release
+                  for arch in arm64 x64; do
+                    ditto -c -k --keepParent "build/Paperless-darwin-$arch/Paperless.app" "release/Paperless-$GITHUB_REF_NAME-macOS-$arch.zip"
+                  done
+                  cd release && shasum -a 256 *.zip > checksums.txt
+
+            # the notes are the part of CHANGELOG.md for this version, followed by the generated list of changes
+            - name: Write the release notes
+              run: |
+                  VERSION="${GITHUB_REF_NAME#v}"
+                  awk -v version="$VERSION" '$0 ~ "^## " version "$" {found=1; next} /^## / {found=0} found' CHANGELOG.md > release-notes.md
+                  if [ ! -s release-notes.md ]; then echo "CHANGELOG.md has no section for $VERSION"; exit 1; fi
+
+            - name: Publish the release
+              uses: softprops/action-gh-release@v2
+              with:
+                  files: release/*
+                  body_path: release-notes.md
+                  generate_release_notes: true

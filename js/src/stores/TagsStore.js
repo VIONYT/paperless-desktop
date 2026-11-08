@@ -1,14 +1,8 @@
 import alt from "../alt";
 import TagsActions from "../actions/TagsActions";
 import ToolbarActions from "../actions/ToolbarActions";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
-const ipcRenderer = electron.ipcRenderer;
+import native from "../native";
+import { handleError, handleLoadError } from "../errors";
 
 // TAGS STORE
 class TagsStore {
@@ -24,79 +18,47 @@ class TagsStore {
 
 	// GET TAGS FAIL
 	getTagsFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not load tags!", "Please try again.");
+		handleLoadError(err, "tags.loadFailed");
 	}
 
 	// DELETE TAGS SUCCESS
 	deleteTagsSuccess(ids) {
 		if (this.tags.results) {
-			this.tags.results = this.tags.results.filter((t) => {
-				return !ids.find((i) => i === t.id);
-			});
+			this.tags.results = this.tags.results.filter((tag) => !ids.includes(tag.id));
 		}
 
 		// remove the delete button
-		window.setTimeout(() => {
-			ToolbarActions.removeItem("remove-tags");
-		}, 0);
+		window.setTimeout(() => ToolbarActions.removeItem("remove-tags"), 0);
 	}
 
 	// DELETE TAGS FAIL
 	deleteTagsFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not delete tag(s)!", "Please try again.");
+		handleError(err, "tags.deleteFailed");
 	}
 
-	// ADD TAG SUCCESS
+	// ADD TAG SUCCESS: the modal window hands the new tag over to the list
 	addTagSuccess(result) {
-		ipcRenderer.send("tagAdd", result);
-		ipcRenderer.send("closeModal");
+		native.send("tagAdd", { data: result.data });
+		native.send("closeModal");
 	}
 
 	// ADD TAG FAIL
 	addTagFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(
-			"Could not add the tag!",
-			"Data might be missing or the tag may already exist."
-		);
+		handleError(err, "tags.addFailed", "tags.addFailedMessage");
 	}
 
-	// EDIT TAG SUCCESS
+	// EDIT TAG SUCCESS: replaces the tag with the edited one
 	editTagSuccess(result) {
 		if (!result.data) return;
 
-		// replace the tag with new edited one
-		this.tags.results = this.tags.results.map((t) => {
-			if (t.id === result.data.id) return result.data;
-			else return t;
-		});
+		this.tags.results = this.tags.results.map((tag) =>
+			tag.id === result.data.id ? result.data : tag
+		);
 	}
 
 	// EDIT TAG FAIL
 	editTagFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox(
-			"Could not edit the tag!",
-			"Data might be missing or the tag does not exist anymore."
-		);
+		handleError(err, "tags.editFailed", "tags.editFailedMessage");
 	}
 }
 

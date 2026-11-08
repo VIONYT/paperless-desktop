@@ -1,5 +1,8 @@
 import alt from "../alt";
-import axios from "axios";
+import { request } from "../api";
+
+// the fields of a document the user can edit in the app
+const EDITABLE_FIELDS = ["title", "content", "correspondent", "tags", "created"];
 
 // DOCUMENT ACTIONS
 class DocumentActions {
@@ -14,35 +17,20 @@ class DocumentActions {
 
 	// GET DOC
 	getDocument(id) {
-		const url = localStorage.getItem("settings.host") + "/api/documents/" + id;
-
-		// fetch documents
-		axios({
-			method: "get",
-			url: url,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "get", url: "/api/documents/" + id + "/" })
 			.then(this.actions.getDocumentSuccess)
 			.catch(this.actions.getDocumentFail);
 	}
 
 	// UPDATE DOCUMENT
-	updateDocument(data) {
-		const url = localStorage.getItem("settings.host") + "/api/documents/" + data.id + "/";
+	updateDocument(doc) {
+		// only send what can be changed, the rest of the document is read-only
+		const data = {};
+		EDITABLE_FIELDS.forEach((field) => {
+			if (field in doc) data[field] = doc[field];
+		});
 
-		// fetch documents
-		axios({
-			method: "put",
-			url: url,
-			data: data,
-			auth: {
-				username: localStorage.getItem("settings.auth.username"),
-				password: localStorage.getItem("settings.auth.password")
-			}
-		})
+		request({ method: "patch", url: "/api/documents/" + doc.id + "/", data: data })
 			.then(this.actions.updateDocumentSuccess)
 			.catch(this.actions.updateDocumentFail);
 	}

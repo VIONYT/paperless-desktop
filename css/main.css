@@ -31,7 +31,8 @@
 }
 
 .document-item small {
-	color: #ccc;
+	/* 5.1:1 on white */
+	color: #6e6e73;
 }
 
 .document-item-thumbnail {
@@ -47,6 +48,13 @@
 }
 
 .document-item-title {
+	/* long titles (e.g. file names without spaces) must not leave the box */
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	/* line-height is 1.6, so 2.4em are 1.5 lines */
+	max-height: 2.4em;
+	margin-bottom: 4px;
 	margin-top: 10px;
 	color: black !important;
 	text-decoration: none !important;
@@ -117,20 +125,6 @@
 }
 
 /** SELECT2 OVERRIDE */
-.select2-container--default .select2-selection--multiple {
-	border: 1px solid #ddd;
-}
-
-.select2-container--default.select2-container--focus .select2-selection--multiple {
-	border-color: #6db3fd;
-	box-shadow: 3px 3px 0 #6db3fd, -3px -3px 0 #6db3fd, -3px 3px 0 #6db3fd,
-		3px -3px 0 #6db3fd;
-}
-
-.select2-container--default .select2-container--below {
-	width: none;
-}
-
 .btn {
 	cursor: pointer;
 }
@@ -181,7 +175,7 @@
 
 .no-reminders {
 	font-style: italic;
-	color: lightgrey;
+	color: #6e6e73;
 }
 
 .spinner {
@@ -208,8 +202,8 @@
 }
 
 .spinner .rect3 {
-	-webkit-animation-delay: -1.0s;
-	animation-delay: -1.0s;
+	-webkit-animation-delay: -1s;
+	animation-delay: -1s;
 }
 
 .spinner .rect4 {
@@ -229,7 +223,7 @@
 		-webkit-transform: scaleY(0.4);
 	}
 	20% {
-		-webkit-transform: scaleY(1.0);
+		-webkit-transform: scaleY(1);
 	}
 }
 
@@ -241,8 +235,8 @@
 		-webkit-transform: scaleY(0.4);
 	}
 	20% {
-		transform: scaleY(1.0);
-		-webkit-transform: scaleY(1.0);
+		transform: scaleY(1);
+		-webkit-transform: scaleY(1);
 	}
 }
 
@@ -254,16 +248,538 @@
 	color: #fb2f29;
 }
 
+/* The toolbar sits in the title bar of the window, next to the traffic lights */
 .toolbar-header {
 	-webkit-app-region: drag;
+	display: flex;
+	align-items: center;
+	height: 52px;
+	/* space for the window buttons (close, minimize, zoom) */
+	padding: 0 14px 0 100px;
+}
+
+.toolbar-header .toolbar-actions {
+	display: flex;
+	align-items: center;
+	flex: 1;
+	margin: 0;
+	padding: 0;
+}
+
+.toolbar-header .toolbar-actions:before,
+.toolbar-header .toolbar-actions:after {
+	display: none;
+}
+
+.toolbar-header .toolbar-actions > .btn-group {
+	margin: 0 14px 0 0;
+}
+
+.toolbar-header .btn {
+	padding: 5px 13px;
+}
+
+/* bigger icons, they are easier to hit and look better on retina displays */
+.toolbar-header .btn .icon {
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	font-size: 22px;
+}
+
+.toolbar-header .search-bar {
+	float: none;
+	flex: 0 1 300px;
+	min-width: 120px;
+	margin-left: 14px;
+}
+
+.toolbar-header .search-bar > input[type="search"] {
+	width: 100%;
+	height: 30px;
+	margin: 0;
+	padding: 4px 10px;
+	font-size: 14px;
 }
 
 .pane-two-third {
-	overflow: scroll;
+	overflow: auto;
 }
 
 .tags-match {
 	min-height: 1.5em;
 	min-width: 100px;
 	display: block;
+}
+
+/* PDF preview */
+.pdf-viewer {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+	background-color: #8e8e93;
+}
+
+.pdf-pages {
+	padding: 16px 16px 0;
+}
+
+.pdf-page {
+	display: block;
+	margin: 0 auto 16px;
+	background-color: #fff;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pdf-message {
+	padding: 20px;
+	text-align: center;
+	color: #fff;
+}
+
+/* sidebar: icons and text are centered on the same line */
+.nav-group-item {
+	display: flex;
+	align-items: center;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.nav-group-item .icon {
+	float: none;
+	flex-shrink: 0;
+	margin-top: 0;
+	line-height: 18px;
+}
+
+/* floating button to upload documents */
+.upload-button {
+	position: absolute;
+	right: 28px;
+	bottom: 28px;
+	z-index: 20;
+	width: 56px;
+	height: 56px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	/* the white plus has 5.4:1 on this green */
+	background-color: #1f7a35;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+	cursor: pointer;
+	-webkit-app-region: no-drag;
+	transition: transform 120ms ease, background-color 120ms ease;
+}
+
+.upload-button:hover {
+	background-color: #1a6a2d;
+	transform: scale(1.06);
+}
+
+.upload-button:active {
+	background-color: #155a26;
+	transform: scale(0.96);
+}
+
+.upload-button:focus {
+	outline: none;
+}
+
+.upload-button .icon {
+	color: #fff;
+	font-size: 26px;
+	line-height: 56px;
+}
+
+/* upload progress widget (top right of the window content) */
+.upload-widget {
+	position: absolute;
+	top: 66px;
+	right: 16px;
+	z-index: 30;
+	width: 260px;
+	padding: 10px 12px;
+	font-size: 12px;
+	color: #333;
+	background-color: rgba(255, 255, 255, 0.96);
+	border: 1px solid #d8d6d8;
+	border-radius: 8px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	-webkit-user-select: none;
+}
+
+.upload-widget-header,
+.upload-widget-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+
+.upload-widget-title {
+	font-weight: 600;
+}
+
+.upload-widget-percent {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
+.upload-widget-bar {
+	height: 6px;
+	margin: 8px 0 6px;
+	overflow: hidden;
+	background-color: #e4e4e6;
+	border-radius: 3px;
+}
+
+.upload-widget-bar-fill {
+	height: 100%;
+	background-color: #34c84a;
+	border-radius: 3px;
+	transition: width 150ms linear;
+}
+
+.upload-widget-failed .upload-widget-bar-fill {
+	background-color: #fb2f29;
+}
+
+.upload-widget-footer {
+	color: #737475;
+	font-variant-numeric: tabular-nums;
+}
+
+html.dark .upload-widget {
+	color: #e4e4e6;
+	background-color: rgba(44, 44, 46, 0.97);
+	border-color: #4a4a4d;
+}
+
+html.dark .upload-widget-bar {
+	background-color: #4a4a4d;
+}
+
+html.dark .upload-widget-footer {
+	color: #9b9b9f;
+}
+
+/* paperless-ngx recognizes the text: the bar is animated, because the duration is unknown */
+.upload-widget-processing .upload-widget-bar-fill {
+	background-image: linear-gradient(
+		45deg,
+		rgba(255, 255, 255, 0.35) 25%,
+		transparent 25%,
+		transparent 50%,
+		rgba(255, 255, 255, 0.35) 50%,
+		rgba(255, 255, 255, 0.35) 75%,
+		transparent 75%
+	);
+	background-size: 16px 16px;
+	animation: upload-widget-stripes 700ms linear infinite;
+}
+
+@keyframes upload-widget-stripes {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 16px 0;
+	}
+}
+
+/* ---- one accent color: the green of the logo (white text has 5.4:1 on it) ---- */
+.btn-primary {
+	color: #fff;
+	text-shadow: none;
+	border-color: #1a6a2d;
+	background-color: #1f7a35;
+	background-image: none;
+}
+
+.btn-primary:active {
+	background-color: #1a6a2d;
+	background-image: none;
+}
+
+/* ---- flat look instead of the gradients of the Photon theme ---- */
+.toolbar,
+.btn-default {
+	background-image: none;
+}
+
+.toolbar {
+	background-color: #ececec;
+	box-shadow: none;
+}
+
+.btn-default {
+	background-color: #fff;
+	border-color: #c7c7cc;
+	box-shadow: none;
+}
+
+.btn-default:active {
+	background-color: #e4e4e6;
+}
+
+.tab-item,
+.tab-item.active {
+	background-image: none;
+}
+
+.tab-item {
+	background-color: #dcdcde;
+}
+
+.tab-item.active {
+	background-color: #f5f5f4;
+}
+
+/* ---- keyboard focus is always visible ---- */
+.btn:focus-visible,
+a:focus-visible,
+.nav-group-item:focus-visible,
+.upload-button:focus-visible,
+.tab-item:focus-visible {
+	outline: 2px solid #1f7a35 !important;
+	outline-offset: 2px;
+}
+
+/* ---- text that is useful can be selected and copied ---- */
+td,
+th,
+.document-item-title,
+.pdf-message,
+.upload-widget {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+/* ---- the actions of a page are in the toolbar of the window ---- */
+.toolbar-items {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+}
+
+.toolbar-items .btn {
+	margin-left: 8px;
+}
+
+.toolbar-items .btn-primary .icon {
+	color: #fff;
+}
+
+/* the login has no toolbar: the top of the window moves the window */
+.login-drag {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 52px;
+	-webkit-app-region: drag;
+}
+
+/* buttons with a text: the icon and the text are centered on one line */
+.toolbar-items .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	line-height: 22px;
+}
+
+.toolbar-items .btn .icon {
+	float: none;
+	flex-shrink: 0;
+}
+
+.toolbar-items .btn-primary .icon {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	line-height: 18px;
+}
+
+/* ---- banner: a failed load, with a button to try it again ---- */
+.banner {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	color: #611a15;
+	background-color: #fdecea;
+	border-bottom: 1px solid #f5c6c2;
+}
+
+.banner-message {
+	flex: 1;
+}
+
+/* the toolbar moves the window, but the search field and the buttons must be clickable */
+.toolbar-header .search-bar,
+.toolbar-header .search-bar input,
+.toolbar-items,
+.toolbar-items .btn {
+	-webkit-app-region: no-drag;
+}
+
+/* ---- selection of documents ---- */
+.document-item {
+	position: relative;
+}
+
+.document-item-check {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 2;
+	width: 24px;
+	height: 24px;
+	font-size: 14px;
+	line-height: 22px;
+	text-align: center;
+	color: transparent;
+	background-color: rgba(255, 255, 255, 0.9);
+	border: 2px solid #8e8e93;
+	border-radius: 50%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.document-item:hover .document-item-check,
+.document-item:focus-visible .document-item-check,
+.document-item.selected .document-item-check {
+	opacity: 1;
+}
+
+.document-item.selected .document-item-check {
+	color: #fff;
+	background-color: #1f7a35;
+	border-color: #1f7a35;
+}
+
+.document-item.selected .document-item-thumbnail {
+	outline: 3px solid #1f7a35;
+	outline-offset: 2px;
+}
+
+.selection-bar {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	background-color: #f5f5f4;
+	border-bottom: 1px solid #c7c7cc;
+}
+
+.selection-count {
+	font-weight: 600;
+}
+
+.selection-spacer {
+	flex: 1;
+}
+
+/* ---- while files are dragged over the window: gray translucent layer with an upload symbol ---- */
+.drop-overlay {
+	/* covers the content of the window next to the sidebar (the left is set by the component) */
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* the drop is handled by the window, the layer must not catch the events */
+	pointer-events: none;
+	background-color: rgba(90, 90, 96, 0.6);
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	animation: drop-overlay-in 150ms ease-out;
+}
+
+.drop-overlay-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	color: #fff;
+}
+
+.drop-overlay-circle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 104px;
+	height: 104px;
+	background-color: rgba(255, 255, 255, 0.22);
+	border: 3px dashed rgba(255, 255, 255, 0.85);
+	border-radius: 50%;
+}
+
+.drop-overlay-circle svg {
+	display: block;
+}
+
+.drop-overlay-text {
+	font-size: 15px;
+	font-weight: 600;
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes drop-overlay-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* ---- vibrancy (macOS): the sidebar shows the material of the system, the rest of the window is opaque ----
+ * The class "vibrancy" is set on a Mac, where the main process gives the window the sidebar material
+ * (BrowserWindow vibrancy). The material is visible wherever the page is transparent. */
+html.vibrancy .window,
+html.vibrancy .window-content,
+html.vibrancy .sidebar {
+	background-color: transparent;
+}
+
+html.vibrancy .sidebar {
+	border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+html.vibrancy .window-content .pane:not(.sidebar),
+html.vibrancy .pane-two-third {
+	background-color: #fff;
+}
+
+/* the selected item is a translucent gray, so the material shines through */
+html.vibrancy .sidebar .nav-group-item:active,
+html.vibrancy .sidebar .nav-group-item.active {
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Reduce Transparency of the system settings: opaque like before */
+@media (prefers-reduced-transparency: reduce) {
+	html.vibrancy .sidebar {
+		background-color: #f5f5f4;
+	}
+}
+
+/* like the sidebars of macOS: the items are inset, the selected one has rounded corners */
+html.vibrancy .sidebar .nav-group-item {
+	margin: 0 8px;
+	padding-left: 17px;
+	border-radius: 6px;
+}
+
+/* pages without the sidebar (login) are opaque, the material is only for the sidebar */
+html.vibrancy body:not(:has(.window)) {
+	background-color: #fff;
 }

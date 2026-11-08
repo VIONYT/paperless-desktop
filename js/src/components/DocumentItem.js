@@ -1,73 +1,80 @@
 import React from "react";
 import { Link } from "react-router";
-import PaperlessComponent from "./PaperlessComponent";
-import moment from "moment";
-import TagsStore from "../stores/TagsStore";
 import TagDot from "./TagDot";
+import { thumbnailUrl } from "../api";
+import { formatDate } from "../dates";
+import { t } from "../i18n";
 
-String.prototype.trunc =
-	String.prototype.trunc ||
-	function(n) {
-		return this.length > n ? this.substr(0, n - 1) + "&hellip;" : this;
-	};
+const MAX_TITLE_LENGTH = 100;
 
-class DocumentItem extends PaperlessComponent {
-	// CONSTRUCTOR
-	constructor(props) {
-		super(props);
-		this.state = TagsStore.getState();
+const shorten = (title) =>
+	title.length > MAX_TITLE_LENGTH ? title.substr(0, MAX_TITLE_LENGTH - 1) + "…" : title;
+
+class DocumentItem extends React.Component {
+	// HANDLE CLICK: with shift or command, or while documents are selected, a click selects.
+	// Otherwise it opens the document.
+	handleClick(event, doc) {
+		const additive = event.metaKey || event.ctrlKey || event.shiftKey || this.props.selecting;
+		if (!additive) return;
+
+		event.preventDefault();
+		this.props.onSelect(doc, event.shiftKey);
 	}
 
-	// COMPONENT DID MOUNT
-	componentDidMount() {
-		// load the image base64 data
-		super.getDataUri(
-			super.getHost() + this.props.document.thumbnail_url.replace("\\", ""),
-			(result) => {
-				this.setState({
-					data: result
-				});
-			}
-		);
+	// HANDLE CHECK: the check mark at the thumbnail adds or removes the document
+	handleCheck(event, doc) {
+		event.preventDefault();
+		event.stopPropagation();
+		this.props.onSelect(doc, false);
+	}
+
+	// SHOW CONTEXT MENU: a right click opens the menu of the document (edit, tags, delete)
+	showContextMenu(event, doc) {
+		event.preventDefault();
+		this.props.onContextMenu(doc);
 	}
 
 	// RENDER
 	render() {
-		var divStyle = {};
-		if ("data" in this.state) {
-			divStyle["backgroundImage"] = "url(" + this.state.data + ")";
-		}
-		var tags = [];
-		this.state.tags.results.map((tag) => {
-			tags[tag.id] = tag;
-		});
+		const doc = this.props.document;
+		const tags = this.props.tags;
+
 		return (
-			<Link className="document-item" to={"/document/" + this.props.document.id}>
-				<div className="document-item-thumbnail" style={divStyle} />
+			<Link
+				className={"document-item" + (this.props.selected ? " selected" : "")}
+				to={"/document/" + doc.id}
+				aria-selected={this.props.selected}
+				onClick={(e) => this.handleClick(e, doc)}
+				onContextMenu={(e) => this.showContextMenu(e, doc)}
+			>
+				<span
+					className="document-item-check icon icon-check"
+					role="checkbox"
+					aria-checked={this.props.selected}
+					aria-label={t("selection.select")}
+					onClick={(e) => this.handleCheck(e, doc)}
+				/>
+				<div
+					className="document-item-thumbnail"
+					style={{ backgroundImage: `url("${thumbnailUrl(doc.id)}")` }}
+				/>
 				<div className="document-item-title">
-					{this.props.document.fresh ? (
+					{doc.fresh ? (
 						<span
-							title="New document"
+							title={t("documents.new")}
 							className="icon icon-plus-circled text-positive"
 						/>
 					) : null}
-					{this.props.document.fresh ? " " : null}
-					{this.props.document.title.trunc(100)}
+					{doc.fresh ? " " : null}
+					{shorten(doc.title)}
 					&nbsp;
-					{this.props.document.tags.map((tagUrl) => {
-						var tagRegex = /\/([0-9]+)\//;
-						var tagId = tagRegex.exec(tagUrl)[1];
-						var tag = tags[tagId];
-						return (
-							<TagDot
-								tag={tag}
-								key={"sidebar_tags_" + tag.id}
-								setTagFilter={this.props.setTagFilter}
-							/>
-						);
-					})}
+					{doc.tags
+						.filter((id) => tags[id])
+						.map((id) => (
+							<TagDot tag={tags[id]} key={"tag_" + id} />
+						))}
 				</div>
-				<small>{moment(this.props.document.created).format("LLLL")}</small>
+				<small>{formatDate(doc.created)}</small>
 			</Link>
 		);
 	}

@@ -1,36 +1,25 @@
 import React from "react";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const ipcRenderer = electron.ipcRenderer;
+import bus from "../bus";
+import native from "../native";
+import { signOut } from "../auth";
 
 class Master extends React.Component {
 	// COMPONENT DID MOUNT
 	componentDidMount() {
-		$(window).on("goBackToLogin", this.goBackToLogin.bind(this));
+		this.unsubscribe = bus.on("goBackToLogin", () => this.goBackToLogin());
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		$(window).off("goBackToLogin");
+		this.unsubscribe();
 	}
 
-	// GO BACK TO LOGIN
+	// GO BACK TO LOGIN: the server rejected the credentials
 	goBackToLogin() {
-		localStorage.removeItem("settings.auth.username");
-		localStorage.removeItem("settings.auth.password");
-		localStorage.removeItem("settings.host");
+		signOut();
+		native.send("setSize", { width: 500, height: 520 });
 
-		ipcRenderer.send("setSize", {
-			width: 500,
-			height: 520
-		});
-
-		if (this.context.router) {
-			this.context.router.push("/login");
-		}
+		if (this.context.router) this.context.router.push("/login");
 	}
 
 	// RENDER

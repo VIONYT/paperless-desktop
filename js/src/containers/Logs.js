@@ -1,76 +1,76 @@
 import React from "react";
 import LogsActions from "../actions/LogsActions";
 import LogsStore from "../stores/LogsStore";
-import moment from "moment";
-import $ from "jquery";
+import bus from "../bus";
+import { onRetry } from "../errors";
+import { t } from "../i18n";
 
 class Logs extends React.Component {
-    // CONSTRUCTOR
-    constructor(props) {
-        super(props);
-        this.state = LogsStore.getState();
-        this.onChange = this.onChange.bind(this);
-    }
+	// CONSTRUCTOR
+	constructor(props) {
+		super(props);
+		this.state = LogsStore.getState();
+		this.onChange = this.onChange.bind(this);
+	}
 
-    // COMPONENT DID MOUNT
-    componentDidMount() {
-        $(window).trigger("tabs.replace", {
-            idx: 0,
-            tab: {
-                title: "Logs",
-                route: "/logs"
-            }
-        });
-        $(window).trigger("header.activeItem", { item: "logs" });
+	// COMPONENT DID MOUNT
+	componentDidMount() {
+		bus.trigger("tabs.replace", { idx: 0, tab: { title: t("nav.logs"), route: "/logs" } });
+		bus.trigger("header.activeItem", { item: "logs" });
 
-        LogsStore.listen(this.onChange);
-        LogsActions.getLogs();
-    }
+		LogsStore.listen(this.onChange);
+		LogsActions.getLogs();
+		this.unsubscribeRetry = onRetry(() => LogsActions.getLogs());
+	}
 
-    // COMPONENT WILL UNMOUNT
-    componentWillUnmount() {
-        LogsStore.unlisten(this.onChange);
-    }
+	// COMPONENT WILL UNMOUNT
+	componentWillUnmount() {
+		LogsStore.unlisten(this.onChange);
+		this.unsubscribeRetry();
+	}
 
-    // ON CHANGE
-    onChange(state) {
-        this.setState(state);
-    }
+	// ON CHANGE
+	onChange(state) {
+		this.setState(state);
+	}
 
-    // RENDER
-    render() {
-        if (!this.state.logs || !("results" in this.state.logs)) return null;
+	// RENDER
+	render() {
+		if (!Array.isArray(this.state.logs)) return null;
 
-        return (
-            <div className="pane">
-                <table className="table-striped">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Log</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        {this.state.logs.results.map(l => {
-                            return (
-                                <tr key={l.time}>
-                                    <td>{moment(l.time).format("LLLL")}</td>
-                                    <td>{l.messages}</td>
-                                </tr>
-                            );
-                        })}
-
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<table className="table-striped">
+					<thead>
+						<tr>
+							<th>{t("logs.title")}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{this.state.logs.map((line, idx) => {
+							return (
+								<tr key={"log_" + idx}>
+									<td
+										style={{
+											fontFamily: "Menlo, monospace",
+											whiteSpace: "pre-wrap"
+										}}
+									>
+										{line}
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+			</div>
+		);
+	}
 }
 
 // CONTEXT TYPES
 Logs.contextTypes = {
-    router: React.PropTypes.object.isRequired
+	router: React.PropTypes.object.isRequired
 };
 
 export default Logs;

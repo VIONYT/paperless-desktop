@@ -1,24 +1,18 @@
 import alt from "../alt";
 import DocumentsActions from "../actions/DocumentsActions";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
+import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENTS STORE
 class DocumentsStore {
-    constructor() {
-        this.bindActions(DocumentsActions);
-        this.documents = [];
-        this.correspondent = null;
-        this.tag = null;
+	constructor() {
+		this.bindActions(DocumentsActions);
+		this.documents = [];
+		this.correspondent = null;
+		this.tag = null;
 		this.isLoading = true;
 		this.page = 0;
 		this.next = null;
-    }
+	}
 
 	// SET LOADING
 	setLoading(state) {
@@ -31,34 +25,54 @@ class DocumentsStore {
 		this.documents = [];
 	}
 
-    // GET DOCUMENTS SUCCESS
-    getDocumentsSuccess(result) {
-
-		// check if a reset is necessary
-		if(this.correspondent !== result.correspondent || this.tag !== result.tag) {
+	// GET DOCUMENTS SUCCESS
+	getDocumentsSuccess(result) {
+		// another filter than before starts with an empty list
+		if (this.correspondent !== result.correspondent || this.tag !== result.tag) {
 			this.resetDocuments();
 		}
 
-		Array.prototype.push.apply(this.documents, result.data.results);
+		this.documents = this.documents.concat(result.data.results);
 		this.page = this.page + 1;
-        this.correspondent = result.correspondent;
-        this.tag = result.tag;
+		this.correspondent = result.correspondent;
+		this.tag = result.tag;
 		this.isLoading = false;
 		this.next = result.data.next;
-    }
+	}
 
-    // GET DOCUMENTS FAIL
-    getDocumentsFail(err) {
-
+	// GET DOCUMENTS FAIL
+	getDocumentsFail(err) {
 		this.isLoading = false;
+		handleLoadError(err, "documents.loadFailed");
+	}
 
-        if (err.response && err.response.status === 403) {
-            $(window).trigger("goBackToLogin");
-			return;
-        }
+	// DOCUMENTS UPDATED: the documents in the list show the changes
+	documentsUpdated(updated) {
+		const byId = {};
+		updated.forEach((doc) => {
+			byId[doc.id] = doc;
+		});
 
-        dialog.showErrorBox("Could not load documents!", "Please try again.");
-    }
+		this.documents = this.documents.map((doc) =>
+			byId[doc.id] ? { ...doc, ...byId[doc.id] } : doc
+		);
+	}
+
+	// BULK EDIT FAIL
+	bulkEditFail(err) {
+		handleError(err, "documents.saveFailed");
+	}
+
+	// DELETE DOCUMENTS SUCCESS
+	deleteDocumentsSuccess(ids) {
+		const removed = ids.map(String);
+		this.documents = this.documents.filter((d) => !removed.includes(String(d.id)));
+	}
+
+	// DELETE DOCUMENTS FAIL
+	deleteDocumentsFail(err) {
+		handleError(err, "documents.deleteFailed");
+	}
 }
 
 export default alt.createStore(DocumentsStore);

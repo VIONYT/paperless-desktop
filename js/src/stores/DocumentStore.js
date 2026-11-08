@@ -1,12 +1,7 @@
 import alt from "../alt";
 import DocumentActions from "../actions/DocumentActions";
-import $ from "jquery";
-
-// IPC hack (https://medium.freecodecamp.com/building-an-electron-application-with-create-react-app-97945861647c#.gi5l2hzbq)
-const electron = window.require("electron");
-const fs = electron.remote.require("fs");
-const remote = electron.remote;
-const dialog = remote.dialog;
+import bus from "../bus";
+import { handleError, handleLoadError } from "../errors";
 
 // DOCUMENT STORE
 class DocumentStore {
@@ -22,28 +17,17 @@ class DocumentStore {
 
 	// GET DOCUMENT FAIL
 	getDocumentFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-			return;
-		}
-
-		dialog.showErrorBox("Could not load document!", "Please try again.");
+		handleLoadError(err, "documents.loadOneFailed");
 	}
 
 	// UPDATE DOCUMENT SUCCESS
 	updateDocumentSuccess(result) {
-		if (result.data) {
-			$(window).trigger("tabs.setActiveTitle", {
-				title: result.data.title
-			});
-		}
+		if (result.data) bus.trigger("tabs.setActiveTitle", { title: result.data.title });
 	}
 
 	// UPDATE DOCUMENT FAIL
 	updateDocumentFail(err) {
-		if (err.response && err.response.status === 403) {
-			$(window).trigger("goBackToLogin");
-		}
+		handleError(err, "documents.saveFailed");
 	}
 }
 

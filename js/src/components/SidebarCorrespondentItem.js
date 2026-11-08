@@ -1,65 +1,45 @@
 import React from "react";
-import $ from "jquery";
+import bus from "../bus";
 
 class SidebarCorrespondentItem extends React.Component {
 	// CONSTRUCTOR
 	constructor(props) {
 		super(props);
-		this.state = {
-			active: false
-		};
+		this.state = { active: false };
 	}
 
-	// COMPONENT DID MOUNT
+	// COMPONENT DID MOUNT: another place (e.g. the search) can change the selected correspondent
 	componentDidMount() {
-		$(window).on(
-			"changeExternCorrespendent",
-			this.changeExternCorrespendent.bind(this)
+		this.unsubscribe = bus.on("changeExternCorrespondent", (data) =>
+			this.setState({ active: this.props.correspondent.id === data.correspondent })
 		);
 	}
 
 	// COMPONENT WILL UNMOUNT
 	componentWillUnmount() {
-		$(window).off("changeExternCorrespendent");
+		this.unsubscribe();
 	}
 
-	// SET CORRESPONDENT FILTER
+	// SET CORRESPONDENT FILTER: a second click removes the filter
 	setCorrespondentFilter() {
-		$(window).trigger("changeExternCorrespendent", {
-			correspondent: this.props.correspondent.slug
-		});
+		const { correspondent, setCorrespondentFilter } = this.props;
 
-		// set or unset the tag
-		if (this.state.active === true) {
-			this.props.setCorrespondentFilter(null);
-		} else {
-			this.props.setCorrespondentFilter(this.props.correspondent.slug);
-		}
-
-		// toggle active state
-		this.setState({
-			active: !this.state.active
-		});
-	}
-
-	// CHANGE EXTERN CORRESPONDENT
-	changeExternCorrespendent(e, data) {
-		this.setState({
-			active: this.props.correspondent.slug === data.correspondent
-		});
+		bus.trigger("changeExternCorrespondent", { correspondent: correspondent.id });
+		setCorrespondentFilter(this.state.active ? null : correspondent.id);
+		this.setState({ active: !this.state.active });
 	}
 
 	// RENDER
 	render() {
-		var itemClass = "nav-group-item";
-		if (this.state.active === true) {
-			itemClass += " active";
-		}
-
 		return (
 			<span
-				className={itemClass}
+				className={"nav-group-item" + (this.state.active ? " active" : "")}
+				role="button"
+				tabIndex={0}
 				onClick={this.setCorrespondentFilter.bind(this)}
+				onKeyDown={(e) =>
+					(e.key === "Enter" || e.key === " ") && this.setCorrespondentFilter()
+				}
 			>
 				<span className="icon icon-user" />
 				{this.props.correspondent.name}

@@ -1,24 +1,8 @@
 import React from "react";
-import PaperlessComponent from "./PaperlessComponent";
+import { tagColor } from "../utils";
 
-class TagDot extends PaperlessComponent {
-	// CONSTRUCTOR
-	constructor(props) {
-		super(props);
-	}
-
-	// RENDER
-	render() {
-		return (
-			<span
-				className="icon icon-record"
-				title={this.props.tag.name}
-				style={{
-					color: this.getTagColor(this.props.tag.colour)
-				}}
-			/>
-		);
-	}
-}
+const TagDot = ({ tag }) => (
+	<span className="icon icon-record" title={tag.name} style={{ color: tagColor(tag) }} />
+);
 
 export default TagDot;

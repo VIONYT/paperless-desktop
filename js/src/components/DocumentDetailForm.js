@@ -1,98 +1,86 @@
 import React from "react";
-import moment from "moment";
 import TagsInput from "./TagsInput";
-import PaperlessComponent from "./PaperlessComponent";
 import CorrespondentSelect from "./CorrespondentSelect";
 import DocumentDetailReminders from "./DocumentDetailReminders";
+import { isDateOnly, toLocalInput } from "../dates";
+import { t } from "../i18n";
 
-class DocumentDetailForm extends PaperlessComponent {
-	// CONSTRUCTOR
-	constructor(props) {
-		super(props);
-		this.state = {
-			doc: this.props.doc
-		};
-	}
+// The value of the date input as the API expects it: a plain date for paperless-ngx 2.16+,
+// otherwise an ISO date time (the input delivers local time).
+const toApiDate = (value, created) =>
+	isDateOnly(created) || !value ? value : new Date(value).toISOString();
 
+class DocumentDetailForm extends React.Component {
 	// HANDLE DETAIL CHANGE
 	handleDetailChange(e) {
-		var doc = this.state.doc;
-		doc[e.target.name] = e.target.value;
-
-		this.setState({
-			doc: doc
-		});
+		const { name, value } = e.target;
+		const doc = {
+			...this.props.doc,
+			[name]: name === "created" ? toApiDate(value, this.props.doc.created) : value
+		};
 
 		this.props.changeDoc(doc);
 	}
 
 	// RENDER
 	render() {
-		// convert the date to local time
-		var created = moment
-			.utc(this.state.doc.created)
-			.local()
-			.format("YYYY-MM-DD[T]HH:mm");
+		const doc = this.props.doc;
+		const dateOnly = isDateOnly(doc.created);
+		const change = this.handleDetailChange.bind(this);
 
 		return (
 			<form className="form-detail-info">
 				<div className="form-group">
-					<label>Title</label>
+					<label>{t("document.title")}</label>
 					<input
 						type="text"
 						className="form-control"
 						name="title"
-						placeholder="Title"
-						value={this.state.doc.title}
-						onChange={this.handleDetailChange.bind(this)}
+						placeholder={t("document.title")}
+						value={doc.title}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Correspondent</label>
-					<CorrespondentSelect
-						value={this.state.doc.correspondent}
-						onChange={this.handleDetailChange.bind(this)}
-					/>
+					<label>{t("document.correspondent")}</label>
+					<CorrespondentSelect value={doc.correspondent} onChange={change} />
 				</div>
 
 				<div className="form-group">
-					<label>Content</label>
+					<label>{t("document.content")}</label>
 					<textarea
 						className="form-control"
 						rows="6"
 						name="content"
-						placeholder="Content"
-						value={this.state.doc.content}
-						onChange={this.handleDetailChange.bind(this)}
+						placeholder={t("document.content")}
+						value={doc.content || ""}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Tags</label>
+					<label>{t("document.tags")}</label>
 					<div className="select-wrapper">
-						<TagsInput
-							tags={this.state.doc.tags}
-							onChange={this.handleDetailChange.bind(this)}
-						/>
+						<TagsInput tags={doc.tags} onChange={change} />
 					</div>
 				</div>
 
 				<div className="form-group">
-					<label>Date</label>
+					<label>{t("document.date")}</label>
 					<input
-						type="datetime-local"
+						type={dateOnly ? "date" : "datetime-local"}
 						className="form-control"
 						name="created"
-						placeholder="Tags"
-						value={created}
-						onChange={this.handleDetailChange.bind(this)}
+						placeholder={t("document.date")}
+						value={dateOnly ? doc.created : toLocalInput(doc.created)}
+						onChange={change}
 					/>
 				</div>
 
 				<div className="form-group">
-					<label>Reminders</label>
-					<DocumentDetailReminders doc={this.state.doc} />
+					<label>{t("document.reminders")}</label>
+					<DocumentDetailReminders doc={doc} />
 				</div>
 			</form>
 		);
