@@ -6,6 +6,11 @@ import { applyTheme } from "./theme";
 import { applyLanguage } from "./i18n";
 import { restoreSignIn } from "./auth";
 
+// a file that is dropped somewhere else must not be opened by the window
+["dragover", "drop"].forEach((name) =>
+	window.addEventListener(name, (event) => event.preventDefault())
+);
+
 applyTheme();
 applyLanguage();
 restoreSignIn();

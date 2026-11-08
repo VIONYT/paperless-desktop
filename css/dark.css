@@ -225,3 +225,7 @@ html.dark .document-item.selected .document-item-check {
 html.dark .document-item.selected .document-item-thumbnail {
 	outline-color: #4cc364;
 }
+
+html.dark .drop-overlay {
+	background-color: rgba(30, 30, 32, 0.65);
+}

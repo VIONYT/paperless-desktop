@@ -1,5 +1,5 @@
 import React from "react";
-import FileDrop from "react-file-drop";
+import DropOverlay from "../components/DropOverlay";
 import Header from "../components/Header";
 import Tabs from "../components/Tabs";
 import RemindersNotification from "../components/RemindersNotification";
@@ -114,7 +114,7 @@ class App extends React.Component {
 				<RemindersNotification />
 				<Header history={this.props.history} />
 				<Tabs history={this.props.history} />
-				<FileDrop onDrop={uploadFiles}>{t("documents.dropFiles")}</FileDrop>
+				<DropOverlay onDrop={uploadFiles} />
 				<Banner />
 				<div className="window-content">{this.props.children}</div>
 				<UploadWidget />

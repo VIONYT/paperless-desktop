@@ -25,7 +25,6 @@
 		"prop-types": "^15.5.8",
 		"react": "^15.4.1",
 		"react-dom": "^15.4.1",
-		"react-file-drop": "^0.1.8",
 		"react-router": "^3.0.2",
 		"react-select": "^1.0.0-rc.3",
 		"react-waypoint": "^6.0.0",

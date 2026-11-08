@@ -36,7 +36,7 @@
 	"documents.loadOneFailed": "Could not load document!",
 	"documents.notDisplayed": "The document could not be displayed.",
 	"documents.loading": "Loading...",
-	"documents.dropFiles": "Drop some files here!",
+	"documents.dropFiles": "Drop files to upload them",
 	"documents.upload": "Upload documents",
 	"documents.uploading": "Documents uploading..",
 	"documents.uploadingBody": "They will appear in your document list once they have finished processing.",

@@ -36,7 +36,7 @@
 	"documents.loadOneFailed": "Dokument konnte nicht geladen werden!",
 	"documents.notDisplayed": "Das Dokument konnte nicht angezeigt werden.",
 	"documents.loading": "Lädt...",
-	"documents.dropFiles": "Dateien hier ablegen!",
+	"documents.dropFiles": "Dateien zum Hochladen ablegen",
 	"documents.upload": "Dokumente hochladen",
 	"documents.uploading": "Dokumente werden hochgeladen..",
 	"documents.uploadingBody": "Sie erscheinen in deiner Dokumentenliste, sobald die Verarbeitung abgeschlossen ist.",
